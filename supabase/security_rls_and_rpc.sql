@@ -1326,6 +1326,10 @@ as $$
     and (m.female_id = me.id or m.male_id = me.id)
   order by coalesce(m.created_at_ts, now()) desc;
 $$;
+-- 다시 만들 때 기본 권한(PUBLIC 실행 허용)이 붙으므로 비로그인 호출은 바로 막음
+revoke all on function public.ondo_get_my_match_partners() from public, anon;
+grant execute on function public.ondo_get_my_match_partners() to authenticated;
+
 
 -- 수락/패스: 남학생 수락 시 티켓 1장 차감, 패스·만료 시 차감분 환급
 create or replace function public.ondo_respond_match(p_match_id text, p_accept boolean)
@@ -1516,7 +1520,7 @@ begin
       v_f_max := coalesce(nullif(r_female.profile_extra ->> 'preferredAgeMax', '')::integer, 40);
 
       -- 다른 학교 · 활성 매칭 없음 · 오늘 자동 매칭 이력 없음 · 과거 매칭 이력 없음
-      -- 서로의 선호 나이·흡연·종교 조건을 우선 반영하되, 스마트 조건 완화(smartRelaxFilter)가 켜져 있으면 차순위 후보도 허용
+      -- 서로의 선호 나이·흡연·종교 조건을 우선 반영하되 (예전 버전에 저장된 선호 값도 같은 뜻으로 인식), 스마트 조건 완화(smartRelaxFilter)가 켜져 있으면 차순위 후보도 허용
       select * into r_male
       from public.ondo_members m
       where m.gender in ('M', 'MALE') and m.verified
@@ -1546,12 +1550,12 @@ begin
           )
         )
         and (
-          coalesce(r_female.profile_extra ->> 'preferredSmoking', 'any') <> 'no_smoke'
+          coalesce(r_female.profile_extra ->> 'preferredSmoking', 'any') not in ('no_smoke', 'non_smoker_only')
           or coalesce(m.profile_extra ->> 'smokingStatus', 'NON_SMOKER') = 'NON_SMOKER'
           or coalesce((r_female.profile_extra ->> 'smartRelaxFilter')::boolean, true)
         )
         and (
-          coalesce(m.profile_extra ->> 'preferredSmoking', 'any') <> 'no_smoke'
+          coalesce(m.profile_extra ->> 'preferredSmoking', 'any') not in ('no_smoke', 'non_smoker_only')
           or coalesce(r_female.profile_extra ->> 'smokingStatus', 'NON_SMOKER') = 'NON_SMOKER'
           or coalesce((m.profile_extra ->> 'smartRelaxFilter')::boolean, true)
         )
@@ -1569,15 +1573,15 @@ begin
                 and coalesce(nullif(m.profile_extra ->> 'preferredAgeMax', '')::integer, 40)
              then 0 else 1 end asc,
         -- 2순위: 흡연 선호 일치 여부
-        case when (coalesce(r_female.profile_extra ->> 'preferredSmoking', 'any') <> 'no_smoke'
+        case when (coalesce(r_female.profile_extra ->> 'preferredSmoking', 'any') not in ('no_smoke', 'non_smoker_only')
                    or coalesce(m.profile_extra ->> 'smokingStatus', 'NON_SMOKER') = 'NON_SMOKER')
-              and (coalesce(m.profile_extra ->> 'preferredSmoking', 'any') <> 'no_smoke'
+              and (coalesce(m.profile_extra ->> 'preferredSmoking', 'any') not in ('no_smoke', 'non_smoker_only')
                    or coalesce(r_female.profile_extra ->> 'smokingStatus', 'NON_SMOKER') = 'NON_SMOKER')
              then 0 else 1 end asc,
         -- 3순위: 종교 선호 일치 여부
         case when (coalesce(r_female.profile_extra ->> 'preferredReligion', 'any') = 'any'
-                   or (r_female.profile_extra ->> 'preferredReligion' = 'none_only' and coalesce(m.profile_extra ->> 'religion', 'NONE') = 'NONE')
-                   or (r_female.profile_extra ->> 'preferredReligion' = 'same_only' and coalesce(m.profile_extra ->> 'religion', 'NONE') = coalesce(r_female.profile_extra ->> 'religion', 'NONE')))
+                   or (r_female.profile_extra ->> 'preferredReligion' in ('none_only', 'nonreligious_preferred') and coalesce(m.profile_extra ->> 'religion', 'NONE') = 'NONE')
+                   or (r_female.profile_extra ->> 'preferredReligion' in ('same_only', 'same_as_me') and coalesce(m.profile_extra ->> 'religion', 'NONE') = coalesce(r_female.profile_extra ->> 'religion', 'NONE')))
              then 0 else 1 end asc,
         -- 4순위: 나이 차이 및 최근 활동 순
         abs(coalesce(m.age, 24) - coalesce(r_female.age, 22)) asc,
