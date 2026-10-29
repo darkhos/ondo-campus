@@ -127,65 +127,14 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 pt-6 pb-28 sm:px-5 sm:py-10">
-        {/* Hero */}
-        <section className="mx-auto max-w-xl text-center">
-          <div className="ondo-rise inline-flex max-w-full items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1 text-[11.5px] font-bold text-zinc-700 shadow-2xs sm:text-[12px]" style={{ "--ondo-rise-delay": "0ms" } as React.CSSProperties}>
-            <span>
-              {isJa
-                ? "🇰🇷 韓国の大学生 ＆ 🇯🇵 日本人留学生・語学堂生"
-                : "🇰🇷 한국 대학생 & 🇯🇵 일본인 유학생·어학당생"}
-            </span>
-          </div>
-
-          <h1 className="ondo-rise mt-3.5 text-[27px] font-black leading-[1.25] tracking-tight text-zinc-900 sm:mt-5 sm:text-[40px]" style={{ "--ondo-rise-delay": "90ms" } as React.CSSProperties}>
-            {isJa ? (
-              <>
-                友達の紹介みたいに、
-                <br />
-                <span className="ondo-underline-draw text-rose-600">ちょうどいい人とつながる</span>
-              </>
-            ) : (
-              <>
-                친구가 주선해 주듯,
-                <br />
-                <span className="ondo-underline-draw text-rose-600">결 맞는 사람과 소개팅</span>
-              </>
-            )}
-          </h1>
-          <p className="ondo-rise mt-2.5 text-[14px] text-zinc-500 sm:mt-3.5 sm:text-[15px]" style={{ "--ondo-rise-delay": "180ms" } as React.CSSProperties}>
-            {isJa
-              ? "毎晩21時、希望条件に合う他大学の学生を1対1でご紹介します。"
-              : "매일 밤 9시, 조건이 맞는 다른 학교 학생을 1:1로 소개해 드려요."}
-          </p>
-
-          {/* Interactive Male & Female Couple Hero Visual */}
-          <CoupleInteractiveHero isJa={isJa} />
-
-          {/* Clean Hero CTA */}
-          <div
-            ref={heroCtaRef}
-            className="ondo-rise mx-auto mt-5 max-w-md sm:mt-6"
-            style={{ "--ondo-rise-delay": "270ms" } as React.CSSProperties}
-          >
-            <Button
-              size="lg"
-              fullWidth
-              loading={quickLoading}
-              variant="kakao"
-              onClick={handleKakaoLogin}
-            >
-              {isJa
-                ? "💬 カカオで3秒で始める"
-                : "💬 카카오로 3초 만에 시작하기"}
-            </Button>
-
-            <p className="mt-2.5 text-center text-[12px] text-zinc-500">
-              {isJa
-                ? "🔒 お互い5往復会話するまでカカオIDは公開されません"
-                : "🔒 서로 5마디 이상 대화하기 전까지 카톡 ID는 공개되지 않아요"}
-            </p>
-          </div>
+      <main className="mx-auto max-w-3xl px-4 pt-4 pb-28 sm:px-5 sm:py-8">
+        {/* Hero with Interactive Couple Backdrop Behind the Title */}
+        <section ref={heroCtaRef} className="mx-auto max-w-2xl">
+          <CoupleInteractiveHero
+            isJa={isJa}
+            quickLoading={quickLoading}
+            onKakaoLogin={handleKakaoLogin}
+          />
         </section>
 
         {/* University Eligibility & 3D Circular Carousel */}
