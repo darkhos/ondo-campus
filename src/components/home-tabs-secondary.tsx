@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { DbMatchPartner, deleteMyAccount, logoutEverywhere } from "@/lib/supabase";
 import { RealMatchPanel } from "@/components/real-match-panel";
+import { useInViewOnce } from "@/components/reveal";
 import { useRouter } from "next/navigation";
 import {
   CalendarHeart,
@@ -180,6 +181,7 @@ export function IdealTypeTab({
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
 
+  const [recRef, recSeen] = useInViewOnce<HTMLDivElement>(0.3);
   const myMbti = (user.mbti ?? "").toUpperCase();
   const recommendedMbti = MBTI_BEST_MATCH[myMbti] ?? [];
   const missingDetail = [
@@ -489,12 +491,17 @@ export function IdealTypeTab({
 
           {advancedOpen && (
             <div className="space-y-5 border-t border-gray-100 p-4">
-              <div>
+              <div ref={recRef}>
                 <label className={FIELD_LABEL}>
                   {isJa ? "希望するMBTI（複数選択）" : "선호 MBTI (복수 선택)"}
                 </label>
                 {recommendedMbti.length > 0 && (
-                  <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-rose-100 bg-rose-50/70 px-3 py-2.5">
+                  <div
+                    className={cn(
+                      "mb-2 flex items-center justify-between gap-2 rounded-xl border border-rose-100 bg-rose-50/70 px-3 py-2.5 shadow-sm",
+                      recSeen ? "ondo-popup-in" : "ondo-popup-wait"
+                    )}
+                  >
                     <p className="min-w-0 text-[12px] leading-relaxed text-rose-700">
                       💡{" "}
                       {isJa
@@ -532,7 +539,13 @@ export function IdealTypeTab({
                     >
                       {m}
                       {recommendedMbti.includes(m) && (
-                        <span className="absolute -right-1 -top-1.5 rounded-full bg-rose-600 px-1 text-[9px] font-bold leading-[14px] text-white">
+                        <span
+                          className={cn(
+                            "absolute -right-1 -top-1.5 rounded-full bg-rose-600 px-1 text-[9px] font-bold leading-[14px] text-white",
+                            recSeen ? "ondo-popup-in" : "ondo-popup-wait"
+                          )}
+                          style={{ "--ondo-popup-delay": `${450 + recommendedMbti.indexOf(m) * 150}ms` } as React.CSSProperties}
+                        >
                           {isJa ? "おすすめ" : "추천"}
                         </span>
                       )}
