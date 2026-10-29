@@ -204,13 +204,13 @@ export function UniversityCircularCarousel({
       const containerWidth = containerRef.current?.clientWidth ?? 360;
       const isWide = !compact && containerWidth >= 720;
 
-      // PC와 모바일 모두 3D 원기둥 아크가 글자 잘림/겹침 없이 한눈에 보이도록
-      // 가상 스테이지 폭 기준으로 원기둥을 배치한 뒤 컨테이너 폭에 맞춰 스케일링
-      const cardW = isWide ? 154 : 144;
-      const radius = isWide ? 420 : 292;
-      const virtualWidth = isWide ? 760 : 480;
+      // PC와 모바일 모두 카드 사이에 넉넉한 여백(약 38px)을 두고 한 대학씩 자연스럽게 넘어가도록
+      // PC와 동일한 원기둥 반지름 비율(R / cardW ≈ 2.73)을 적용하고 컨테이너 폭에 맞춰 스케일링
+      const cardW = isWide ? 154 : 148;
+      const radius = isWide ? 420 : 404;
+      const virtualWidth = isWide ? 760 : 520;
       const stageScale = Math.min(1, containerWidth / virtualWidth);
-      const visibleCosThreshold = 0.42;
+      const visibleCosThreshold = isWide ? 0.42 : 0.62;
 
       if (pivotRef.current) {
         pivotRef.current.style.transform =
@@ -235,12 +235,12 @@ export function UniversityCircularCarousel({
         }
 
         // 3D 원기둥 궤도 좌표 계산:
-        // - 모든 인접 카드 사이에 여백(Gap > 0)을 보장해 앞 카드가 옆 카드 글자를 가리지 않음
+        // - 모든 인접 카드 사이에 넉넉한 여백(약 38px)을 보장해 카드가 붙어 보이지 않고 자연스럽게 넘어감
         // - 상하 아치(y)는 정면(+8px) ~ 측면(-6px)으로 입체적인 링 형태를 유지하되 상하단 잘림 완벽 방지
         const x = sinVal * radius;
         const y = cosVal * (compact ? 8 : 10) - 2;
         const z = (cosVal - 1) * (compact ? 120 : 150);
-        const rotMultiplier = isWide ? 1.08 : 1.48;
+        const rotMultiplier = isWide ? 1.08 : 1.24;
         const rotY = Math.max(-78, Math.min(78, -normThetaDeg * rotMultiplier));
 
         // 카드의 바깥쪽 끝이 스테이지 좌우 경계에 닿기 전에 부드럽게 페이드아웃해 좌우 잘림을 100% 방지
@@ -250,7 +250,7 @@ export function UniversityCircularCarousel({
         const halfStage = virtualWidth / 2 - 4;
         const edgeFade = Math.max(
           0,
-          Math.min(1, (halfStage - outerEdge) / 34)
+          Math.min(1, (halfStage - outerEdge) / 36)
         );
 
         const fadeRange = 0.18;
