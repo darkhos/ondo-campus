@@ -60,7 +60,16 @@ const religionLabelMap = Object.fromEntries(
 );
 
 export function isActiveMatch(m: DbMatchPartner) {
-  return ACTIVE_STATUSES.includes(m.ticket_status);
+  if (m.ticket_status === "PENDING" || m.ticket_status === "CHATTING") {
+    return true;
+  }
+  if (m.ticket_status === "CONFIRMED") {
+    // 연락처 공개(CONFIRMED)된 매칭은 36시간 동안 홈 화면에도 표시하고, 이후에는 대화방 탭에서 언제든 열람
+    const createdMs = m.created_at ? Date.parse(m.created_at) : NaN;
+    if (Number.isNaN(createdMs)) return true;
+    return Date.now() - createdMs < 36 * 60 * 60 * 1000;
+  }
+  return false;
 }
 
 /**

@@ -365,7 +365,8 @@ function buildProfileExtra(user: UserProfile) {
     preferredImpressions: user.preferredImpressions,
     preferredBuilds: user.preferredBuilds,
     preferredReligion: user.preferredReligion,
-    smartRelaxFilter: user.smartRelaxFilter ?? null,
+    smartRelaxFilter: user.smartRelaxFilter ?? true,
+    includeJapaneseGlobal: user.includeJapaneseGlobal ?? true,
   };
 }
 

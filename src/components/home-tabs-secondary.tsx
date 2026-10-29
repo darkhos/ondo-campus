@@ -166,7 +166,9 @@ export function IdealTypeTab({
   );
   const [avoidSameSchool, setAvoidSameSchool] = useState(user.avoidSameSchool);
   const [smartRelax, setSmartRelax] = useState(user.smartRelaxFilter ?? true);
-  const [includeJapaneseGlobal, setIncludeJapaneseGlobal] = useState(true);
+  const [includeJapaneseGlobal, setIncludeJapaneseGlobal] = useState(
+    user.includeJapaneseGlobal ?? true
+  );
 
   const [advancedOpen, setAdvancedOpen] = useState(true);
   const [prefMbti, setPrefMbti] = useState<string[]>(user.preferredMbti);
@@ -230,6 +232,7 @@ export function IdealTypeTab({
       preferredHeight: heightPrefs.join(","),
       avoidSameSchool,
       smartRelaxFilter: smartRelax,
+      includeJapaneseGlobal,
       preferredMbti: prefMbti,
       preferredSmoking: prefSmoking,
       preferredImpressions: prefImpressions,

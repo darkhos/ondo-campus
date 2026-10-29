@@ -483,6 +483,7 @@ export interface UserProfile {
   points: number;
   escrowPoints?: number;
   smartRelaxFilter?: boolean;
+  includeJapaneseGlobal?: boolean;
   voiceIntroText?: string;
   voiceAudioDataUrl?: string | null;
   kakaoVerified?: boolean;
@@ -623,7 +624,8 @@ export const EMPTY_USER_PROFILE: UserProfile = {
   preferredReligion: "any",
   points: 0,
   escrowPoints: 0,
-  smartRelaxFilter: false,
+  smartRelaxFilter: true,
+  includeJapaneseGlobal: true,
   voiceIntroText: "",
   kakaoVerified: false,
 };

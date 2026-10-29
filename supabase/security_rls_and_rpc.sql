@@ -169,7 +169,7 @@ begin
   if v ? 'preferredHeight' and jsonb_typeof(v -> 'preferredHeight') not in ('string', 'null') then
     v := v - 'preferredHeight';
   end if;
-  foreach k in array array['avoidSameSchool', 'smartRelaxFilter'] loop
+  foreach k in array array['avoidSameSchool', 'smartRelaxFilter', 'includeJapaneseGlobal'] loop
     if v ? k and jsonb_typeof(v -> k) <> 'null' and coalesce(v ->> k, '') not in ('true', 'false') then
       v := v - k;
     end if;
@@ -1796,15 +1796,20 @@ begin
     end if;
   end loop;
 
-  -- 1-2) 대화가 오가다 3일 동안 멈추면 종료 → 두 사람 모두 다시 새 소개를 받을 수 있게 함
-  --      (여학생이 이미 답한 대화이므로 티켓은 사용된 것으로 봄)
+  -- 1-2) 채팅 시작 후 24시간 동안 남학생 첫 답장이 없거나, 대화가 오가다 3일 동안 멈추면 종료
+  --      → 두 사람 모두 다시 새 소개를 받을 수 있게 함 (여학생이 이미 답한 대화이므로 티켓은 사용된 것으로 봄)
   update public.ondo_matches m
   set ticket_status = 'EXPIRED'
   where m.ticket_status = 'CHATTING'
     and exists (select 1 from public.ondo_match_messages x
                 where x.match_id = m.id and x.sender_id = m.female_id)
-    and coalesce((select max(x.created_at) from public.ondo_match_messages x where x.match_id = m.id),
-                 m.chat_opened_at, now()) < now() - interval '3 days';
+    and (
+      (m.chat_opened_at < now() - interval '24 hours'
+       and not exists (select 1 from public.ondo_match_messages x
+                       where x.match_id = m.id and x.sender_id = m.male_id))
+      or coalesce((select max(x.created_at) from public.ondo_match_messages x where x.match_id = m.id),
+                  m.chat_opened_at, now()) < now() - interval '3 days'
+    );
   get diagnostics v_stale_count = row_count;
 
   -- 2) 매일 밤 9시(KST) 이후에만 실행 (운영자가 수동으로 실행한 경우는 시간과 관계없이 실행)
@@ -1816,6 +1821,8 @@ begin
         select f.* from public.ondo_members f
         where f.gender in ('F', 'FEMALE') and f.verified
           and not coalesce(f.matching_paused, false)
+          and public.ondo_extra_int(f.profile_extra, 'height', 0) between 140 and 210
+          and coalesce(trim(f.contact), '') not in ('', 'ondo_univ')
           and not exists (select 1 from public.ondo_matches om
                           where om.female_id = f.id
                             and (om.ticket_status in ('PENDING', 'HELD', 'CHATTING')
@@ -1827,6 +1834,8 @@ begin
         select m.* from public.ondo_members m
         where m.gender in ('M', 'MALE') and m.verified
           and not coalesce(m.matching_paused, false)
+          and public.ondo_extra_int(m.profile_extra, 'height', 0) between 140 and 210
+          and coalesce(trim(m.contact), '') not in ('', 'ondo_univ')
           and not exists (select 1 from public.ondo_matches om
                           where om.male_id = m.id
                             and (om.ticket_status in ('PENDING', 'HELD', 'CHATTING')
@@ -1852,6 +1861,10 @@ begin
               and not public.ondo_extra_bool(m.profile_extra, 'avoidSameSchool', true))
         where not exists (select 1 from public.ondo_matches om
                           where om.female_id = f.id and om.male_id = m.id)
+          and (not (f.univ like '%어학당%' or f.major like '%🇯🇵%')
+               or public.ondo_extra_bool(m.profile_extra, 'includeJapaneseGlobal', true))
+          and (not (m.univ like '%어학당%' or m.major like '%🇯🇵%')
+               or public.ondo_extra_bool(f.profile_extra, 'includeJapaneseGlobal', true))
       ),
       s as (
         select c.*,
