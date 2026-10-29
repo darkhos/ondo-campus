@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useInViewOnce, usePrefersReducedMotion } from "@/components/reveal";
 import { useRouter } from "next/navigation";
 import {
@@ -252,6 +252,75 @@ export function Modal({
   );
 }
 
+/** 손잡이 두 개로 최소·최대를 고르는 범위 막대 (예: 선호 나이) */
+export function RangeSlider({
+  min,
+  max,
+  low,
+  high,
+  onChange,
+  format,
+  labelLow,
+  labelHigh,
+}: {
+  min: number;
+  max: number;
+  low: number;
+  high: number;
+  onChange: (low: number, high: number) => void;
+  format: (v: number) => string;
+  labelLow: string;
+  labelHigh: string;
+}) {
+  const pct = (v: number) => ((v - min) / (max - min)) * 100;
+  return (
+    <div className="px-1 pt-1">
+      <div className="mb-3 flex items-center justify-center gap-2 text-[15px] font-black text-zinc-900 tabular-nums">
+        <span key={`l${low}`} className="ondo-pop rounded-xl bg-rose-50 px-3 py-1 text-rose-600">
+          {format(low)}
+        </span>
+        <span className="text-zinc-300">~</span>
+        <span key={`h${high}`} className="ondo-pop rounded-xl bg-rose-50 px-3 py-1 text-rose-600">
+          {format(high)}
+        </span>
+      </div>
+      <div className="relative h-6">
+        <div className="absolute top-1/2 right-0 left-0 h-1.5 -translate-y-1/2 rounded-full bg-stone-200" />
+        <div
+          className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-rose-500"
+          style={{ left: `${pct(low)}%`, right: `${100 - pct(high)}%` }}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={1}
+          value={low}
+          aria-label={labelLow}
+          onChange={(e) => onChange(Math.min(Number(e.target.value), high), high)}
+          className="ondo-range absolute inset-0 w-full"
+          style={{ zIndex: low > max - 2 ? 5 : 3 }}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={1}
+          value={high}
+          aria-label={labelHigh}
+          onChange={(e) => onChange(low, Math.max(Number(e.target.value), low))}
+          className="ondo-range absolute inset-0 w-full"
+          style={{ zIndex: 4 }}
+        />
+      </div>
+      <div className="mt-1 flex justify-between text-[10.5px] font-semibold text-zinc-400 tabular-nums">
+        <span>{format(min)}</span>
+        <span>{format(max)}</span>
+      </div>
+    </div>
+  );
+}
+
 export function SelectField({
   value,
   onChange,
@@ -353,16 +422,29 @@ export function MatchCard({
     }, 160);
     return () => window.clearInterval(id);
   }, [demoChatStep, reduceMotion]);
-  // 1단계(0) → 2단계(3) → 3단계(5) 자동 순차 조명 반복 (직접 버튼을 눌러도 전환되며 다시 자연스럽게 순환)
-  const [demoRef] = useInViewOnce<HTMLDivElement>(0.2);
+  // 화면에 들어오면 0 → 3 → 5 시연 후 잠시 멈췄다가 처음부터 다시 (0으로는 거꾸로 세지 않고 바로 돌아감)
+  // 방문자가 버튼을 직접 누르면 자동 시연은 멈추고, 동작 줄이기를 켠 경우에는 자동 시연하지 않음
+  const [demoRef, demoSeen] = useInViewOnce<HTMLDivElement>(0.4);
+  const [demoTouched, setDemoTouched] = useState(false);
   useEffect(() => {
-    if (!isDemoPartner) return;
-    const id = window.setInterval(() => {
-      setDemoChatStep((prev) => (prev === 0 ? 3 : prev === 3 ? 5 : 0));
-    }, 2400);
-    return () => window.clearInterval(id);
-  }, [isDemoPartner]);
+    if (!isDemoPartner || !demoSeen || demoTouched || reduceMotion) return;
+    const timers: number[] = [];
+    const runCycle = () => {
+      timers.push(window.setTimeout(() => setDemoChatStep(3), 900));
+      timers.push(window.setTimeout(() => setDemoChatStep(5), 2500));
+      timers.push(
+        window.setTimeout(() => {
+          setDemoCount(0);
+          setDemoChatStep(0);
+          runCycle();
+        }, 7000)
+      );
+    };
+    runCycle();
+    return () => timers.forEach((id) => window.clearTimeout(id));
+  }, [isDemoPartner, demoSeen, demoTouched, reduceMotion]);
   const pickDemoStep = (step: 0 | 3 | 5) => {
+    setDemoTouched(true);
     setDemoChatStep(step);
   };
   const [tiltStyle, setTiltStyle] = useState<React.CSSProperties>({});
@@ -1194,27 +1276,40 @@ export function PillNav({
       aria-label="하단 플로팅 내비게이션"
       className="fixed inset-x-0 bottom-4 z-30 mx-auto max-w-md px-4"
     >
-      <div className="grid h-14 grid-cols-5 items-center rounded-full border border-stone-200/90 bg-zinc-900/95 px-2 text-white shadow-xl backdrop-blur-md">
-        {TAB_ITEMS.map(({ id, label, labelJa, Icon }) => {
-          const isActive = active === id;
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => onChange(id)}
-              aria-current={isActive ? "page" : undefined}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 rounded-full py-1.5 text-[11px] transition-all",
-                isActive
-                  ? "bg-white font-bold text-zinc-900"
-                  : "font-medium text-zinc-400 hover:text-white"
-              )}
-            >
-              <Icon className="h-4 w-4" strokeWidth={isActive ? 2.3 : 1.8} />
-              <span className="leading-none">{isJa ? labelJa : label}</span>
-            </button>
-          );
-        })}
+      <div className="h-14 rounded-full border border-stone-200/90 bg-zinc-900/95 px-2 text-white shadow-xl backdrop-blur-md">
+        <div className="relative grid h-full grid-cols-5 items-center">
+          {/* 고른 탭 뒤의 흰 배경이 옆으로 미끄러지듯 이동 */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-1.5 left-0 w-1/5 rounded-full bg-white shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{
+              transform: `translateX(${Math.max(0, TAB_ITEMS.findIndex((t) => t.id === active)) * 100}%)`,
+            }}
+          />
+          {TAB_ITEMS.map(({ id, label, labelJa, Icon }) => {
+            const isActive = active === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => onChange(id)}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "relative z-10 flex flex-col items-center justify-center gap-1 rounded-full py-1.5 text-[11px] transition-colors duration-300 active:scale-95",
+                  isActive
+                    ? "font-bold text-zinc-900"
+                    : "font-medium text-zinc-400 hover:text-white"
+                )}
+              >
+                {/* 고른 탭 아이콘은 한 번 톡 튀어 반응 */}
+                <span key={isActive ? `on-${id}` : `off-${id}`} className={isActive ? "ondo-pop" : "inline-block"}>
+                  <Icon className="h-4 w-4" strokeWidth={isActive ? 2.3 : 1.8} />
+                </span>
+                <span className="leading-none">{isJa ? labelJa : label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
@@ -1286,21 +1381,48 @@ export function ProfileCompletionCard({
 }) {
   const [locale] = useAppLocale();
   const isJa = locale === "ja";
+  // 화면에 처음 보일 때 0%에서 현재 완성도까지 숫자와 막대가 차오름 (동작 줄이기면 바로 표시)
+  const reduceMotion = usePrefersReducedMotion();
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    if (reduceMotion) return;
+    let raf = 0;
+    const start = performance.now();
+    const from = 0;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / 900);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setShown(Math.round(from + (percent - from) * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [percent, reduceMotion]);
+  const value = reduceMotion ? percent : shown;
+  const complete = percent >= 100;
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="flex w-full items-center justify-between gap-3 rounded-2xl border border-stone-200/80 bg-white px-5 py-3.5 text-left transition-colors hover:bg-stone-50"
+      className="flex w-full items-center justify-between gap-3 rounded-2xl border border-stone-200/80 bg-white px-5 py-3.5 text-left transition-all hover:bg-stone-50 active:scale-[0.99]"
     >
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-bold text-zinc-900">
           {isJa ? "価値観ノート完成度 " : "가치관 노트 완성도 "}
-          <span className="text-rose-600">{percent}%</span>
+          <span className={cn("tabular-nums", complete ? "text-emerald-600" : "text-rose-600")}>
+            {value}%
+          </span>
+          {complete && value >= 100 && (
+            <span className="ondo-check-pop ml-1.5 inline-block text-[12px]">🎉</span>
+          )}
         </p>
         <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-stone-100">
           <div
-            className="h-full rounded-full bg-rose-500 transition-all"
-            style={{ width: `${percent}%` }}
+            className={cn(
+              "h-full rounded-full",
+              complete ? "bg-emerald-500" : "bg-rose-500"
+            )}
+            style={{ width: `${value}%` }}
           />
         </div>
       </div>

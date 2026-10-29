@@ -430,7 +430,8 @@ function HomeContent() {
           </div>
         </div>
       )}
-      <div className="flex-1 pb-24">
+      {/* 탭을 바꾸면 내용이 살짝 올라오며 부드럽게 넘어옴 */}
+      <div key={activeTab} className="ondo-tab-in flex-1 pb-24">
         {activeTab === "lounge" && (
           <HomeMatchTab
             user={user}

@@ -382,6 +382,24 @@ function JoinForm({
   // 한국 대학생(DEGREE), 일본인 어학당생(KLI_JP), 일본인 대학 유학생(INTL_JP) 모두
   // 학교 공식 웹메일 인증(WEBMAIL) 또는 학생증(도서관 모바일 이용증 등 신분 입증 자료) 인증(STUDENT_ID) 중 선택 가능
   const usesStudentIdVerification = intlVerifyMethod === "STUDENT_ID";
+  // 위쪽 진행 막대: 카카오 확인 → 기본 정보 → 카톡 아이디 → 학생 인증
+  const joinSteps = [
+    { label: isJa ? "カカオ確認" : "카카오 확인", done: hasKakaoSession === true },
+    {
+      label: isJa ? "基本情報" : "기본 정보",
+      done:
+        nickname.trim().length >= 2 &&
+        !!age &&
+        !!gender &&
+        !!school.trim() &&
+        (campusTrack === "KLI_JP" || !!department.trim()),
+    },
+    { label: isJa ? "カカオID" : "카톡 아이디", done: kakaoId.trim().length > 0 },
+    {
+      label: isJa ? "学生認証" : "학생 인증",
+      done: usesStudentIdVerification ? !!studentIdBlob : emailStage === "verified",
+    },
+  ];
   const emailGuide = getUnivEmailGuide(school, isJa);
 
   // 학생증 사진은 자동 검사 없이 그대로 받아 두었다가, 가입 완료 시 운영자 확인용으로 업로드
@@ -732,6 +750,7 @@ function JoinForm({
         title={isJa ? "ONDO 36.5° プロフィール登録" : "ONDO 36.5° 주파수 등록"}
         back
       />
+      <JoinProgress steps={joinSteps} isJa={isJa} />
 
       <div className="flex-1 space-y-5 px-5 py-6">
         <div>
@@ -807,12 +826,13 @@ function JoinForm({
                 }
               }}
               className={cn(
-                "flex flex-col items-start rounded-2xl border p-3.5 text-left transition-all",
+                "relative flex flex-col items-start rounded-2xl border p-3.5 text-left transition-all active:scale-[0.98]",
                 campusTrack === "DEGREE"
                   ? "border-zinc-900 bg-zinc-900 text-white shadow-sm"
                   : "border-stone-200 bg-white text-zinc-700 hover:border-stone-300"
               )}
             >
+              <SelectedCheck show={campusTrack === "DEGREE"} />
               <GraduationCap className="h-4 w-4 text-rose-500" />
               <span className="mt-1.5 text-[13px] font-extrabold">
                 {isJa ? "🇰🇷 韓国の大学生" : "🇰🇷 한국 대학생"}
@@ -838,12 +858,13 @@ function JoinForm({
                 }
               }}
               className={cn(
-                "flex flex-col items-start rounded-2xl border p-3.5 text-left transition-all",
+                "relative flex flex-col items-start rounded-2xl border p-3.5 text-left transition-all active:scale-[0.98]",
                 campusTrack === "KLI_JP"
                   ? "border-rose-600 bg-rose-600 text-white shadow-sm"
                   : "border-stone-200 bg-white text-zinc-700 hover:border-stone-300"
               )}
             >
+              <SelectedCheck show={campusTrack === "KLI_JP"} />
               <BookOpen
                 className={cn(
                   "h-4 w-4",
@@ -879,12 +900,13 @@ function JoinForm({
                 }
               }}
               className={cn(
-                "flex flex-col items-start rounded-2xl border p-3.5 text-left transition-all",
+                "relative flex flex-col items-start rounded-2xl border p-3.5 text-left transition-all active:scale-[0.98]",
                 campusTrack === "INTL_JP"
                   ? "border-indigo-600 bg-indigo-600 text-white shadow-sm"
                   : "border-stone-200 bg-white text-zinc-700 hover:border-stone-300"
               )}
             >
+              <SelectedCheck show={campusTrack === "INTL_JP"} />
               <Globe2
                 className={cn(
                   "h-4 w-4",
@@ -1430,15 +1452,11 @@ function JoinForm({
 
             {(emailStage === "sent" || emailStage === "verifying") && (
               <div className="mt-2 flex gap-2">
-                <input
-                  inputMode="numeric"
-                  maxLength={6}
-                  className={FIELD_INPUT}
+                <CodeBoxes
                   value={emailCode}
-                  onChange={(e) =>
-                    setEmailCode(e.target.value.replace(/\D/g, "").slice(0, 6))
-                  }
-                  placeholder={isJa ? "6桁の認証番号" : "6자리 인증번호"}
+                  onChange={setEmailCode}
+                  shakeKey={emailStage === "sent" ? emailMsg : null}
+                  label={isJa ? "6桁の認証番号" : "6자리 인증번호"}
                 />
                 <Button
                   size="lg"
@@ -1454,8 +1472,13 @@ function JoinForm({
 
             {emailMsg && (
               <p
+                key={emailMsg}
                 className={cn(
                   "mt-2 text-[12px] font-semibold leading-relaxed",
+                  emailStage !== "verified" &&
+                    emailStage !== "sent" &&
+                    emailStage !== "verifying" &&
+                    "ondo-shake",
                   emailStage === "verified"
                     ? "text-emerald-700"
                     : emailStage === "sent" || emailStage === "verifying"
@@ -1609,7 +1632,10 @@ function JoinForm({
 
         <div className="space-y-2.5 pt-2">
           {submitError && (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-[12px] font-semibold text-rose-600">
+            <div
+              key={submitError}
+              className="ondo-shake rounded-2xl border border-rose-200 bg-rose-50 p-3 text-[12px] font-semibold text-rose-600"
+            >
               {submitError}
             </div>
           )}
@@ -1636,6 +1662,141 @@ function JoinForm({
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** 고른 카드 오른쪽 위에 체크 표시가 톡 튀어나옴 */
+function SelectedCheck({ show }: { show: boolean }) {
+  if (!show) return null;
+  return (
+    <span
+      className="ondo-check-pop absolute top-2.5 right-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-600 text-white shadow-sm"
+      aria-hidden
+    >
+      <CheckCircle2 className="h-3.5 w-3.5" />
+    </span>
+  );
+}
+
+/** 가입 진행 막대 (4단계) */
+function JoinProgress({
+  steps,
+  isJa,
+}: {
+  steps: { label: string; done: boolean }[];
+  isJa: boolean;
+}) {
+  const doneCount = steps.filter((s) => s.done).length;
+  return (
+    <div className="sticky top-14 z-10 border-b border-stone-200/70 bg-[#FAF9F6]/95 px-5 py-2.5 backdrop-blur-md">
+      <div className="flex items-center justify-between text-[11px] font-bold">
+        <span className="text-zinc-500">{isJa ? "登録の進み具合" : "가입 진행"}</span>
+        <span className="tabular-nums text-rose-600">
+          {doneCount}/{steps.length}
+        </span>
+      </div>
+      <div className="mt-1.5 grid grid-cols-4 gap-1">
+        {steps.map((s) => (
+          <div key={s.label} className="min-w-0">
+            <div className="h-1.5 overflow-hidden rounded-full bg-stone-200">
+              <div
+                className={cn(
+                  "h-full rounded-full bg-rose-500 transition-[width] duration-500 ease-out",
+                  s.done ? "w-full" : "w-0"
+                )}
+              />
+            </div>
+            <p
+              className={cn(
+                "mt-1 truncate text-[10px] font-semibold transition-colors",
+                s.done ? "text-rose-600" : "text-zinc-400"
+              )}
+            >
+              {s.done ? "✓ " : ""}
+              {s.label}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** 인증번호 6칸 입력: 입력하면 다음 칸으로, 지우면 앞 칸으로, 붙여 넣으면 한 번에 채움 */
+function CodeBoxes({
+  value,
+  onChange,
+  shakeKey,
+  label,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  /** 이 값이 바뀌면(틀린 번호 안내 등) 칸들이 한 번 흔들림 */
+  shakeKey: string | null;
+  label: string;
+}) {
+  const refs = useRef<(HTMLInputElement | null)[]>([]);
+  const digits = Array.from({ length: 6 }, (_, i) => value[i] ?? "");
+
+  const setFrom = (start: number, raw: string) => {
+    const clean = raw.replace(/\D/g, "");
+    if (!clean) return;
+    const arr = digits.slice();
+    for (let k = 0; k < clean.length && start + k < 6; k++) arr[start + k] = clean[k];
+    const next = arr.join("").slice(0, 6);
+    onChange(next);
+    const focusIdx = Math.min(5, start + clean.length);
+    refs.current[focusIdx]?.focus();
+  };
+
+  return (
+    <div
+      key={shakeKey ?? "steady"}
+      className={cn("flex flex-1 gap-1.5", shakeKey && "ondo-shake")}
+      role="group"
+      aria-label={label}
+    >
+      {digits.map((d, i) => (
+        <input
+          key={i}
+          ref={(el) => {
+            refs.current[i] = el;
+          }}
+          inputMode="numeric"
+          autoComplete={i === 0 ? "one-time-code" : "off"}
+          maxLength={6}
+          aria-label={`${label} ${i + 1}`}
+          value={d}
+          onChange={(e) => setFrom(i, e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Backspace") {
+              e.preventDefault();
+              const arr = digits.slice();
+              if (arr[i]) {
+                arr[i] = "";
+                onChange(arr.join("").replace(/\s/g, ""));
+              } else if (i > 0) {
+                arr[i - 1] = "";
+                onChange(arr.join(""));
+                refs.current[i - 1]?.focus();
+              }
+            } else if (e.key === "ArrowLeft" && i > 0) {
+              refs.current[i - 1]?.focus();
+            } else if (e.key === "ArrowRight" && i < 5) {
+              refs.current[i + 1]?.focus();
+            }
+          }}
+          onPaste={(e) => {
+            e.preventDefault();
+            setFrom(0, e.clipboardData.getData("text"));
+          }}
+          className={cn(
+            "h-12 w-full min-w-0 rounded-xl border bg-white text-center text-[18px] font-black tabular-nums text-zinc-900 transition-all focus:scale-105 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/15",
+            d ? "border-rose-300" : "border-stone-200"
+          )}
+        />
+      ))}
     </div>
   );
 }

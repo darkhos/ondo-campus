@@ -143,6 +143,13 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
   },
 ];
 
+// 휴대폰 화면 기준값: 카드 너비, 원 반지름, 카드 사이 여백
+// (반지름 330일 때 옆 카드 중심이 약 143px 떨어져 카드 사이에 약 26px 여백이 생김)
+const MOBILE_BREAKPOINT = 560;
+const MOBILE_CARD_W = 124;
+const MOBILE_RADIUS = 330;
+const MOBILE_GAP = 26;
+
 export function UniversityCircularCarousel({
   isJa,
   compact = false,
@@ -202,13 +209,15 @@ export function UniversityCircularCarousel({
       }
 
       const containerWidth = containerRef.current?.clientWidth ?? 360;
+      const isMobile = containerWidth < MOBILE_BREAKPOINT;
 
-      // PC(carousel_v4_desktop)와 모바일을 100% 동일한 지오메트리(cardW: 154, radius: 420, virtualWidth: 780)로 통일해
-      // 모바일에서도 PC와 완전히 똑같은 5~6장 3D 원기둥 아크와 카드 간 여백·회전감이 그대로 보이도록 스케일링
-      const cardW = 154;
-      const radius = 420;
-      const virtualWidth = 780;
-      const stageScale = Math.min(1, containerWidth / virtualWidth);
+      // 컴퓨터: 넓은 무대(780px)에 4~5장. 화면이 좁으면 무대 전체를 줄임
+      // 휴대폰: 무대를 줄이지 않고 글자가 읽히는 크기의 카드 1장을 가운데 두고,
+      //        카드 사이 여백(약 26px)을 둔 채 양옆 카드가 살짝 보이다가 넘어가게 함
+      const cardW = isMobile ? MOBILE_CARD_W : 154;
+      const radius = isMobile ? MOBILE_RADIUS : 420;
+      const virtualWidth = isMobile ? containerWidth : 780;
+      const stageScale = isMobile ? 1 : Math.min(1, containerWidth / virtualWidth);
       const visibleCosThreshold = 0.42;
 
       if (pivotRef.current) {
@@ -247,10 +256,11 @@ export function UniversityCircularCarousel({
           (cardW / 2) * Math.cos((Math.abs(rotY) * Math.PI) / 180);
         const outerEdge = Math.abs(x) + projHalfW;
         const halfStage = virtualWidth / 2 - 4;
-        const edgeFade = Math.max(
-          0,
-          Math.min(1, (halfStage - outerEdge) / 36)
-        );
+        // 휴대폰은 카드 가운데 위치 기준으로 흐려지게 해서 양옆 카드가 가장자리에서 살짝 보이도록 함
+        // (가장자리는 무대 좌우의 흐림 처리로 자연스럽게 사라짐)
+        const edgeFade = isMobile
+          ? Math.max(0, Math.min(1, (halfStage + 20 - Math.abs(x)) / 40))
+          : Math.max(0, Math.min(1, (halfStage - outerEdge) / 36));
 
         const fadeRange = 0.18;
         const arcVis = Math.max(
@@ -317,8 +327,15 @@ export function UniversityCircularCarousel({
     const dt = Math.max(0.008, (now - st.lastTime) / 1000);
     st.dragDistance += Math.abs(dx);
     const containerWidth = containerRef.current?.clientWidth ?? 360;
-    const scaleFactor = Math.max(0.45, Math.min(1, containerWidth / 756));
-    const degDelta = (dx / scaleFactor) * 0.28;
+    let degDelta: number;
+    if (containerWidth < MOBILE_BREAKPOINT) {
+      // 휴대폰: 카드 한 장 너비만큼 밀면 정확히 한 칸 이동
+      const stepDeg = 360 / UNIV_RING_ITEMS.length;
+      degDelta = dx * (stepDeg / (MOBILE_CARD_W + MOBILE_GAP));
+    } else {
+      const scaleFactor = Math.max(0.45, Math.min(1, containerWidth / 756));
+      degDelta = (dx / scaleFactor) * 0.28;
+    }
     st.angle += degDelta;
     st.velocity = (degDelta / dt) * 0.6;
     if (Math.abs(dx) > 1) {
@@ -368,7 +385,7 @@ export function UniversityCircularCarousel({
         style={{
           touchAction: "pan-y",
         }}
-        className={`relative w-full cursor-grab overflow-hidden active:cursor-grabbing ${
+        className={`relative w-full cursor-grab overflow-hidden active:cursor-grabbing max-[559px]:[mask-image:linear-gradient(to_right,transparent,black_14%,black_86%,transparent)] ${
           compact ? "h-[136px] sm:h-[188px]" : "h-[148px] sm:h-[212px]"
         }`}
       >
@@ -409,13 +426,15 @@ export function UniversityCircularCarousel({
 
                 <div className="w-full">
                   <p
-                    className={`whitespace-nowrap font-black tracking-tight text-zinc-900 leading-snug ${
-                      compact ? "text-[13px]" : "text-[13.5px] sm:text-[14.5px]"
+                    className={`truncate font-black tracking-tight text-zinc-900 leading-snug ${
+                      compact
+                        ? "text-[12.5px] min-[560px]:text-[13px]"
+                        : "text-[12.5px] min-[560px]:text-[13.5px] sm:text-[14.5px]"
                     }`}
                   >
                     {isJa ? item.nameJa : item.nameKo}
                   </p>
-                  <p className="mt-0.5 whitespace-nowrap text-[10px] font-semibold tracking-tight text-zinc-500 leading-snug sm:text-[10.5px]">
+                  <p className="mt-0.5 truncate text-[10px] font-semibold tracking-tight text-zinc-500 leading-snug sm:text-[10.5px]">
                     {isJa ? item.subJa : item.subKo}
                   </p>
                 </div>

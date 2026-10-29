@@ -39,7 +39,8 @@ import {
   respondMatch,
   sendMatchMessage,
 } from "@/lib/supabase";
-import { Button, cn } from "@/components/ondo-ui";
+import { Button, Modal, cn } from "@/components/ondo-ui";
+import { ConfettiBurst, HeartBurst, useCelebrateOnce } from "@/components/celebrate";
 
 const ACTIVE_STATUSES = ["PENDING", "CHATTING", "CONFIRMED"];
 const POLL_MS = 4000;
@@ -125,9 +126,36 @@ function MatchCardReal({
     null
   );
   const [translatedBio, setTranslatedBio] = useState<string | null>(null);
+  // 넘기기 확인은 인터넷 창 기본 확인 상자 대신 화면 아래에서 올라오는 선택 창으로
+  const [passSheetOpen, setPassSheetOpen] = useState(false);
+  const [heartBurst, setHeartBurst] = useState(false);
+
+  // [1] 새 매칭이 처음 보일 때 한 번만 카드가 뒤집히며 등장
+  const seenKey = `ondo_seen_match_${match.match_id}`;
+  const [flipIn] = useState(() => {
+    if (match.ticket_status !== "PENDING") return false;
+    try {
+      return window.localStorage.getItem(seenKey) !== "1";
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    if (!flipIn) return;
+    try {
+      window.localStorage.setItem(seenKey, "1");
+    } catch {
+      // ignore
+    }
+  }, [flipIn, seenKey]);
+  // [3] 서로 수락해서 대화방이 열린 순간 한 번만 축하
+  const celebrateChat = useCelebrateOnce(
+    `ondo_celebrated_chat_${match.match_id}`,
+    match.ticket_status === "CHATTING" && !match.contact
+  );
 
   const respond = async (accept: boolean) => {
-    if (!accept && !window.confirm(isJa ? "このマッチングをパスしますか？" : "이 매칭을 넘길까요? 되돌릴 수 없어요.")) return;
+    setPassSheetOpen(false);
     setBusy(true);
     setMsg(null);
     const r = await respondMatch(match.match_id, accept);
@@ -146,6 +174,15 @@ function MatchCardReal({
           ? "処理に失敗しました。もう一度お試しください。"
           : "처리에 실패했어요. 다시 시도해 주세요."
       );
+      return;
+    }
+    if (accept) {
+      // 하트가 떠오르는 모습을 잠깐 보여 준 뒤 다음 화면(대기·대화방)으로 넘어감
+      setHeartBurst(true);
+      window.setTimeout(() => {
+        setHeartBurst(false);
+        onChanged();
+      }, 900);
       return;
     }
     onChanged();
@@ -227,7 +264,18 @@ function MatchCardReal({
     .join(" · ");
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-2xs">
+    <section
+      className={cn(
+        "overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-2xs",
+        flipIn && "ondo-card-flip"
+      )}
+    >
+      {celebrateChat && (
+        <ConfettiBurst
+          title={isJa ? "お互いにOKしました！🎉" : "서로 수락했어요! 🎉"}
+          subtitle={isJa ? "チャットルームが開きました。まずは挨拶から。" : "대화방이 열렸어요. 가볍게 인사부터 해 보세요."}
+        />
+      )}
       <div className="border-b border-stone-100 bg-rose-50/50 px-5 py-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="rounded-full bg-rose-600 px-2.5 py-0.5 text-[12px] font-bold text-white">
@@ -346,7 +394,7 @@ function MatchCardReal({
                 : "여성 회원은 무료로 수락할 수 있어요."}
             </p>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="secondary" size="lg" fullWidth disabled={busy} onClick={() => respond(false)}>
+              <Button variant="secondary" size="lg" fullWidth disabled={busy} onClick={() => setPassSheetOpen(true)}>
                 {isJa ? "パス" : "넘기기"}
               </Button>
               {isMale && ticketCount < 1 ? (
@@ -355,22 +403,25 @@ function MatchCardReal({
                   {isJa ? "チケットをチャージ" : "티켓 충전하기"}
                 </Button>
               ) : (
-                <Button variant="destructive" size="lg" fullWidth loading={busy} onClick={() => respond(true)}>
-                  {isMale
-                    ? isJa
-                      ? "承認する（1枚）"
-                      : "수락하기 (1장)"
-                    : isJa
-                    ? "承認する"
-                    : "수락하기"}
-                </Button>
+                <div className="relative">
+                  {heartBurst && <HeartBurst />}
+                  <Button variant="destructive" size="lg" fullWidth loading={busy} onClick={() => respond(true)}>
+                    {isMale
+                      ? isJa
+                        ? "承認する（1枚）"
+                        : "수락하기 (1장)"
+                      : isJa
+                      ? "承認する"
+                      : "수락하기"}
+                  </Button>
+                </div>
               )}
             </div>
           </>
         )}
 
         {match.ticket_status === "PENDING" && match.my_response === "ACCEPT" && (
-          <p className="rounded-2xl bg-stone-50 px-4 py-3 text-[13px] text-zinc-600">
+          <p className="animate-fade-in-up rounded-2xl bg-stone-50 px-4 py-3 text-[13px] text-zinc-600">
             {isJa
               ? "承認しました！お相手の返事を待っています。お相手も承認するとチャットが開きます。"
               : "수락했어요! 상대방의 응답을 기다리는 중이에요. 상대도 수락하면 대화방이 열려요."}
@@ -383,6 +434,27 @@ function MatchCardReal({
 
         {msg && <p className="text-[12px] font-semibold text-rose-600">{msg}</p>}
       </div>
+
+      <Modal open={passSheetOpen} onClose={() => setPassSheetOpen(false)}>
+        <h3 className="text-[17px] font-black text-zinc-900">
+          {isJa
+            ? `${match.nickname}さんとのマッチングをパスしますか？`
+            : `${match.nickname}님과의 매칭을 넘길까요?`}
+        </h3>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-500">
+          {isJa
+            ? "パスすると元に戻せません。次の紹介は毎晩21時に届きます。"
+            : "넘기면 되돌릴 수 없어요. 다음 소개는 매일 밤 9시에 도착해요."}
+        </p>
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <Button variant="secondary" size="lg" fullWidth onClick={() => setPassSheetOpen(false)}>
+            {isJa ? "戻る" : "돌아가기"}
+          </Button>
+          <Button variant="destructive" size="lg" fullWidth loading={busy} onClick={() => respond(false)}>
+            {isJa ? "パスする" : "넘기기"}
+          </Button>
+        </div>
+      </Modal>
     </section>
   );
 }
@@ -401,6 +473,14 @@ function MatchChat({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  // 처음 불러온 이후에 새로 도착한 메시지만 살짝 튀어나오게 표시
+  const [freshIds, setFreshIds] = useState<Set<number>>(() => new Set());
+  const firstLoadDoneRef = useRef(false);
+  // [5] 카톡 아이디가 공개된 순간 한 번만 축하
+  const celebrateContact = useCelebrateOnce(
+    `ondo_celebrated_contact_${match.match_id}`,
+    !!match.contact
+  );
   // 대화 번역은 기본으로 꺼 둠 — 켜면 상대 메시지가 외부 번역 서비스(구글 번역)로 전송되므로 본인이 직접 켜야 함
   const [autoTranslateChat, setAutoTranslateChat] = useState(false);
   const autoTranslateRef = useRef(false);
@@ -448,9 +528,21 @@ function MatchChat({
 
   const load = useCallback(async () => {
     const fresh = await listMatchMessages(match.match_id, lastIdRef.current);
-    if (fresh.length === 0) return;
+    if (fresh.length === 0) {
+      // 첫 불러오기가 비어 있어도 "처음 불러옴"으로 기록해서, 그 뒤 도착한 메시지는 튀어나오게 함
+      firstLoadDoneRef.current = true;
+      return;
+    }
     lastIdRef.current = fresh[fresh.length - 1].id;
     setMessages((prev) => [...prev, ...fresh]);
+    if (firstLoadDoneRef.current) {
+      setFreshIds((prev) => {
+        const next = new Set(prev);
+        fresh.forEach((m) => next.add(m.id));
+        return next;
+      });
+    }
+    firstLoadDoneRef.current = true;
     if (autoTranslateRef.current) translateMessages(fresh);
     requestAnimationFrame(() => {
       listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
@@ -473,6 +565,12 @@ function MatchChat({
 
   const mineCount = messages.filter((m) => m.mine).length;
   const theirCount = messages.length - mineCount;
+  // [4] 카톡 공개 조건: 각자 2번 이상, 합쳐서 5번 이상
+  const progressRows = [
+    { label: isJa ? "自分" : "나", value: Math.min(mineCount, 2), max: 2 },
+    { label: isJa ? "お相手" : "상대", value: Math.min(theirCount, 2), max: 2 },
+    { label: isJa ? "合計" : "합계", value: Math.min(messages.length, 5), max: 5 },
+  ];
 
   const send = async () => {
     const body = input.trim();
@@ -515,8 +613,14 @@ function MatchChat({
 
   return (
     <div className="space-y-3">
+      {celebrateContact && (
+        <ConfettiBurst
+          title={isJa ? "カカオトークIDが公開されました！🎉" : "카톡 아이디가 공개됐어요! 🎉"}
+          subtitle={isJa ? "コピーしてカカオトークで連絡してみましょう。" : "복사해서 카톡으로 먼저 연락해 보세요."}
+        />
+      )}
       {match.contact ? (
-        <div className="flex items-center justify-between gap-3 rounded-2xl border border-rose-100 bg-rose-50/70 px-4 py-3">
+        <div className="ondo-pop-box flex w-full items-center justify-between gap-3 rounded-2xl border border-rose-100 bg-rose-50/70 px-4 py-3">
           <div className="min-w-0">
             <p className="text-[12px] font-bold text-rose-600">
               {isJa ? "お相手のカカオトークID" : "상대방 카카오톡 ID"}
@@ -528,19 +632,51 @@ function MatchChat({
           <button
             type="button"
             onClick={copyContact}
-            className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-2 text-[12px] font-bold text-zinc-800 ring-1 ring-stone-200"
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-2 text-[12px] font-bold text-zinc-800 ring-1 ring-stone-200 transition-transform active:scale-95",
+              !copied && "ondo-attention-ring"
+            )}
           >
             <Copy className="h-3.5 w-3.5" />
             {copied ? (isJa ? "コピー済み" : "복사됨") : isJa ? "コピー" : "복사"}
           </button>
         </div>
       ) : (
-        <p className="flex items-start gap-2 rounded-2xl bg-stone-50 px-4 py-3 text-[12px] leading-relaxed text-zinc-600">
-          <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          {isJa
-            ? `お互いに2回以上・合計5回以上会話すると、カカオトークIDが公開されます。（自分 ${mineCount} · 相手 ${theirCount}）`
-            : `서로 2번 이상, 합쳐서 5번 이상 대화하면 카카오톡 ID가 공개돼요. (나 ${mineCount} · 상대 ${theirCount})`}
-        </p>
+        <div className="rounded-2xl bg-stone-50 px-4 py-3">
+          <p className="flex items-start gap-2 text-[12px] leading-relaxed text-zinc-600">
+            <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            {isJa
+              ? "お互いに2回以上・合計5回以上会話すると、カカオトークIDが公開されます。"
+              : "서로 2번 이상, 합쳐서 5번 이상 대화하면 카카오톡 ID가 공개돼요."}
+          </p>
+          <div className="mt-2.5 space-y-1.5">
+            {progressRows.map((row) => {
+              const done = row.value >= row.max;
+              return (
+                <div key={row.label} className="flex items-center gap-2">
+                  <span className="w-9 shrink-0 text-[11px] font-bold text-zinc-500">{row.label}</span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-stone-200/80">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-[width] duration-500 ease-out",
+                        done ? "bg-emerald-500" : "bg-rose-500"
+                      )}
+                      style={{ width: `${(row.value / row.max) * 100}%` }}
+                    />
+                  </div>
+                  <span
+                    className={cn(
+                      "w-9 shrink-0 text-right text-[11px] font-extrabold tabular-nums",
+                      done ? "text-emerald-600" : "text-zinc-500"
+                    )}
+                  >
+                    {row.value}/{row.max}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       <div className="flex items-center justify-between px-1">
@@ -597,7 +733,8 @@ function MatchChat({
                 key={m.id}
                 className={cn(
                   "flex flex-col",
-                  m.mine ? "items-end" : "items-start"
+                  m.mine ? "items-end" : "items-start",
+                  freshIds.has(m.id) && "animate-fade-in-up"
                 )}
               >
                 <div

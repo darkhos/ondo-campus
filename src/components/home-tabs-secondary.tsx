@@ -6,6 +6,7 @@ import { RealMatchPanel } from "@/components/real-match-panel";
 import { useRouter } from "next/navigation";
 import {
   CalendarHeart,
+  CheckCircle2,
   ChevronDown,
   ChevronRight,
   Sparkles,
@@ -67,6 +68,7 @@ import {
   MatchingToggleCard,
   Modal,
   PageHeader,
+  RangeSlider,
   SelectField,
   VoiceRecorderCard,
   cn,
@@ -171,10 +173,6 @@ export function IdealTypeTab({
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
 
-  const ageOptions = Array.from(
-    { length: AGE_MAX - AGE_MIN + 1 },
-    (_, i) => AGE_MIN + i
-  );
   const sigunguList = sido ? DISTRICTS_BY_SIDO[sido] ?? [] : [];
 
   const toggleItem = (list: string[], val: string) =>
@@ -271,27 +269,19 @@ export function IdealTypeTab({
             <label className={FIELD_LABEL}>
               {isJa ? "希望する年齢（満年齢）" : "선호 나이 (만 나이)"}
             </label>
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <SelectField value={minAge} onChange={setMinAge}>
-                  {ageOptions.map((a) => (
-                    <option key={a} value={a}>
-                      {isJa ? `${a}歳から` : `${a}세부터`}
-                    </option>
-                  ))}
-                </SelectField>
-              </div>
-              <span className="text-gray-400">~</span>
-              <div className="flex-1">
-                <SelectField value={maxAge} onChange={setMaxAge}>
-                  {ageOptions.map((a) => (
-                    <option key={a} value={a}>
-                      {isJa ? `${a}歳まで` : `${a}세까지`}
-                    </option>
-                  ))}
-                </SelectField>
-              </div>
-            </div>
+            <RangeSlider
+              min={AGE_MIN}
+              max={AGE_MAX}
+              low={Number(minAge) || AGE_MIN}
+              high={Number(maxAge) || AGE_MAX}
+              onChange={(lo, hi) => {
+                setMinAge(String(lo));
+                setMaxAge(String(hi));
+              }}
+              format={(v) => (isJa ? `${v}歳` : `${v}세`)}
+              labelLow={isJa ? "希望年齢の下限" : "선호 나이 최소"}
+              labelHigh={isJa ? "希望年齢の上限" : "선호 나이 최대"}
+            />
           </div>
 
           <div>
@@ -566,17 +556,30 @@ export function IdealTypeTab({
         </section>
 
         {error && (
-          <p className="text-[13px] font-medium text-red-500">{error}</p>
+          <p key={error} className="ondo-shake text-[13px] font-medium text-red-500">
+            {error}
+          </p>
         )}
 
-        <Button fullWidth size="lg" onClick={handleSaveAll}>
-          {saved
-            ? isJa
-              ? "理想の条件を保存しました ✓"
-              : "이상형 설정이 저장되었어요 ✓"
-            : isJa
-            ? "条件を保存する"
-            : "조건 저장하기"}
+        <Button
+          fullWidth
+          size="lg"
+          onClick={handleSaveAll}
+          className={cn(
+            "transition-colors duration-300",
+            saved && "bg-emerald-600 hover:bg-emerald-600"
+          )}
+        >
+          {saved ? (
+            <span key="saved" className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="ondo-check-pop h-4 w-4" />
+              {isJa ? "理想の条件を保存しました" : "이상형 설정이 저장되었어요"}
+            </span>
+          ) : isJa ? (
+            "条件を保存する"
+          ) : (
+            "조건 저장하기"
+          )}
         </Button>
       </div>
     </div>
