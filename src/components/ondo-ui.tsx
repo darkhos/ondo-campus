@@ -305,7 +305,7 @@ export function MatchCard({
 
   const isDemoPartner = partner.uid === "partner-01";
   const displayNickname =
-    isJa && isDemoPartner ? "安岩洞ゴールデンレトリバー" : partner.nickname;
+    isJa && isDemoPartner ? "安岩洞ジェジェイヤ" : partner.nickname;
   const displaySchool = isJa
     ? isDemoPartner
       ? "高麗大学"

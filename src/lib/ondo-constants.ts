@@ -607,7 +607,7 @@ export const EMPTY_USER_PROFILE: UserProfile = {
 export const DEMO_PARTNERS: PartnerProfile[] = [
   {
     uid: "partner-01",
-    nickname: "안암동골든리트리버",
+    nickname: "안암동줴줴이야",
     age: 24,
     school: "고려대학교",
     department: "컴퓨터학과",
