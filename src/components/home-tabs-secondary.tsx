@@ -182,6 +182,8 @@ export function IdealTypeTab({
   const [saved, setSaved] = useState(false);
 
   const [recRef, recSeen] = useInViewOnce<HTMLDivElement>(0.3);
+  // MBTI "상관없어요" = 16개 유형을 모두 고른 것으로 저장 (서버는 목록에 들어 있으면 맞는 것으로 봄)
+  const mbtiAny = MBTI_TYPES.every((m) => prefMbti.includes(m));
   const myMbti = (user.mbti ?? "").toUpperCase();
   const recommendedMbti = MBTI_BEST_MATCH[myMbti] ?? [];
   const missingDetail = [
@@ -477,8 +479,8 @@ export function IdealTypeTab({
               </h2>
               <p className="mt-0.5 text-[12px] text-gray-500">
                 {isJa
-                  ? `MBTI ${prefMbti.length}つ · 喫煙 · 第一印象 · 体格 · 宗教`
-                  : `MBTI ${prefMbti.length}개 · 흡연 · 첫인상 · 체격 · 종교`}
+                  ? `MBTI ${mbtiAny ? "こだわらない" : `${prefMbti.length}つ`} · 喫煙 · 第一印象 · 体格 · 宗教`
+                  : `MBTI ${mbtiAny ? "상관없음" : `${prefMbti.length}개`} · 흡연 · 첫인상 · 체격 · 종교`}
               </p>
             </div>
             <ChevronDown
@@ -513,10 +515,14 @@ export function IdealTypeTab({
                     <button
                       type="button"
                       onClick={() =>
-                        setPrefMbti((prev) => [
-                          ...prev,
-                          ...recommendedMbti.filter((m) => !prev.includes(m)),
-                        ])
+                        setPrefMbti((prev) =>
+                          MBTI_TYPES.every((m) => prev.includes(m))
+                            ? [...recommendedMbti]
+                            : [
+                                ...prev,
+                                ...recommendedMbti.filter((m) => !prev.includes(m)),
+                              ]
+                        )
                       }
                       className="shrink-0 rounded-full bg-rose-600 px-2.5 py-1 text-[11px] font-bold text-white"
                     >
@@ -525,15 +531,27 @@ export function IdealTypeTab({
                   </div>
                 )}
                 <div className="grid grid-cols-4 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setPrefMbti(mbtiAny ? [] : [...MBTI_TYPES])}
+                    className={cn(OptionTileClass(mbtiAny), "col-span-4")}
+                  >
+                    {isJa ? "こだわらない" : "상관없어요"}
+                    {mbtiAny && " ✓"}
+                  </button>
                   {MBTI_TYPES.map((m) => (
                     <button
                       key={m}
                       type="button"
                       onClick={() =>
-                        setPrefMbti((prev) => toggleItem(prev, m))
+                        setPrefMbti((prev) =>
+                          MBTI_TYPES.every((x) => prev.includes(x))
+                            ? [m]
+                            : toggleItem(prev, m)
+                        )
                       }
                       className={cn(
-                        OptionTileClass(prefMbti.includes(m)),
+                        OptionTileClass(!mbtiAny && prefMbti.includes(m)),
                         "relative"
                       )}
                     >

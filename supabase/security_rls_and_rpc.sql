@@ -124,6 +124,54 @@ $$;
 -- ============================================================================
 -- [비밀 주방 1] 프로필 생성·수정 (로그인한 본인 행만, 티켓은 클라이언트 값으로 절대 변경 불가)
 -- ============================================================================
+-- 가입 축하 티켓을 이미 받은 카카오 계정 기록 (계정 정보 원문이 아닌 암호화된 값만 저장)
+-- 프로필 초기화·탈퇴 후 다시 가입해도 축하 티켓을 또 받지 못하게 함
+create table if not exists public.ondo_welcome_grants (
+  id_hash text primary key,
+  granted_at timestamptz not null default now()
+);
+alter table public.ondo_welcome_grants enable row level security;
+revoke all on table public.ondo_welcome_grants from anon, authenticated;
+-- 이미 가입한 회원은 축하 티켓을 받은 것으로 기록
+insert into public.ondo_welcome_grants (id_hash)
+select distinct on (i.user_id)
+  encode(extensions.digest('ondo-welcome-v1:' || i.provider || ':' || i.provider_id, 'sha256'), 'hex')
+from auth.identities i
+join public.ondo_members m on m.auth_user_id = i.user_id
+order by i.user_id, i.created_at
+on conflict (id_hash) do nothing;
+
+-- 프로필 부가 정보 정리: 매칭 계산에 쓰는 값이 이상하면 지워서 밤 9시 매칭 전체가 멈추지 않게 함
+create or replace function public.ondo_clean_profile_extra(p jsonb)
+returns jsonb
+language plpgsql
+immutable
+set search_path = public
+as $$
+declare
+  v jsonb := p;
+  k text;
+begin
+  if v is null or jsonb_typeof(v) <> 'object' then
+    return '{}'::jsonb;
+  end if;
+  if length(v::text) > 20000 then
+    raise exception 'Profile too large';
+  end if;
+  foreach k in array array['preferredAgeMin', 'preferredAgeMax'] loop
+    if v ? k and not (coalesce(v ->> k, '') ~ '^\d{1,2}$' and (v ->> k)::integer between 18 and 30) then
+      v := v - k;
+    end if;
+  end loop;
+  foreach k in array array['avoidSameSchool', 'smartRelaxFilter'] loop
+    if v ? k and jsonb_typeof(v -> k) <> 'null' and coalesce(v ->> k, '') not in ('true', 'false') then
+      v := v - k;
+    end if;
+  end loop;
+  return v;
+end;
+$$;
+
 create or replace function public.ondo_upsert_my_profile(
   p_nickname text,
   p_univ text,
@@ -144,9 +192,16 @@ declare
   v_auth uuid := auth.uid();
   v_existing public.ondo_members;
   v_result public.ondo_members;
+  v_mbti text := upper(nullif(trim(coalesce(p_mbti, '')), ''));
+  v_extra jsonb := case when p_extra is null then null else public.ondo_clean_profile_extra(p_extra) end;
+  v_welcome_hash text;
+  v_welcome_tickets integer := 2;
 begin
   if v_auth is null then
     raise exception 'Login required';
+  end if;
+  if v_mbti is not null and v_mbti !~ '^[EI][NS][TF][JP]$' then
+    v_mbti := null;
   end if;
 
   if p_age is not null and (p_age < 18 or p_age > 30) then
@@ -158,38 +213,52 @@ begin
   if v_existing.id is not null then
     update public.ondo_members
     set
-      nickname = coalesce(nullif(trim(p_nickname), ''), v_existing.nickname),
+      nickname = coalesce(left(nullif(trim(p_nickname), ''), 30), v_existing.nickname),
       -- 정식 학교 인증(SCHOOL_EMAIL / ADMIN_REVIEW)을 마친 뒤에만 학교 변경 잠금
       univ = case when v_existing.verified and v_existing.verify_method in ('SCHOOL_EMAIL', 'ADMIN_REVIEW')
                   then v_existing.univ
-                  else coalesce(nullif(trim(p_univ), ''), v_existing.univ) end,
+                  else coalesce(left(nullif(trim(p_univ), ''), 80), v_existing.univ) end,
       verified = case when v_existing.verify_method in ('SCHOOL_EMAIL', 'ADMIN_REVIEW')
                       then v_existing.verified else false end,
       student_id_status = case when v_existing.verify_method in ('SCHOOL_EMAIL', 'ADMIN_REVIEW')
                                then v_existing.student_id_status else 'pending' end,
-      major = coalesce(nullif(trim(p_major), ''), v_existing.major),
-      gender = coalesce(nullif(trim(p_gender), ''), v_existing.gender),
+      major = coalesce(left(nullif(trim(p_major), ''), 80), v_existing.major),
+      -- 성별은 가입할 때 한 번만 정함 (나중에 바꿔서 티켓 규칙을 피하지 못하게)
+      gender = coalesce(v_existing.gender, case when p_gender in ('F', 'FEMALE') then 'F' else 'M' end),
       age = coalesce(p_age, v_existing.age),
-      mbti = coalesce(nullif(trim(p_mbti), ''), v_existing.mbti),
-      contact = coalesce(nullif(trim(p_contact), ''), v_existing.contact),
-      bio = coalesce(p_bio, v_existing.bio),
-      profile_extra = coalesce(p_extra, v_existing.profile_extra),
+      mbti = coalesce(v_mbti, v_existing.mbti),
+      contact = coalesce(left(nullif(trim(p_contact), ''), 80), v_existing.contact),
+      bio = coalesce(left(p_bio, 1000), v_existing.bio),
+      profile_extra = coalesce(v_extra, v_existing.profile_extra),
       updated_at = now()
     where id = v_existing.id
     returning * into v_result;
   else
-    -- 신규 가입자: 회원 id는 서버가 로그인 계정으로 정함 (u-<auth uuid>), 웰컴 티켓 2장 고정
+    -- 같은 카카오 계정이 축하 티켓을 이미 받은 적이 있으면 다시 주지 않음
+    select encode(extensions.digest('ondo-welcome-v1:' || i.provider || ':' || i.provider_id, 'sha256'), 'hex')
+    into v_welcome_hash
+    from auth.identities i where i.user_id = v_auth
+    order by i.created_at limit 1;
+    v_welcome_hash := coalesce(v_welcome_hash,
+      encode(extensions.digest('ondo-welcome-v1:uid:' || v_auth::text, 'sha256'), 'hex'));
+    insert into public.ondo_welcome_grants (id_hash) values (v_welcome_hash)
+    on conflict (id_hash) do nothing;
+    if not found then
+      v_welcome_tickets := 0;
+    end if;
+
+    -- 신규 가입자: 회원 id는 서버가 로그인 계정으로 정함 (u-<auth uuid>), 웰컴 티켓 2장 (처음 가입한 계정만)
     -- 학생 인증 전에는 verified=false (학교 메일 인증 또는 운영자 학생증 확인 후에만 true)
     insert into public.ondo_members (
       id, auth_user_id, nickname, univ, major, gender, age, mbti, temp,
       verified, student_id_status, voice_recorded, voice_duration,
       tickets, joined_at, contact, bio, profile_extra, updated_at
     ) values (
-      'u-' || v_auth::text, v_auth, trim(p_nickname), trim(p_univ), trim(p_major),
+      'u-' || v_auth::text, v_auth, left(trim(p_nickname), 30), left(trim(p_univ), 80), left(trim(p_major), 80),
       case when p_gender in ('F', 'FEMALE') then 'F' else 'M' end,
-      coalesce(p_age, 22), nullif(trim(coalesce(p_mbti, '')), ''), 38.5,
+      coalesce(p_age, 22), v_mbti, 38.5,
       false, 'pending', true, '00:10',
-      2, '방금 전', trim(p_contact), coalesce(p_bio, ''), coalesce(p_extra, '{}'::jsonb), now()
+      v_welcome_tickets, '방금 전', left(trim(p_contact), 80), left(coalesce(p_bio, ''), 1000), coalesce(v_extra, '{}'::jsonb), now()
     )
     returning * into v_result;
   end if;
@@ -1307,6 +1376,12 @@ begin
   if v_member_id is null then
     return false;
   end if;
+  -- 진행 중인 매칭에서 상대 남학생이 이미 티켓을 냈다면 돌려준 뒤 지움
+  update public.ondo_members mm
+  set tickets = coalesce(mm.tickets, 0) + 1, updated_at = now()
+  from public.ondo_matches m
+  where m.female_id = v_member_id and m.male_id = mm.id
+    and m.male_ticket_charged and m.ticket_status in ('PENDING', 'HELD', 'CHATTING');
   delete from public.ondo_match_messages
   where match_id in (select id from public.ondo_matches where female_id = v_member_id or male_id = v_member_id);
   delete from public.ondo_matches where female_id = v_member_id or male_id = v_member_id;
@@ -1331,6 +1406,12 @@ begin
   if v_member_id is null or v_auth is null then
     raise exception 'Login required';
   end if;
+  -- 진행 중인 매칭에서 상대 남학생이 이미 티켓을 냈다면 돌려준 뒤 지움
+  update public.ondo_members mm
+  set tickets = coalesce(mm.tickets, 0) + 1, updated_at = now()
+  from public.ondo_matches m
+  where m.female_id = v_member_id and m.male_id = mm.id
+    and m.male_ticket_charged and m.ticket_status in ('PENDING', 'HELD', 'CHATTING');
   delete from public.ondo_match_messages
   where match_id in (select id from public.ondo_matches where female_id = v_member_id or male_id = v_member_id);
   delete from public.ondo_matches where female_id = v_member_id or male_id = v_member_id;
