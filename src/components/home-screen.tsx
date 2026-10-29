@@ -353,7 +353,7 @@ function HomeContent() {
               isJa ? (
                 <>
                   🪪 <b>学生証を確認中です。</b>{" "}
-                  通常24時間以内に確認し、結果はカカオトークのメッセージでお知らせします。その間にサイトを見て回ったり、{" "}
+                  通常24時間以内に確認し、結果はカカオアカウントのメールでお知らせします。その間にサイトを見て回ったり、{" "}
                   <button
                     type="button"
                     className="font-bold underline"
@@ -366,7 +366,7 @@ function HomeContent() {
               ) : (
                 <>
                   🪪 <b>학생증 확인 중이에요.</b> 보통 24시간 안에 확인하고, 결과는
-                  카카오톡 메시지로 알려 드려요. 그동안 둘러보면서{" "}
+                  카카오 계정 이메일로 알려 드려요. 그동안 둘러보면서{" "}
                   <button
                     type="button"
                     className="font-bold underline"

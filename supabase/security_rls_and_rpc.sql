@@ -671,7 +671,8 @@ begin
   perform net.http_post(
     url := 'https://ofnechamnjafsjmuydpl.supabase.co/functions/v1/ondo-kakao-notify',
     headers := jsonb_build_object('Content-Type', 'application/json', 'x-ondo-mail-secret', v_secret),
-    body := p_body
+    body := p_body,
+    timeout_milliseconds := 15000
   );
 end;
 $$;
@@ -1151,7 +1152,7 @@ end;
 $$;
 
 -- 운영자 승인/반려: 반환값은 지워야 할 사진 경로 (관리자 화면이 보관함에서 삭제)
--- 승인·반려 결과는 이메일이 아니라 회원의 카카오톡 메시지로 즉시 발송
+-- 승인·반려 결과는 회원의 이메일(학교 메일 또는 카카오 계정 이메일) 및 카카오톡 메시지로 즉시 발송
 create or replace function public.ondo_admin_review_student(p_member_id text, p_approve boolean)
 returns text
 language plpgsql
@@ -1161,6 +1162,10 @@ as $$
 declare
   v_path text;
   v_auth_user_id uuid;
+  v_email text;
+  v_secret text;
+  v_subject text;
+  v_text text;
   v_msg text;
   v_link text;
   v_btn text;
@@ -1168,8 +1173,12 @@ begin
   if not public.ondo_is_admin() then
     raise exception 'Admin only';
   end if;
-  select m.student_id_image_path, m.auth_user_id into v_path, v_auth_user_id
+  select m.student_id_image_path,
+         m.auth_user_id,
+         coalesce(nullif(trim(m.school_email), ''), u.email)
+    into v_path, v_auth_user_id, v_email
   from public.ondo_members m
+  left join auth.users u on u.id = m.auth_user_id
   where m.id = p_member_id;
 
   update public.ondo_members
@@ -1184,7 +1193,45 @@ begin
   update public.ondo_support_tickets set status = 'DONE'
   where kind = 'VERIFY' and member_id = p_member_id and status = 'OPEN';
 
-  -- 결과를 해당 회원의 카카오톡 메시지로 발송 (이메일 발송 안 함)
+  -- 1) 이메일 알림 발송 (학교 이메일 또는 카카오 계정 이메일)
+  begin
+    select decrypted_secret into v_secret from vault.decrypted_secrets where name = 'ondo_mail_hook_secret' limit 1;
+    if v_email is not null and v_secret is not null then
+      if p_approve then
+        v_subject := '[ONDO 36.5°] 학생 인증이 완료됐어요 🎉 (学生認証が完了しました)';
+        v_text := '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+          || '보내 주신 학생증 확인이 끝나 학생 인증이 완료됐어요.' || chr(10)
+          || '이제 아래 링크에서 소개팅 매칭에 참여할 수 있어요!' || chr(10)
+          || 'https://darkhos.github.io/ondo-campus/' || chr(10) || chr(10)
+          || '---' || chr(10)
+          || 'ONDO 36.5° ご利用ありがとうございます。' || chr(10)
+          || '学生証の確認が完了し、学生認証が承認されました。' || chr(10)
+          || '下のリンクからマッチングにご参加いただけます！' || chr(10)
+          || 'https://darkhos.github.io/ondo-campus/jp/';
+      else
+        v_subject := '[ONDO 36.5°] 학생증을 다시 올려 주세요 (学生証の再提出のお願い)';
+        v_text := '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+          || '보내 주신 학생증 사진을 확인하지 못했어요 (글자가 흐리거나 학교·학번이 보이지 않는 경우).' || chr(10)
+          || '번거로우시겠지만 학교 이름과 학번이 잘 보이게 다시 올려 주세요.' || chr(10)
+          || 'https://darkhos.github.io/ondo-campus/join/' || chr(10) || chr(10)
+          || '---' || chr(10)
+          || 'お送りいただいた学生証画像を確認できませんでした。' || chr(10)
+          || '学校名・学籍番号がはっきり見えるように再度アップロードしてください。' || chr(10)
+          || 'https://darkhos.github.io/ondo-campus/join/';
+      end if;
+
+      perform net.http_post(
+        url := 'https://ofnechamnjafsjmuydpl.supabase.co/functions/v1/ondo-send-mail',
+        headers := jsonb_build_object('Content-Type', 'application/json', 'x-ondo-mail-secret', v_secret),
+        body := jsonb_build_object('to', v_email, 'subject', v_subject, 'text', v_text),
+        timeout_milliseconds := 15000
+      );
+    end if;
+  exception when others then
+    null;
+  end;
+
+  -- 2) 카카오톡 메시지(나와의 채팅) 보조 발송
   if v_auth_user_id is not null then
     v_msg := case when p_approve
       then '🎉 [ONDO 36.5°] 학생 인증이 완료됐어요!' || chr(10)
