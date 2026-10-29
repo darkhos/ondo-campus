@@ -228,6 +228,21 @@ export function HomeMatchTab({
 
           {!hasActiveServerMatch && !isPaused && (
             <div className="animate-fade-in space-y-4">
+              {(user.penaltySkipRemaining ?? 0) > 0 && (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50/90 p-4 text-left">
+                  <p className="text-[13px] font-extrabold text-rose-900">
+                    {isJa
+                      ? `🚫 24時間以内の初回返信がなかったため、あと${user.penaltySkipRemaining}回のマッチングがお休みになります`
+                      : `🚫 이전 대화방에서 24시간 내 첫 답장을 하지 않아 다음 ${user.penaltySkipRemaining}번의 매칭이 제한됩니다`}
+                  </p>
+                  <p className="mt-1 text-[12px] text-rose-700">
+                    {isJa
+                      ? "お相手との約束を守るため、チャットルームが開いたら24時間以内に最初のメッセージを送ってください。"
+                      : "서로 수락해 열린 대화방에서는 24시간 안에 첫 인사를 남겨 주세요."}
+                  </p>
+                </div>
+              )}
+
               {isStep2Incomplete && (
                 <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4 text-left">
                   <p className="text-[13px] font-bold text-amber-900">

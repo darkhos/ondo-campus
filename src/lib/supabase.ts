@@ -63,7 +63,35 @@ export interface DbOndoMember {
   school_email?: string | null;
   student_id_image_path?: string | null;
   matching_paused?: boolean;
+  penalty_skip_remaining?: number;
+  penalty_last_skipped_date?: string | null;
   profile_extra?: Partial<UserProfile> & { locationLabel?: string };
+}
+
+export function getPenaltySkipRemaining(
+  member: Pick<
+    DbOndoMember,
+    "penalty_skip_remaining" | "penalty_last_skipped_date"
+  >
+): number {
+  const rem = Math.max(0, Number(member.penalty_skip_remaining ?? 0));
+  if (rem > 0) return rem;
+  if (member.penalty_last_skipped_date) {
+    try {
+      const kstNow = new Date(
+        new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })
+      );
+      const y = kstNow.getFullYear();
+      const m = String(kstNow.getMonth() + 1).padStart(2, "0");
+      const d = String(kstNow.getDate()).padStart(2, "0");
+      if (member.penalty_last_skipped_date === `${y}${m}${d}`) {
+        return 1;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return 0;
 }
 
 export interface DbOndoMatch {
@@ -332,6 +360,7 @@ export function persistMemberSession(member: DbOndoMember): void {
       voiceAudioDataUrl: member.voice_audio_url ?? null,
       bio: member.bio || "",
       verificationStatus: toVerificationStatus(member),
+      penaltySkipRemaining: getPenaltySkipRemaining(member),
       selfRegisteredV2: member.profile_extra?.selfRegisteredV2 === true,
     };
     parsed.kakaoId = member.contact || "";

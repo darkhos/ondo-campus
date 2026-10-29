@@ -103,6 +103,9 @@ drop function if exists public.ondo_upsert_my_profile(text, text, text, text, te
 drop function if exists public.ondo_upsert_my_profile(text, text, text, text, integer, text, text, text);
 -- 키·지역·관심사·이상형 조건 등 화면 전용이던 프로필 값을 서버에 함께 보관
 alter table public.ondo_members add column if not exists profile_extra jsonb not null default '{}'::jsonb;
+alter table public.ondo_members add column if not exists matching_paused boolean not null default false;
+alter table public.ondo_members add column if not exists penalty_skip_remaining integer not null default 0;
+alter table public.ondo_members add column if not exists penalty_last_skipped_date text;
 drop function if exists public.ondo_get_my_profile(text);
 drop function if exists public.ondo_get_my_matches(text);
 drop function if exists public.ondo_login_lookup(text, text);
@@ -1347,6 +1350,8 @@ $$;
 -- [회원 기능] 매칭 쉬어가기 · 매칭 상대 정보 · 회원 탈퇴
 -- ============================================================================
 alter table public.ondo_members add column if not exists matching_paused boolean not null default false;
+alter table public.ondo_members add column if not exists penalty_skip_remaining integer not null default 0;
+alter table public.ondo_members add column if not exists penalty_last_skipped_date text;
 
 -- 매칭 쉬어가기 (켜면 자동 매칭 대상에서 제외)
 create or replace function public.ondo_set_matching_paused(p_paused boolean)
@@ -1759,10 +1764,13 @@ declare
   v_refunded_count integer := 0;
   v_matched_count integer := 0;
   v_stale_count integer := 0;
+  v_extra_stale integer := 0;
+  v_today_date text := to_char(now() at time zone 'Asia/Seoul', 'YYYYMMDD');
   v_today_prefix text := 'auto-' || to_char(now() at time zone 'Asia/Seoul', 'YYYYMMDD') || '-';
   v_kst_hour integer := extract(hour from (now() at time zone 'Asia/Seoul'));
   v_admin boolean := public.ondo_is_admin();
   r_expired record;
+  r_male_expired record;
   r_pair record;
   v_score integer;
   v_match_id text;
@@ -1775,9 +1783,17 @@ begin
   where verified and verified_at is not null and verified_at < now() - interval '1 year';
 
   -- 1) 수락 대기 24시간 초과 → 만료 (남학생이 이미 냈다면 환급)
-  --    채팅 시작 후 24시간 동안 여학생 첫 답장이 없으면 → 만료 + 환급
+  --    채팅 시작 후 24시간 동안 여학생 첫 답장이 없으면 → 만료 + 환급 + 미응답자 다음 3번 매칭 제한
   for r_expired in
-    select m.id, m.male_id, m.male_ticket_charged
+    select m.id,
+           m.female_id,
+           m.male_id,
+           m.ticket_status,
+           m.male_ticket_charged,
+           exists (select 1 from public.ondo_match_messages x
+                   where x.match_id = m.id and x.sender_id = m.female_id) as female_replied,
+           exists (select 1 from public.ondo_match_messages x
+                   where x.match_id = m.id and x.sender_id = m.male_id) as male_replied
     from public.ondo_matches m
     where (m.ticket_status in ('PENDING', 'HELD')
            and coalesce(m.created_at_ts, now()) < now() - interval '24 hours')
@@ -1794,33 +1810,77 @@ begin
       where id = r_expired.male_id;
       v_refunded_count := v_refunded_count + 1;
     end if;
+    -- 대화방 오픈 후 24시간 내 첫 답장을 하지 않은 회원에게 다음 3번의 매칭 제한 패널티 부여
+    if r_expired.ticket_status = 'CHATTING' then
+      if not r_expired.female_replied then
+        update public.ondo_members
+        set penalty_skip_remaining = 3,
+            penalty_last_skipped_date = case when v_kst_hour >= 21 then v_today_date else null end,
+            updated_at = now()
+        where id = r_expired.female_id;
+      end if;
+      if not r_expired.male_replied then
+        update public.ondo_members
+        set penalty_skip_remaining = 3,
+            penalty_last_skipped_date = case when v_kst_hour >= 21 then v_today_date else null end,
+            updated_at = now()
+        where id = r_expired.male_id;
+      end if;
+    end if;
   end loop;
 
-  -- 1-2) 채팅 시작 후 24시간 동안 남학생 첫 답장이 없거나, 대화가 오가다 3일 동안 멈추면 종료
-  --      → 두 사람 모두 다시 새 소개를 받을 수 있게 함 (여학생이 이미 답한 대화이므로 티켓은 사용된 것으로 봄)
+  -- 1-2) 채팅 시작 후 24시간 동안 남학생 첫 답장이 없으면 → 만료 + 남학생 다음 3번 매칭 제한
+  for r_male_expired in
+    select m.id, m.male_id
+    from public.ondo_matches m
+    where m.ticket_status = 'CHATTING'
+      and m.chat_opened_at < now() - interval '24 hours'
+      and exists (select 1 from public.ondo_match_messages x
+                  where x.match_id = m.id and x.sender_id = m.female_id)
+      and not exists (select 1 from public.ondo_match_messages x
+                      where x.match_id = m.id and x.sender_id = m.male_id)
+  loop
+    update public.ondo_matches set ticket_status = 'EXPIRED' where id = r_male_expired.id;
+    update public.ondo_members
+    set penalty_skip_remaining = 3,
+        penalty_last_skipped_date = case when v_kst_hour >= 21 then v_today_date else null end,
+        updated_at = now()
+    where id = r_male_expired.male_id;
+    v_stale_count := v_stale_count + 1;
+  end loop;
+
+  -- 1-3) 양쪽 모두 첫 답장을 한 뒤 대화가 오가다 3일 동안 멈추면 종료 → 다시 새 소개를 받을 수 있게 함
   update public.ondo_matches m
   set ticket_status = 'EXPIRED'
   where m.ticket_status = 'CHATTING'
     and exists (select 1 from public.ondo_match_messages x
                 where x.match_id = m.id and x.sender_id = m.female_id)
-    and (
-      (m.chat_opened_at < now() - interval '24 hours'
-       and not exists (select 1 from public.ondo_match_messages x
-                       where x.match_id = m.id and x.sender_id = m.male_id))
-      or coalesce((select max(x.created_at) from public.ondo_match_messages x where x.match_id = m.id),
-                  m.chat_opened_at, now()) < now() - interval '3 days'
-    );
-  get diagnostics v_stale_count = row_count;
+    and exists (select 1 from public.ondo_match_messages x
+                where x.match_id = m.id and x.sender_id = m.male_id)
+    and coalesce((select max(x.created_at) from public.ondo_match_messages x where x.match_id = m.id),
+                 m.chat_opened_at, now()) < now() - interval '3 days';
+  get diagnostics v_extra_stale = row_count;
+  v_stale_count := v_stale_count + v_extra_stale;
 
   -- 2) 매일 밤 9시(KST) 이후에만 실행 (운영자가 수동으로 실행한 경우는 시간과 관계없이 실행)
   --    같은 날(21시·22시·23시) 이미 자동 매칭을 받은 회원은 중복 매칭하지 않음
   --    가능한 모든 짝을 한꺼번에 비교해 가장 잘 맞는 짝부터 정함 (먼저 차례가 온 사람이 좋은 짝을 가져가지 않도록)
   if v_kst_hour >= 21 or v_admin then
+    -- 24시간 내 첫 답장 미응답 패널티(3회 매칭 제한): 하루에 1회씩 차감하며 해당 날짜 밤 매칭에서 제외
+    update public.ondo_members
+    set penalty_skip_remaining = greatest(0, coalesce(penalty_skip_remaining, 0) - 1),
+        penalty_last_skipped_date = v_today_date,
+        updated_at = now()
+    where coalesce(penalty_skip_remaining, 0) > 0
+      and coalesce(penalty_last_skipped_date, '') <> v_today_date;
+
     for r_pair in
       with f as (
         select f.* from public.ondo_members f
         where f.gender in ('F', 'FEMALE') and f.verified
           and not coalesce(f.matching_paused, false)
+          and coalesce(f.penalty_skip_remaining, 0) = 0
+          and coalesce(f.penalty_last_skipped_date, '') <> v_today_date
           and public.ondo_extra_int(f.profile_extra, 'height', 0) between 140 and 210
           and coalesce(trim(f.contact), '') not in ('', 'ondo_univ')
           and not exists (select 1 from public.ondo_matches om
@@ -1834,6 +1894,8 @@ begin
         select m.* from public.ondo_members m
         where m.gender in ('M', 'MALE') and m.verified
           and not coalesce(m.matching_paused, false)
+          and coalesce(m.penalty_skip_remaining, 0) = 0
+          and coalesce(m.penalty_last_skipped_date, '') <> v_today_date
           and public.ondo_extra_int(m.profile_extra, 'height', 0) between 140 and 210
           and coalesce(trim(m.contact), '') not in ('', 'ondo_univ')
           and not exists (select 1 from public.ondo_matches om

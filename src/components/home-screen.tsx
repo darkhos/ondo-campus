@@ -16,6 +16,7 @@ import {
 import {
   DbMatchPartner,
   fetchMyMatchPartners,
+  getPenaltySkipRemaining,
   isStaleAutoCreatedMember,
   mergeProfileExtra,
   fetchMyMemberSecure,
@@ -172,6 +173,7 @@ function HomeContent() {
         bio: data.bio || "",
         voiceAudioDataUrl: prev.voiceAudioDataUrl,
         verificationStatus: toVerificationStatus(data),
+        penaltySkipRemaining: getPenaltySkipRemaining(data),
         selfRegisteredV2: true,
         matchingStatus: data.matching_paused
           ? "PAUSED"

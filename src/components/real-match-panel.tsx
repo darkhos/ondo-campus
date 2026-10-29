@@ -663,6 +663,13 @@ function MatchChat({
               ? "お互いに2回以上・合計5回以上会話すると、カカオトークIDが公開されます。"
               : "서로 2번 이상, 합쳐서 5번 이상 대화하면 카카오톡 ID가 공개돼요."}
           </p>
+          {mineCount === 0 && (
+            <p className="mt-1.5 rounded-xl bg-amber-50 px-3 py-1.5 text-[11.5px] font-bold text-amber-800">
+              {isJa
+                ? "⏱️ チャットが開いてから24時間以内に最初のメッセージを送らない場合、次回3回分のマッチングが制限されます。"
+                : "⏱️ 대화방이 열린 뒤 24시간 내 첫 답장을 보내지 않으면 다음 3번의 매칭이 제한돼요."}
+            </p>
+          )}
           <div className="mt-2.5 space-y-1.5">
             {progressRows.map((row) => {
               const done = row.value >= row.max;

@@ -484,6 +484,7 @@ export interface UserProfile {
   escrowPoints?: number;
   smartRelaxFilter?: boolean;
   includeJapaneseGlobal?: boolean;
+  penaltySkipRemaining?: number;
   voiceIntroText?: string;
   voiceAudioDataUrl?: string | null;
   kakaoVerified?: boolean;
