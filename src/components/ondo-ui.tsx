@@ -104,7 +104,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-150 disabled:pointer-events-none disabled:opacity-45",
+          "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-150 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45",
           variants[variant],
           sizes[size],
           fullWidth && "w-full",
@@ -250,6 +250,39 @@ export function Modal({
       </div>
     </div>
   );
+}
+
+/** 숫자가 바뀔 때 이전 값에서 새 값까지 굴러가듯 바뀌는 숫자 (동작 줄이기면 바로 표시) */
+export function RollingNumber({
+  value,
+  format,
+  durationMs = 450,
+}: {
+  value: number;
+  format: (v: number) => string;
+  durationMs?: number;
+}) {
+  const reduceMotion = usePrefersReducedMotion();
+  const [shown, setShown] = useState(value);
+  const fromRef = React.useRef(value);
+  useEffect(() => {
+    if (reduceMotion) return;
+    const from = fromRef.current;
+    if (from === value) return;
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / durationMs);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const v = Math.round(from + (value - from) * eased);
+      fromRef.current = v;
+      setShown(v);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, durationMs, reduceMotion]);
+  return <span className="tabular-nums">{format(reduceMotion ? value : shown)}</span>;
 }
 
 /** 손잡이 두 개로 최소·최대를 고르는 범위 막대 (예: 선호 나이) */
@@ -926,8 +959,8 @@ export function InAppBlindChatCard({
                 ? "24時間未返信 · コーヒーチケット1枚 自動返還完了"
                 : "24시간 미응답 · 커피티켓 1장 자동 반환 완료"
               : isJa
-              ? "エスクロー保護中（最初の返信を確認済み）"
-              : "에스크로 커피티켓 보호 중 (첫 답장 확인됨)"}
+              ? "チケット返還保証中（最初の返信を確認済み）"
+              : "커피티켓 보호 중 (첫 답장 확인됨)"}
           </span>
         </div>
         {preview && (
@@ -1450,7 +1483,7 @@ export function ContactUnlockCard({
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-rose-600">
           <ShieldCheck className="h-3.5 w-3.5" />
-          {isJa ? "100% エスクローチケット保証" : "100% 에스크로 티켓 보증"}
+          {isJa ? "チケット100%自動返還保証" : "티켓 100% 자동 환급 보장"}
         </span>
         <span className="text-[12px] font-semibold text-zinc-400">
           {isJa
@@ -1460,8 +1493,8 @@ export function ContactUnlockCard({
       </div>
       <h4 className="mt-3 text-[17px] font-extrabold text-zinc-900">
         {isJa
-          ? "エスクロー・コーヒーチケット1枚(☕)でブラインドルームを開く"
-          : "에스크로 커피티켓 1장(☕)으로 블라인드 룸 열기"}
+          ? "コーヒーチケット1枚(☕)でブラインドルームを開く"
+          : "커피티켓 1장(☕)으로 블라인드 대화방 열기"}
       </h4>
       <p className="mt-1 text-[13px] leading-relaxed text-zinc-500">
         {isJa
@@ -1482,8 +1515,8 @@ export function ContactUnlockCard({
         ) : (
           <Button fullWidth size="lg" onClick={onUnlock}>
             {isJa
-              ? "エスクロー保証で会話を始める"
-              : "에스크로 보증으로 대화 시작하기"}
+              ? "100%返還保証で会話を始める"
+              : "100% 환급 보장으로 대화 시작하기"}
           </Button>
         )}
       </div>

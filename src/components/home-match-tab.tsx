@@ -276,23 +276,13 @@ export function HomeMatchTab({
               [
                 {
                   id: "recommendation",
-                  labelKo: "01 오늘의 가치관 노트",
-                  labelJa: "01 今日の価値観ノート",
+                  labelKo: "💌 오늘의 매칭 라운지",
+                  labelJa: "💌 今日のマッチングラウンジ",
                 },
                 {
                   id: "blind_chat",
-                  labelKo: "02 24h 블라인드 커피챗",
-                  labelJa: "02 24h ブラインドチャット",
-                },
-                {
-                  id: "waiting",
-                  labelKo: "03 캠퍼스 온도차 투표",
-                  labelJa: "03 日韓キャンパス投票",
-                },
-                {
-                  id: "cancelled_after_success",
-                  labelKo: "04 에스크로 보증 안내",
-                  labelJa: "04 エスクロー保証案内",
+                  labelKo: "💬 블라인드 대화방 미리보기",
+                  labelJa: "💬 ブラインドトーク体験",
                 },
               ] as const
             ).map((tab) => {
@@ -512,8 +502,8 @@ export function HomeMatchTab({
                         ? "トークルームを見る"
                         : "대화방 바로 보기"
                       : isJa
-                      ? "エスクロー案内を見る"
-                      : "에스크로 안내 보기"}
+                      ? "チケット返還保証を見る"
+                      : "티켓 100% 환급 안내 보기"}
                   </button>
                 </div>
 

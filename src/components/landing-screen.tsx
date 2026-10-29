@@ -7,9 +7,6 @@ import {
   BookOpen,
   Flame,
   Globe2,
-  MessageSquare,
-  ShieldCheck,
-  Sparkles,
   Zap,
 } from "lucide-react";
 import {
@@ -30,61 +27,6 @@ import {
 import { Button, LanguageToggle, MatchCard } from "@/components/ondo-ui";
 import { Reveal, useInViewOnce } from "@/components/reveal";
 import { UniversityCircularCarousel } from "@/components/univ-circular-carousel";
-
-// 가나다순 정렬
-const PARTICIPATING_UNIVS_KO = [
-  "건국대",
-  "경희대",
-  "고려대",
-  "광운대",
-  "서강대",
-  "서울대",
-  "성균관대",
-  "연세대",
-  "이화여대",
-  "중앙대",
-  "한국외대",
-  "한양대",
-  "홍익대",
-];
-
-const PARTICIPATING_UNIVS_JA = [
-  "建国大学",
-  "慶熙大学",
-  "高麗大学",
-  "光云大学",
-  "西江大学",
-  "ソウル大学",
-  "成均館大学",
-  "延世大学",
-  "梨花女子大学",
-  "中央大学",
-  "韓国外国語大学",
-  "漢陽大学",
-  "弘益大学",
-];
-
-const REVIEWS_KO = [
-  {
-    meta: "광운대 22세 · 경영학과",
-    body: "친구한테 소개팅 부탁하기는 눈치 보이고, 사진 앱은 부담스러웠어요. 여기선 서로 수락한 다음에 대화부터 해 보고, 말이 잘 통하면 그때 카톡을 주고받으니까 첫 만남이 훨씬 덜 어색했어요.",
-  },
-  {
-    meta: "이화여대 언어교육원 21세 · 🇯🇵 일본인 어학당생",
-    body: "한국 대학생과 소개팅을 해 보고 싶었지만 어디서 만나야 할지 몰랐어요. 학생 인증을 한 사람끼리만 연결되고, 대화를 충분히 나눈 뒤에 연락처가 열려서 안심하고 만날 수 있었어요.",
-  },
-];
-
-const REVIEWS_JA = [
-  {
-    meta: "梨花女子大学 言語教育院 21歳 · 🇯🇵 日本人語学堂生",
-    body: "韓国の大学生と合コンや紹介で出会う機会がなかなか無かったのですが、ここでは学生認証済みの人とだけつながり、お互いOKしてから会話を始められるので安心してお見合いのような出会いを楽しめました。",
-  },
-  {
-    meta: "光云大学 22歳 · 🇯🇵 日本人正規留学生",
-    body: "写真で選ばれるアプリは苦手でしたが、ここはプロフィールと会話で相手を知ってから連絡先を交換するので、友達に紹介してもらう感覚に近いです。日本語表示にも対応していて使いやすいです。",
-  },
-];
 
 export default function LandingPage() {
   const router = useRouter();
@@ -140,14 +82,6 @@ export default function LandingPage() {
       setQuickLoading(false);
     }
   };
-
-  const univs = isJa ? PARTICIPATING_UNIVS_JA : PARTICIPATING_UNIVS_KO;
-  const univRow1 = univs.slice(0, 7);
-  const univRow2 = [
-    ...univs.slice(7),
-    isJa ? "🇯🇵 日本語学堂・留学生" : "🇯🇵 일본어학당·유학생",
-  ];
-  const reviews = isJa ? REVIEWS_JA : REVIEWS_KO;
 
   useEffect(() => {
     try {
@@ -210,7 +144,7 @@ export default function LandingPage() {
       <main className="mx-auto max-w-4xl px-4 pt-5 pb-28 sm:px-5 sm:py-10">
         {/* Hero */}
         <section className="mx-auto max-w-2xl text-center">
-          <div className="inline-flex max-w-full items-center gap-1.5 rounded-2xl border border-stone-200 bg-white px-3 py-1 text-[11px] font-bold leading-snug text-zinc-700 shadow-2xs sm:px-3.5 sm:py-1.5 sm:text-[12px]">
+          <div className="ondo-rise inline-flex max-w-full items-center gap-1.5 rounded-2xl border border-stone-200 bg-white px-3 py-1 text-[11px] font-bold leading-snug text-zinc-700 shadow-2xs sm:px-3.5 sm:py-1.5 sm:text-[12px]" style={{ "--ondo-rise-delay": "0ms" } as React.CSSProperties}>
             <span>
               {isJa
                 ? "🇰🇷 韓国の大学生 ＆ 🇯🇵 日本人の語学堂生・留学生 1:1 ブラインド紹介"
@@ -218,22 +152,22 @@ export default function LandingPage() {
             </span>
           </div>
 
-          <h1 className="mt-3 text-[26px] font-black leading-[1.25] tracking-tight text-zinc-900 sm:mt-5 sm:text-[40px]">
+          <h1 className="ondo-rise mt-3 text-[26px] font-black leading-[1.25] tracking-tight text-zinc-900 sm:mt-5 sm:text-[40px]" style={{ "--ondo-rise-delay": "90ms" } as React.CSSProperties}>
             {isJa ? (
               <>
                 友達の紹介みたいに、
                 <br />
-                <span className="text-rose-600">ちょうどいい人とつながる</span>
+                <span className="ondo-underline-draw text-rose-600">ちょうどいい人とつながる</span>
               </>
             ) : (
               <>
                 친구가 주선해 주듯,
                 <br />
-                <span className="text-rose-600">결 맞는 사람과 소개팅</span>
+                <span className="ondo-underline-draw text-rose-600">결 맞는 사람과 소개팅</span>
               </>
             )}
           </h1>
-          <p className="mt-2.5 text-[13.5px] leading-relaxed text-zinc-500 sm:mt-4 sm:text-[15px]">
+          <p className="ondo-rise mt-2.5 text-[13.5px] leading-relaxed text-zinc-500 sm:mt-4 sm:text-[15px]" style={{ "--ondo-rise-delay": "180ms" } as React.CSSProperties}>
             {isJa ? (
               <>
                 ONDOが希望条件に合う他大学の学生を紹介します。
@@ -249,30 +183,31 @@ export default function LandingPage() {
             )}
           </p>
 
-          <div ref={heroCtaRef} className="mx-auto mt-4 flex max-w-md flex-col gap-2 sm:mt-6">
-            <Button
-              size="lg"
-              fullWidth
-              className="bg-rose-600 hover:bg-rose-700"
-              onClick={() => router.push(ROUTES.JOIN)}
-            >
-              {isJa
-                ? "プロフィールを登録して紹介を受ける 💌"
-                : "프로필 등록하고 소개팅 받기 💌"}
-            </Button>
-          </div>
-
-          {/* Existing member login (Kakao identity check) */}
-          <div className="mx-auto mt-3 max-w-xl rounded-3xl border border-stone-200/90 bg-white p-3.5 text-left shadow-2xs sm:mt-4 sm:p-4">
-            <div className="flex items-center justify-between">
+          {/* Unified Hero CTA Card */}
+          <div
+            ref={heroCtaRef}
+            className="ondo-rise mx-auto mt-4 max-w-xl rounded-3xl border border-stone-200/90 bg-white p-4 text-left shadow-2xs sm:mt-6 sm:p-5"
+            style={{ "--ondo-rise-delay": "270ms" } as React.CSSProperties}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="inline-flex items-center gap-1 text-[11.5px] font-extrabold text-zinc-800 sm:text-[12px]">
                 <Zap className="h-3.5 w-3.5 shrink-0 text-rose-600" />
                 {isJa
-                  ? "既存会員はすぐに入場・未登録の場合は新規登録へ移動"
+                  ? "既存会員はすぐに入場・未登録の場合は新規登録へ自動移動"
                   : "기존 회원은 바로 입장 · 미가입 시 회원가입으로 자동 연결"}
               </span>
+              {!isJa && (
+                <button
+                  type="button"
+                  onClick={() => setLocale("ja")}
+                  className="text-[11px] font-bold text-rose-600 underline hover:text-rose-700 sm:text-[11.5px]"
+                >
+                  🇯🇵 일본어 화면 전환 →
+                </button>
+              )}
             </div>
-            <div className="mt-2">
+
+            <div className="mt-2.5">
               <Button
                 size="lg"
                 fullWidth
@@ -285,35 +220,14 @@ export default function LandingPage() {
                   : "💬 카카오로 3초 만에 시작하기"}
               </Button>
             </div>
-            {/* 카카오 로그인 안내 — 모바일에서는 한눈에 들어오도록 핵심 요약 + 상세 펼치기 */}
-            <ul className="mt-2.5 space-y-1 text-[11.5px] leading-relaxed text-zinc-500 sm:mt-3 sm:text-[12px]">
-              <li>
-                {isJa
-                  ? "・カカオで本人確認のみ行い、友だちリストやトーク内容は一切受け取りません。"
-                  : "· 카카오로 본인 확인만 진행하며, 친구 목록이나 대화 내용은 일절 받지 않아요."}
-              </li>
-              <li>
-                {isJa
-                  ? "・カカオトークIDは会話条件を満たすまでお相手に公開されません。"
-                  : "· 카카오톡 ID는 서로 대화 조건을 채우기 전까지 상대에게 절대 공개되지 않아요."}
-              </li>
-            </ul>
-          </div>
 
-          {/* Dedicated Japanese Tracks Quick Entry Card */}
-          <div className="mx-auto mt-3 max-w-xl rounded-3xl border border-rose-200/80 bg-white p-3.5 text-left shadow-2xs sm:mt-5 sm:p-4">
-            {!isJa && (
-              <div className="mb-2 flex justify-end sm:mb-3">
-                <button
-                  type="button"
-                  onClick={() => setLocale("ja")}
-                  className="text-[11.5px] font-bold text-rose-600 underline hover:text-rose-700 sm:text-[12px]"
-                >
-                  🇯🇵 일본어 화면으로 전환하기 →
-                </button>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-2">
+            <p className="mt-2 text-center text-[11.5px] leading-relaxed text-zinc-500 sm:text-[12px]">
+              {isJa
+                ? "・カカオで本人確認のみ行い、会話条件を満たすまでカカオIDはお相手に公開されません。"
+                : "· 카카오로 본인 확인만 진행하며, 서로 대화 조건을 채우기 전까지 카톡 ID는 공개되지 않아요."}
+            </p>
+
+            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-stone-100 pt-3">
               <button
                 type="button"
                 onClick={() => {
@@ -463,143 +377,45 @@ export default function LandingPage() {
           </ol>
         </section>
 
-        {/* Interactive Live Preview + Features Grid */}
-        <section className="mt-10 grid grid-cols-1 items-start gap-6 sm:mt-12 sm:gap-8 lg:grid-cols-12">
-          <Reveal className="min-w-0 lg:col-span-7">
+        {/* Interactive Live Preview + Core Trust Pills */}
+        <section className="mx-auto mt-10 max-w-2xl sm:mt-12">
+          <Reveal>
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-[13px] font-extrabold text-zinc-900">
+              <span className="text-[14px] font-extrabold text-zinc-900 sm:text-[16px]">
                 {isJa
                   ? "こんなプロフィールが届きます（例）"
                   : "이런 소개팅 프로필이 도착해요 (예시)"}
               </span>
-              <span className="text-[12px] font-bold text-rose-600">
+              <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-extrabold text-rose-600">
                 {isJa ? "サンプル" : "SAMPLE"}
               </span>
             </div>
             <MatchCard partner={DEMO_PARTNERS[0]} />
-          </Reveal>
 
-          <div className="min-w-0 space-y-3 sm:space-y-4 lg:col-span-5">
-            {(isJa
-              ? [
-                  {
-                    icon: Sparkles,
-                    title: "写真より先に、人柄を知る",
-                    desc: "一行紹介と関心事、ライフスタイルを見てから会うかどうか決められます。",
-                  },
-                  {
-                    icon: MessageSquare,
-                    title: "会話が弾んでから連絡先交換",
-                    desc: "最初からカカオトークIDは公開しません。お互いに何度か話したあとで自動的に公開されます。",
-                  },
-                  {
-                    icon: ShieldCheck,
-                    title: "認証済みの学生だけ ＆ チケット返還",
-                    desc: "韓国の学生も日本人学生も、学校ウェブメールまたは学生証（図書館モバイル利用証など身分証明なら何でもOK）で認証します。相手が応答しない場合、チケットは返還されます。",
-                  },
-                ]
-              : [
-                  {
-                    icon: Sparkles,
-                    title: "사진보다 사람을 먼저",
-                    desc: "한 줄 소개, 관심사, 라이프스타일을 보고 만날지 말지 정해요. 외모 품평 없는 소개팅이에요.",
-                  },
-                  {
-                    icon: MessageSquare,
-                    title: "말이 통하면 그때 카톡 교환",
-                    desc: "처음부터 카카오톡 ID를 공개하지 않아요. 서로 몇 마디씩 대화를 나눈 뒤에 자동으로 열려요.",
-                  },
-                  {
-                    icon: ShieldCheck,
-                    title: "인증된 학생만 & 티켓 환불",
-                    desc: "한국 대학생·어학당생·일본 유학생 모두 학교 웹메일 또는 학생증(도서관 모바일 이용증 등 신분 입증 자료)으로 인증해요. 상대가 응답하지 않으면 티켓은 돌려드려요.",
-                  },
-                ]
-            ).map((item, idx) => (
-              <Reveal
-                key={idx}
-                delay={idx * 110}
-                className="rounded-3xl border border-stone-200/90 bg-white p-5"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-50 text-rose-600">
-                    <item.icon className="h-4 w-4" />
-                  </div>
-                  <h3 className="text-[15px] font-extrabold text-zinc-900">
-                    {item.title}
-                  </h3>
-                </div>
-                <p className="mt-2 text-[13px] leading-relaxed text-zinc-500">
-                  {item.desc}
-                </p>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        {/* Reviews — 실제 이용 후기가 아니므로 예시임을 표시 */}
-        <p className="mt-12 text-[12px] font-bold text-zinc-400">
-          {isJa
-            ? "※ 以下は想定利用シーンの例であり、実際の利用者のレビューではありません。"
-            : "※ 아래는 이용 장면을 보여 주는 예시이며, 실제 이용자 후기가 아니에요."}
-        </p>
-        <section className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {reviews.map((r, i) => (
-            <Reveal
-              key={i}
-              delay={i * 120}
-              className="rounded-3xl border border-stone-200/90 bg-white p-6"
-            >
-              <span className="text-[12px] font-bold text-rose-600">
-                {r.meta}
-              </span>
-              <p className="mt-2 text-[14px] leading-relaxed text-zinc-700">
-                &ldquo;{r.body}&rdquo;
-              </p>
-            </Reveal>
-          ))}
-        </section>
-
-        {/* Official KakaoTalk 1:1 Customer Center Banner */}
-        <Reveal as="section" className="mt-10 rounded-3xl border border-amber-200/90 bg-white p-5 shadow-2xs sm:p-6">
-          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-            <div className="min-w-0 w-full flex-1">
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#FEE500] px-2.5 py-0.5 text-[12px] font-extrabold text-zinc-900">
-                💬 OFFICIAL SUPPORT
-              </span>
-              <h3 className="mt-2 text-[16px] font-black text-zinc-900 sm:text-[17px]">
-                {isJa
-                  ? "ONDO 36.5° 公式カカオトーク 1:1 顧客センター"
-                  : "ONDO 36.5° 캠퍼스 공식 카카오톡 1:1 고객센터"}
-              </h3>
-              <p className="mt-1 text-[12.5px] leading-relaxed text-zinc-500 sm:text-[13px]">
-                {isJa
-                  ? "学生認証・紹介の流れ・チケット返還など、気になる点はいつでも公式オープンチャットでお問い合わせください。"
-                  : "학생 인증, 소개팅 진행 방식, 티켓 환불 등 궁금한 점은 언제든 공식 카카오톡 1:1 오픈채팅으로 편하게 문의해 주세요."}
-              </p>
-            </div>
-            <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row">
-              <a
-                href={KAKAO_OPENCHAT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 rounded-2xl bg-[#FEE500] px-5 py-3 text-[13px] font-extrabold text-zinc-900 shadow-2xs transition-transform hover:brightness-95"
-              >
-                <span>
-                  {isJa
-                    ? "💬 カカオ1:1相談室を開く"
-                    : "💬 카카오톡 1:1 오픈채팅 문의하기"}
+            {/* 3가지 핵심 안심 배지 한 줄 요약 */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              {(isJa
+                ? [
+                    "✨ 外見より価値観・人柄から始まる紹介",
+                    "🔒 会話が弾んでからカカオID公開",
+                    "🎫 24時間未応答ならチケット100%返還",
+                  ]
+                : [
+                    "✨ 외모 품평 없는 가치관 매칭",
+                    "🔒 서로 대화 후 카톡 ID 공개",
+                    "🎫 24시간 미응답 시 티켓 100% 환급",
+                  ]
+              ).map((badge) => (
+                <span
+                  key={badge}
+                  className="rounded-full border border-stone-200/90 bg-white px-3.5 py-1.5 text-[11.5px] font-bold text-zinc-700 shadow-2xs sm:text-[12px]"
+                >
+                  {badge}
                 </span>
-              </a>
-              <Link
-                href={ROUTES.FAQ}
-                className="inline-flex items-center justify-center rounded-2xl border border-stone-200 bg-[#FAF9F6] px-4 py-3 text-[13px] font-bold text-zinc-700 hover:bg-stone-100"
-              >
-                {isJa ? "よくある質問 (FAQ)" : "자주 묻는 질문 (FAQ)"}
-              </Link>
+              ))}
             </div>
-          </div>
-        </Reveal>
+          </Reveal>
+        </section>
 
         <footer className="mt-10 border-t border-stone-200/80 pt-6 text-center text-[12px] text-zinc-400">
           <p className="font-bold text-zinc-600">
