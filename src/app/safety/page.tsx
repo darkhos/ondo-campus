@@ -1,0 +1,81 @@
+"use client";
+
+import React from "react";
+import { ShieldCheck } from "lucide-react";
+import { useAppLocale } from "@/lib/i18n";
+import { PageHeader } from "@/components/ondo-ui";
+
+export default function SafetyGuidePage() {
+  const [locale] = useAppLocale();
+  const isJa = locale === "ja";
+
+  const rules = isJa
+    ? [
+        {
+          title: "1. 初対面の待ち合わせは明るく人通りの多いキャンパス周辺のカフェで",
+          desc: "ブラインドチャットで5往復以上の会話後にカカオトークIDを交換し、初めて直接会う際は新村・弘大・安岩・聖水など明るく開放的なカフェやレストランをご利用ください。",
+        },
+        {
+          title: "2. 金銭の要求や外部フィッシングリンクは即座に通報",
+          desc: "ONDO 36.5°は学生認証を行っていますが、万が一相手が金銭取引や不審な外部リンクへの誘導を行った場合は直ちに通報してください。",
+        },
+        {
+          title: "3. 相手の価値観ノートおよびカカオトークIDの外部流出禁止",
+          desc: "マッチングを通じて知り得た相手の大学、学科、価値観ノート、カカオトークIDを外部SNSや掲示板に流出した場合、永久利用停止となります。",
+        },
+      ]
+    : [
+        {
+          title: "1. 첫 만남은 밝고 사람이 많은 캠퍼스 인근 카페에서",
+          desc: "블라인드 룸 5턴 대화 후 카카오톡 ID를 교환하고 오프라인에서 처음 만날 때는 신촌·안암·성수 등 밝고 대중적인 카페나 식당을 이용해 주세요.",
+        },
+        {
+          title: "2. 금전 요구 및 외부 피싱 링크 즉시 신고",
+          desc: "온도(ONDO 36.5°)는 대학교 재학 확인을 거치지만, 만약 상대방이 금전 거래나 외부 링크 접속을 유도한다면 즉시 신고하기를 눌러주세요.",
+        },
+        {
+          title: "3. 상대방 가치관 노트 및 안심 연락처(카카오톡 ID) 외부 유출 금지",
+          desc: "매칭을 통해 알게 된 상대방의 학교, 학과, 가치관 노트, 카카오톡 ID를 에브리타임 등 외부 커뮤니티에 유출할 경우 영구 이용 정지 처리됩니다.",
+        },
+      ];
+
+  return (
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#FAF9F6] shadow-sm">
+      <PageHeader
+        title={isJa ? "ONDO 36.5° 安全ガイド" : "ONDO 36.5° 안전 가이드"}
+        back
+      />
+      <div className="flex-1 space-y-5 px-5 py-6">
+        <div className="rounded-3xl border border-rose-100 bg-rose-50/70 p-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-rose-600 shadow-xs">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <h2 className="mt-3 text-[19px] font-black text-zinc-900">
+            {isJa
+              ? "安全で温かい36.5°の出会いのための約束"
+              : "안전하고 따뜻한 36.5° 만남을 위한 약속"}
+          </h2>
+          <p className="mt-1 text-[13px] leading-relaxed text-zinc-600">
+            {isJa
+              ? "ONDO 36.5°のすべての学生が安心して会話できるよう、以下の安全ガイドラインを必ずお守りください。"
+              : "온도(ONDO 36.5°) 학우 모두가 안심하고 대화할 수 있도록 아래 안전 수칙을 꼭 지켜주세요."}
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {rules.map((r, i) => (
+            <div
+              key={i}
+              className="rounded-2xl border border-stone-200 bg-white p-5"
+            >
+              <h3 className="text-[15px] font-bold text-zinc-900">{r.title}</h3>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-600">
+                {r.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
