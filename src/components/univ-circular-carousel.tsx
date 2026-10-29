@@ -202,15 +202,14 @@ export function UniversityCircularCarousel({
       }
 
       const containerWidth = containerRef.current?.clientWidth ?? 360;
-      const isWide = !compact && containerWidth >= 720;
 
-      // PC와 모바일 모두 카드 사이에 넉넉한 여백(약 38px)을 두고 한 대학씩 자연스럽게 넘어가도록
-      // PC와 동일한 원기둥 반지름 비율(R / cardW ≈ 2.73)을 적용하고 컨테이너 폭에 맞춰 스케일링
-      const cardW = isWide ? 154 : 148;
-      const radius = isWide ? 420 : 404;
-      const virtualWidth = isWide ? 760 : 520;
+      // PC(carousel_v4_desktop)와 모바일을 100% 동일한 지오메트리(cardW: 154, radius: 420, virtualWidth: 780)로 통일해
+      // 모바일에서도 PC와 완전히 똑같은 5~6장 3D 원기둥 아크와 카드 간 여백·회전감이 그대로 보이도록 스케일링
+      const cardW = 154;
+      const radius = 420;
+      const virtualWidth = 780;
       const stageScale = Math.min(1, containerWidth / virtualWidth);
-      const visibleCosThreshold = isWide ? 0.42 : 0.62;
+      const visibleCosThreshold = 0.42;
 
       if (pivotRef.current) {
         pivotRef.current.style.transform =
@@ -234,13 +233,13 @@ export function UniversityCircularCarousel({
           frontIdx = i;
         }
 
-        // 3D 원기둥 궤도 좌표 계산:
-        // - 모든 인접 카드 사이에 넉넉한 여백(약 38px)을 보장해 카드가 붙어 보이지 않고 자연스럽게 넘어감
+        // 3D 원기둥 궤도 좌표 계산 (PC와 모바일 100% 동일):
+        // - 모든 인접 카드 사이에 넉넉한 여백(약 38px)을 보장해 앞 카드가 옆 카드 글자를 가리지 않음
         // - 상하 아치(y)는 정면(+8px) ~ 측면(-6px)으로 입체적인 링 형태를 유지하되 상하단 잘림 완벽 방지
         const x = sinVal * radius;
-        const y = cosVal * (compact ? 8 : 10) - 2;
-        const z = (cosVal - 1) * (compact ? 120 : 150);
-        const rotMultiplier = isWide ? 1.08 : 1.24;
+        const y = cosVal * 10 - 2;
+        const z = (cosVal - 1) * 150;
+        const rotMultiplier = 1.08;
         const rotY = Math.max(-78, Math.min(78, -normThetaDeg * rotMultiplier));
 
         // 카드의 바깥쪽 끝이 스테이지 좌우 경계에 닿기 전에 부드럽게 페이드아웃해 좌우 잘림을 100% 방지
@@ -262,7 +261,7 @@ export function UniversityCircularCarousel({
         const opacity =
           arcVis *
           edgeFade *
-          (0.54 + 0.46 * Math.pow(Math.max(0, cosVal), 0.55));
+          (0.48 + 0.52 * Math.pow(Math.max(0, cosVal), 0.6));
         const scale = 0.88 + depthNorm * 0.12;
         const zIndex = Math.round(depthNorm * 100);
         const isFront = cosVal > 0.94;
@@ -284,6 +283,10 @@ export function UniversityCircularCarousel({
         el.style.boxShadow = isFront
           ? "0 14px 28px -6px rgba(225, 29, 72, 0.18), 0 4px 12px rgba(24, 24, 27, 0.06)"
           : "0 6px 16px rgba(24, 24, 27, 0.05)";
+        const inner = el.firstElementChild as HTMLElement | null;
+        if (inner) {
+          inner.style.opacity = "1";
+        }
         // 보이지 않는 후면 카드 클릭 방지
         el.style.pointerEvents = opacity > 0.15 ? "auto" : "none";
       }
@@ -313,7 +316,9 @@ export function UniversityCircularCarousel({
     const dx = e.clientX - st.lastX;
     const dt = Math.max(0.008, (now - st.lastTime) / 1000);
     st.dragDistance += Math.abs(dx);
-    const degDelta = dx * 0.28;
+    const containerWidth = containerRef.current?.clientWidth ?? 360;
+    const scaleFactor = Math.max(0.45, Math.min(1, containerWidth / 756));
+    const degDelta = (dx / scaleFactor) * 0.28;
     st.angle += degDelta;
     st.velocity = (degDelta / dt) * 0.6;
     if (Math.abs(dx) > 1) {
