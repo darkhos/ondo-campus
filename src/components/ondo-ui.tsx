@@ -22,6 +22,7 @@ import {
   User,
 } from "lucide-react";
 import {
+  BETA_UNLIMITED_TICKETS,
   BUILD_TYPES,
   CAMPUS_BALANCE_QUESTIONS,
   ChatMessage,
@@ -1505,7 +1506,11 @@ export function ContactUnlockCard({
           {isJa ? "チケット100%自動返還保証" : "티켓 100% 자동 환급 보장"}
         </span>
         <span className="text-[12px] font-semibold text-zinc-400">
-          {isJa
+          {BETA_UNLIMITED_TICKETS
+            ? isJa
+              ? "ベータ期間 チケット無制限"
+              : "베타 기간 티켓 무제한"
+            : isJa
             ? `保有チケット ${Math.floor(userPoints / 2900)}枚`
             : `보유 티켓 ${Math.floor(userPoints / 2900)}장`}
         </span>

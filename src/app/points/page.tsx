@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Megaphone, Send, ShieldCheck, Users } from "lucide-react";
-import { INITIAL_USER_PROFILE, ROUTES } from "@/lib/ondo-constants";
+import { BETA_UNLIMITED_TICKETS, INITIAL_USER_PROFILE, ROUTES } from "@/lib/ondo-constants";
 import { useAppLocale } from "@/lib/i18n";
 import { parseJsonObject, useLocalStorageItem } from "@/lib/use-browser-storage";
 import { fetchMyMemberSecure, submitSupportTicket } from "@/lib/supabase";
@@ -180,7 +180,11 @@ export default function PointsPage() {
             </span>
           </div>
           <p className="mt-2 flex items-baseline gap-2 text-[32px] font-black tabular-nums tracking-tight text-zinc-900">
-            <span>{isJa ? `☕ ${ticketCount}枚` : `☕ ${ticketCount}장`}</span>
+            <span>
+              {BETA_UNLIMITED_TICKETS
+                ? isJa ? "☕ 無制限" : "☕ 무제한"
+                : isJa ? `☕ ${ticketCount}枚` : `☕ ${ticketCount}장`}
+            </span>
           </p>
           <p className="mt-2 text-[12px] leading-relaxed text-zinc-600">
             {gender === "FEMALE"
@@ -193,7 +197,23 @@ export default function PointsPage() {
           </p>
         </section>
 
-        {gender === "FEMALE" ? (
+        {BETA_UNLIMITED_TICKETS ? (
+          <section className="rounded-3xl border border-rose-100 bg-white p-5">
+            <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-rose-600">
+              {isJa ? "ベータオープン記念" : "베타 오픈 기념"}
+            </span>
+            <h2 className="mt-2 text-[17px] font-black text-zinc-900">
+              {isJa
+                ? "ベータ期間中はすべての会員がコーヒーチケット無制限です ☕"
+                : "베타 기간에는 모든 회원이 커피티켓 무제한이에요 ☕"}
+            </h2>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-600">
+              {isJa
+                ? "チャージや決済なしで、マッチングを無料で承認できます。正式オープン前には事前にお知らせします。"
+                : "충전이나 결제 없이 매칭을 무료로 수락할 수 있어요. 정식 오픈 전에는 미리 알려 드릴게요."}
+            </p>
+          </section>
+        ) : gender === "FEMALE" ? (
           <section className="rounded-3xl border border-stone-200 bg-white p-5">
             <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-rose-600">
               {isJa

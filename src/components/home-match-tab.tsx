@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import {
+  BETA_UNLIMITED_TICKETS,
   calculateProfileCompletion,
   DEMO_PARTNERS,
   MatchHistoryItem,
@@ -229,7 +230,9 @@ export function HomeMatchTab({
             >
               <Coffee className="h-3 w-3 text-rose-600 sm:h-3.5 sm:w-3.5" />
               <span>
-                {isJa ? `${ticketCount}枚` : `티켓 ${ticketCount}장`}
+                {BETA_UNLIMITED_TICKETS
+                  ? isJa ? "無制限" : "티켓 무제한"
+                  : isJa ? `${ticketCount}枚` : `티켓 ${ticketCount}장`}
               </span>
             </Link>
 

@@ -20,6 +20,9 @@ export const ROUTES = {
 export const KAKAO_OPENCHAT_URL = "https://open.kakao.com/o/sIwbmqUi";
 export const FAQ_URL = "/faq";
 
+// 베타 오픈 기간: 모든 회원 커피티켓 무제한 (끝낼 때 false로 바꾸고 서버 ondo_settings 의 beta_free_tickets 도 false로)
+export const BETA_UNLIMITED_TICKETS = true;
+
 export const AGE_MIN = 18;
 export const AGE_MAX = 30;
 export const HEIGHT_MIN = 140;

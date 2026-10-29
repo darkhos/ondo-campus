@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import {
+  BETA_UNLIMITED_TICKETS,
   BUILD_TYPES,
   IMPRESSION_TYPES,
   RELIGIONS,
@@ -385,7 +386,11 @@ function MatchCardReal({
         {match.ticket_status === "PENDING" && match.my_response === "PENDING" && (
           <>
             <p className="text-[13px] leading-relaxed text-zinc-600">
-              {isMale
+              {isMale && BETA_UNLIMITED_TICKETS
+                ? isJa
+                  ? "ベータ期間中はコーヒーチケットなしで無料で承認できます。"
+                  : "베타 기간에는 커피티켓 없이 무료로 수락할 수 있어요."
+                : isMale
                 ? isJa
                   ? `承認するとコーヒーチケット1枚が使用されます（保有 ${ticketCount}枚）。相手が24時間以内に応答しない場合は自動で返還されます。`
                   : `수락하면 커피티켓 1장이 사용돼요 (보유 ${ticketCount}장). 상대가 24시간 안에 응답하지 않으면 자동으로 돌려받아요.`
@@ -397,7 +402,7 @@ function MatchCardReal({
               <Button variant="secondary" size="lg" fullWidth disabled={busy} onClick={() => setPassSheetOpen(true)}>
                 {isJa ? "パス" : "넘기기"}
               </Button>
-              {isMale && ticketCount < 1 ? (
+              {isMale && !BETA_UNLIMITED_TICKETS && ticketCount < 1 ? (
                 <Button variant="destructive" size="lg" fullWidth onClick={() => router.push(ROUTES.POINTS)}>
                   <Coffee className="h-4 w-4" />
                   {isJa ? "チケットをチャージ" : "티켓 충전하기"}

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, CheckCheck, Gift, Heart, Sparkles } from "lucide-react";
-import { ROUTES } from "@/lib/ondo-constants";
+import { BETA_UNLIMITED_TICKETS, ROUTES } from "@/lib/ondo-constants";
 import { useAppLocale } from "@/lib/i18n";
 import {
   fetchMyMatchPartners,
@@ -98,10 +98,18 @@ async function buildNotifications(): Promise<NotificationItem[]> {
   items.push({
     id: "welcome-tickets",
     type: "POINT_REWARD",
-    title: "가입 축하 커피티켓 2장이 지급됐어요 🎁",
-    titleJa: "新規登録ウェルカム・コーヒーチケット2枚が付与されました 🎁",
-    body: "매칭을 수락할 때 사용할 수 있어요.",
-    bodyJa: "マッチングの承認時に使用できます。",
+    title: BETA_UNLIMITED_TICKETS
+      ? "베타 기간에는 커피티켓이 무제한이에요 🎁"
+      : "가입 축하 커피티켓 2장이 지급됐어요 🎁",
+    titleJa: BETA_UNLIMITED_TICKETS
+      ? "ベータ期間中はコーヒーチケットが無制限です 🎁"
+      : "新規登録ウェルカム・コーヒーチケット2枚が付与されました 🎁",
+    body: BETA_UNLIMITED_TICKETS
+      ? "충전 없이 매칭을 무료로 수락할 수 있어요."
+      : "매칭을 수락할 때 사용할 수 있어요.",
+    bodyJa: BETA_UNLIMITED_TICKETS
+      ? "チャージなしでマッチングを無料で承認できます。"
+      : "マッチングの承認時に使用できます。",
     href: ROUTES.POINTS,
   });
   return items.map((n) => ({ ...n, read: read.has(n.id) }));

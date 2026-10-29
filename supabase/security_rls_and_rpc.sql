@@ -1536,6 +1536,28 @@ grant execute on function public.ondo_get_my_match_partners() to authenticated;
 
 
 -- 수락/패스: 남학생 수락 시 티켓 1장 차감, 패스·만료 시 차감분 환급
+-- 운영 설정 (베타 기간 커피티켓 무제한 등). 끝낼 때: update public.ondo_settings set value = 'false' where key = 'beta_free_tickets';
+create table if not exists public.ondo_settings (
+  key text primary key,
+  value jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.ondo_settings enable row level security;
+revoke all on table public.ondo_settings from anon, authenticated;
+insert into public.ondo_settings (key, value) values ('beta_free_tickets', 'true'::jsonb)
+on conflict (key) do nothing;
+
+create or replace function public.ondo_beta_free_tickets()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce((select value = 'true'::jsonb from public.ondo_settings where key = 'beta_free_tickets'), false);
+$$;
+revoke all on function public.ondo_beta_free_tickets() from public, anon, authenticated;
+
 create or replace function public.ondo_respond_match(p_match_id text, p_accept boolean)
 returns text
 language plpgsql
@@ -1547,6 +1569,7 @@ declare
   v_m public.ondo_matches;
   v_is_male boolean;
   v_other text;
+  v_free boolean := public.ondo_beta_free_tickets();
 begin
   if v_me is null then
     raise exception 'Login required';
@@ -1574,7 +1597,8 @@ begin
     return 'PASSED';
   end if;
 
-  if v_is_male and not v_m.male_ticket_charged then
+  -- 베타 기간에는 티켓을 쓰지 않고 무료로 수락
+  if v_is_male and not v_m.male_ticket_charged and not v_free then
     update public.ondo_members set tickets = tickets - 1, updated_at = now()
     where id = v_me and coalesce(tickets, 0) >= 1;
     if not found then
@@ -1585,7 +1609,7 @@ begin
   update public.ondo_matches
   set female_response = case when v_is_male then female_response else 'ACCEPT' end,
       male_response = case when v_is_male then 'ACCEPT' else male_response end,
-      male_ticket_charged = male_ticket_charged or v_is_male
+      male_ticket_charged = male_ticket_charged or (v_is_male and not v_free)
   where id = p_match_id
   returning * into v_m;
 

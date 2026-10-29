@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import {
+  BETA_UNLIMITED_TICKETS,
   AGE_MAX,
   AGE_MIN,
   BUILD_TYPES,
@@ -1927,7 +1928,11 @@ export function MyPageTab({
               className="flex w-full items-center justify-between py-3 text-left text-[14px]"
             >
               <span className="font-medium text-gray-800">
-                {isJa
+                {BETA_UNLIMITED_TICKETS
+                  ? isJa
+                    ? "コーヒーチケット 無制限（ベータ）"
+                    : "커피티켓 무제한 (베타)"
+                  : isJa
                   ? `保有コーヒーチケット ${Math.floor(user.points / 2900)}枚`
                   : `보유 커피티켓 ${Math.floor(user.points / 2900)}장`}
               </span>
