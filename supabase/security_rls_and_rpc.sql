@@ -149,6 +149,10 @@ begin
     raise exception 'Login required';
   end if;
 
+  if p_age is not null and (p_age < 18 or p_age > 30) then
+    raise exception 'Age must be between 18 and 30';
+  end if;
+
   select * into v_existing from public.ondo_members where auth_user_id = v_auth;
 
   if v_existing.id is not null then

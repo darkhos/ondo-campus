@@ -389,7 +389,9 @@ function JoinForm({
       label: isJa ? "基本情報" : "기본 정보",
       done:
         nickname.trim().length >= 2 &&
-        !!age &&
+        Number.isInteger(Number(age.trim())) &&
+        Number(age.trim()) >= 18 &&
+        Number(age.trim()) <= 30 &&
         !!gender &&
         !!school.trim() &&
         (campusTrack === "KLI_JP" || !!department.trim()),
@@ -451,11 +453,17 @@ function JoinForm({
     }
 
     const parsedAge = Number(age.trim());
-    if (!age.trim() || !Number.isFinite(parsedAge) || parsedAge < 18 || parsedAge > 40) {
+    if (
+      !age.trim() ||
+      !Number.isFinite(parsedAge) ||
+      !Number.isInteger(parsedAge) ||
+      parsedAge < 18 ||
+      parsedAge > 30
+    ) {
       showError(
         isJa
-          ? "満年齢（18〜40歳）を直接入力してください。"
-          : "만 나이(18~40세)를 직접 입력해 주세요."
+          ? "満18歳〜30歳の方のみご登録いただけます。（満年齢18〜30を入力してください）"
+          : "만 18세~30세만 가입할 수 있어요. (만 나이 18~30 사이로 입력해 주세요)"
       );
       return null;
     }
@@ -961,17 +969,27 @@ function JoinForm({
           </div>
           <div>
             <label className={FIELD_LABEL}>
-              {isJa ? "満年齢（歳）" : "만 나이"}
+              {isJa ? "満年齢（18〜30歳のみ）" : "만 나이 (만 18~30세)"}
             </label>
             <input
               type="number"
               className={FIELD_INPUT}
               value={age}
               onChange={(e) => setAge(e.target.value)}
-              placeholder={isJa ? "例: 22" : "예: 22"}
+              placeholder={isJa ? "18〜30（例: 22）" : "18~30 (예: 22)"}
               min={18}
-              max={40}
+              max={30}
             />
+            {age.trim() !== "" &&
+              (!Number.isInteger(Number(age.trim())) ||
+                Number(age.trim()) < 18 ||
+                Number(age.trim()) > 30) && (
+                <p className="mt-1 text-[11px] font-bold text-rose-600">
+                  {isJa
+                    ? "⚠️ 満18歳〜30歳の方のみご登録いただけます。"
+                    : "⚠️ 만 18세~30세만 가입할 수 있어요."}
+                </p>
+              )}
           </div>
         </div>
 
