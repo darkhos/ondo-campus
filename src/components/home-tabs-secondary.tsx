@@ -749,6 +749,11 @@ export function ProfileTab({
             editLabel={editLabel}
             onEdit={() => setEditOpen(true)}
           />
+          <p className="mb-2 text-[12px] font-semibold text-rose-600">
+            {isJa
+              ? "💡 自己紹介を詳しく書くほど、相手からの好感度が高まります。"
+              : "💡 자기소개를 자세히 적을수록 상대가 나에 대한 호감이 높아져요."}
+          </p>
           <div className="rounded-2xl border border-gray-200/80 bg-white p-4">
             <p className="whitespace-pre-line text-[14px] leading-relaxed text-gray-700">
               {user.bio || unsetLabel}
@@ -1297,14 +1302,19 @@ function PartnerVisibleProfileEditor({
             <label className={FIELD_LABEL}>
               {isJa ? "自己紹介" : "자기소개"}
             </label>
+            <p className="mb-1.5 text-[12px] font-semibold text-rose-600">
+              {isJa
+                ? "💡 自己紹介を詳しく書くほど、相手からの好感度が高まります。"
+                : "💡 자기소개를 자세히 적을수록 상대가 나에 대한 호감이 높아져요."}
+            </p>
             <textarea
               className={cn(FIELD_TEXTAREA, "h-28")}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder={
                 isJa
-                  ? "普段の過ごし方や会話のスタイル、どんな方と出会いたいかを自由に書いてください。"
-                  : "평소 일상이나 취미, 대화 스타일, 어떤 분과 만나고 싶은지 자유롭게 적어 주세요."
+                  ? "自己紹介を詳しく書くほど、相手からの好感度が高まります！普段の過ごし方や会話のスタイル、どんな方と出会いたいかを自由に書いてください。"
+                  : "자기소개를 자세히 적을수록 상대가 나에 대한 호감이 높아져요! 평소 일상이나 취미, 대화 스타일, 어떤 분과 만나고 싶은지 자유롭게 적어 주세요."
               }
             />
           </div>
