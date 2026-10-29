@@ -200,10 +200,75 @@ export default function AdminDashboardPage() {
   const [selectedMaleUid, setSelectedMaleUid] = useState<string>("");
   const [escrowPairs, setEscrowPairs] = useState<EscrowPair[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  const [studentIdModal, setStudentIdModal] = useState<{
+    member: AdminMember;
+    signedUrl: string;
+  } | null>(null);
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2800);
+  };
+
+  const openStudentIdModal = async (member: AdminMember) => {
+    if (!member.studentIdImagePath) {
+      showToast("등록된 학생증 사진이 없습니다.");
+      return;
+    }
+    const { data, error } = await supabase.storage
+      .from("student-ids")
+      .createSignedUrl(member.studentIdImagePath, 300);
+    if (error || !data?.signedUrl) {
+      showToast("학생증 사진을 불러오지 못했습니다.");
+      return;
+    }
+    setStudentIdModal({ member, signedUrl: data.signedUrl });
+  };
+
+  const handleReviewStudentId = async (memberId: string, approve: boolean) => {
+    const target = members.find((m) => m.uid === memberId);
+    const ok = window.confirm(
+      approve
+        ? `${target?.nickname ?? memberId}님의 학생 인증을 승인할까요? 승인하면 학생증 사진은 바로 삭제됩니다.`
+        : `${target?.nickname ?? memberId}님의 학생 인증을 반려할까요? 반려하면 학생증 사진은 바로 삭제되고, 회원은 다시 올려야 합니다.`
+    );
+    if (!ok) return;
+    const { data: removedPath, error } = await supabase.rpc(
+      "ondo_admin_review_student",
+      { p_member_id: memberId, p_approve: approve }
+    );
+    if (error) {
+      showToast("처리에 실패했습니다.");
+      return;
+    }
+    if (typeof removedPath === "string" && removedPath) {
+      await supabase.storage.from("student-ids").remove([removedPath]);
+    }
+    setTickets((prev) =>
+      prev.map((x) =>
+        x.kind === "VERIFY" && x.member_id === memberId
+          ? { ...x, status: "DONE" }
+          : x
+      )
+    );
+    setMembers((prev) =>
+      prev.map((m) =>
+        m.uid === memberId
+          ? {
+              ...m,
+              emailVerified: approve,
+              verifyStatus: approve ? "verified" : "rejected",
+              studentIdImagePath: null,
+            }
+          : m
+      )
+    );
+    setStudentIdModal(null);
+    showToast(
+      approve
+        ? "학생 인증을 승인했고, 학생증 사진을 삭제했습니다."
+        : "학생 인증을 반려했고, 학생증 사진을 삭제했습니다."
+    );
   };
 
   const applyAdminData = useCallback((result: AdminData) => {
@@ -263,30 +328,6 @@ export default function AdminDashboardPage() {
     );
   };
 
-  // 운영자 수동 승인 (학교 메일·학생증 경로로 처리하기 어려운 예외 상황용)
-  const handleApproveEmail = async (uid: string) => {
-    if (!window.confirm("이 회원을 운영자 수동 확인으로 학생 인증 승인할까요?")) return;
-    const { data: removedPath, error } = await supabase.rpc(
-      "ondo_admin_review_student",
-      { p_member_id: uid, p_approve: true }
-    );
-    if (error) {
-      showToast("승인에 실패했습니다.");
-      return;
-    }
-    if (typeof removedPath === "string" && removedPath) {
-      await supabase.storage.from("student-ids").remove([removedPath]);
-    }
-    setMembers((prev) =>
-      prev.map((m) =>
-        m.uid === uid
-          ? { ...m, emailVerified: true, verifyStatus: "verified", studentIdImagePath: null }
-          : m
-      )
-    );
-    showToast("학생 인증을 수동 승인했습니다.");
-  };
-
   const handleCreateManualMatch = async () => {
     const female =
       members.find((m) => m.uid === selectedFemaleUid && m.gender === "FEMALE") ??
@@ -329,6 +370,20 @@ export default function AdminDashboardPage() {
       `자동 매칭 실행 완료 (신규 매칭 ${batchRes.matched_count ?? 0}건 · 24시간 미응답 처리 ${
         batchRes.refunded_count ?? 0
       }건)`
+    );
+  };
+
+  const handleCreateTestMatch = async () => {
+    const { data: created, error } = await supabase.rpc(
+      "ondo_admin_create_test_match"
+    );
+    if (error || !created) {
+      showToast("테스트 매칭 생성에 실패했습니다. 운영자 계정으로 먼저 프로필이 등록되어 있는지 확인해 주세요.");
+      return;
+    }
+    await fetchFromSupabase();
+    showToast(
+      "🧪 내 계정으로 테스트 매칭(하루카 · 일본어 소개글)을 보냈습니다! 상단 [학생 메인 라운지(/) →]에서 확인해 보세요."
     );
   };
 
@@ -717,34 +772,31 @@ export default function AdminDashboardPage() {
                         <Button
                           size="sm"
                           variant="secondary"
-                          onClick={async () => {
-                            if (!m.studentIdImagePath) return;
-                            const { data, error } = await supabase.storage
-                              .from("student-ids")
-                              .createSignedUrl(m.studentIdImagePath, 300);
-                            if (error || !data?.signedUrl) {
-                              showToast("학생증 사진을 불러오지 못했습니다.");
-                              return;
-                            }
-                            window.open(
-                              data.signedUrl,
-                              "_blank",
-                              "noopener,noreferrer"
-                            );
-                          }}
+                          onClick={() => openStudentIdModal(m)}
                         >
                           🪪 학생증 보기
                         </Button>
                       )}
 
                       {!m.emailVerified && (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleApproveEmail(m.uid)}
-                        >
-                          수동 인증 승인
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleReviewStudentId(m.uid, true)}
+                          >
+                            ✅ 인증 승인
+                          </Button>
+                          {m.verifyStatus === "pending_review" && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleReviewStudentId(m.uid, false)}
+                            >
+                              반려
+                            </Button>
+                          )}
+                        </>
                       )}
 
                       <button
@@ -845,6 +897,24 @@ export default function AdminDashboardPage() {
                   <Link2 className="h-4 w-4" />
                   선택한 두 회원 즉시 매칭 연결하기
                 </Button>
+
+                <div className="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4">
+                  <p className="text-[12px] font-extrabold text-indigo-900">
+                    🧪 혼자서도 즉시 매칭·번역·5턴 채팅 검증하기
+                  </p>
+                  <p className="mt-1 text-[12px] leading-relaxed text-indigo-700">
+                    현재 가입자가 1명뿐이어도 내 계정과 일본인 테스트 파트너(하루카)를 즉시 매칭해 소개글 번역·수락·블라인드 채팅 자동 답장·5턴 연락처 공개까지 한 번에 테스트할 수 있습니다.
+                  </p>
+                  <Button
+                    fullWidth
+                    size="md"
+                    variant="secondary"
+                    className="mt-3 border-indigo-300 bg-white text-indigo-700 hover:bg-indigo-50"
+                    onClick={handleCreateTestMatch}
+                  >
+                    🧪 내 계정에 테스트 매칭 즉시 보내기
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -1072,17 +1142,8 @@ export default function AdminDashboardPage() {
                               size="sm"
                               variant="secondary"
                               disabled={!member?.studentIdImagePath}
-                              onClick={async () => {
-                                const path = member?.studentIdImagePath;
-                                if (!path) return;
-                                const { data, error } = await supabase.storage
-                                  .from("student-ids")
-                                  .createSignedUrl(path, 300);
-                                if (error || !data?.signedUrl) {
-                                  showToast("학생증 사진을 불러오지 못했습니다.");
-                                  return;
-                                }
-                                window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+                              onClick={() => {
+                                if (member) void openStudentIdModal(member);
                               }}
                             >
                               🪪 학생증 사진 보기
@@ -1092,47 +1153,12 @@ export default function AdminDashboardPage() {
                                 key={action}
                                 size="sm"
                                 variant={action === "approve" ? "destructive" : "ghost"}
-                                onClick={async () => {
-                                  const ok = window.confirm(
+                                onClick={() =>
+                                  handleReviewStudentId(
+                                    t.member_id!,
                                     action === "approve"
-                                      ? `${member?.nickname ?? t.member_id}님의 학생 인증을 승인할까요? 승인하면 학생증 사진은 바로 삭제됩니다.`
-                                      : `${member?.nickname ?? t.member_id}님의 학생 인증을 반려할까요? 반려하면 학생증 사진은 바로 삭제되고, 회원은 다시 올려야 합니다.`
-                                  );
-                                  if (!ok) return;
-                                  const { data: removedPath, error } = await supabase.rpc(
-                                    "ondo_admin_review_student",
-                                    { p_member_id: t.member_id, p_approve: action === "approve" }
-                                  );
-                                  if (error) {
-                                    showToast("처리에 실패했습니다.");
-                                    return;
-                                  }
-                                  if (typeof removedPath === "string" && removedPath) {
-                                    await supabase.storage.from("student-ids").remove([removedPath]);
-                                  }
-                                  setTickets((prev) =>
-                                    prev.map((x) =>
-                                      x.id === t.id ? { ...x, status: "DONE" } : x
-                                    )
-                                  );
-                                  setMembers((prev) =>
-                                    prev.map((m) =>
-                                      m.uid === t.member_id
-                                        ? {
-                                            ...m,
-                                            emailVerified: action === "approve",
-                                            verifyStatus: action === "approve" ? "verified" : "rejected",
-                                            studentIdImagePath: null,
-                                          }
-                                        : m
-                                    )
-                                  );
-                                  showToast(
-                                    action === "approve"
-                                      ? "학생 인증을 승인했고, 학생증 사진을 삭제했습니다."
-                                      : "학생 인증을 반려했고, 학생증 사진을 삭제했습니다."
-                                  );
-                                }}
+                                  )
+                                }
                               >
                                 {action === "approve" ? "✅ 학생 인증 승인" : "반려"}
                               </Button>
@@ -1223,6 +1249,80 @@ export default function AdminDashboardPage() {
           </section>
         )}
       </main>
+
+      {studentIdModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs"
+          onClick={() => setStudentIdModal(null)}
+        >
+          <div
+            className="w-full max-w-lg overflow-hidden rounded-3xl border border-stone-200 bg-white p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-extrabold text-rose-600">
+                  🪪 학생증 · 모바일 신분증 원본 확인
+                </span>
+                <h3 className="mt-1.5 text-[17px] font-black text-zinc-900">
+                  {studentIdModal.member.nickname} ({studentIdModal.member.age}세)
+                </h3>
+                <p className="text-[12.5px] font-semibold text-zinc-600">
+                  {studentIdModal.member.school} · {studentIdModal.member.department} · 카톡ID:{" "}
+                  <span className="font-mono">{studentIdModal.member.kakaoId || "-"}</span>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStudentIdModal(null)}
+                className="rounded-full bg-stone-100 px-3 py-1 text-[12px] font-bold text-zinc-600 hover:bg-stone-200"
+              >
+                닫기 ✕
+              </button>
+            </div>
+
+            <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={studentIdModal.signedUrl}
+                alt={`${studentIdModal.member.nickname} 학생증 사진`}
+                className="max-h-[60vh] w-full object-contain"
+              />
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <a
+                href={studentIdModal.signedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[12px] font-bold text-zinc-500 underline hover:text-zinc-800"
+              >
+                ↗ 새 탭에서 원본 크게 열기
+              </a>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() =>
+                    handleReviewStudentId(studentIdModal.member.uid, false)
+                  }
+                >
+                  반려 (재업로드 요청)
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() =>
+                    handleReviewStudentId(studentIdModal.member.uid, true)
+                  }
+                >
+                  ✅ 학생 인증 승인 (사진 즉시 삭제)
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <div className="fixed inset-x-0 bottom-8 z-50 mx-auto max-w-md px-5">
