@@ -139,7 +139,7 @@ function OptionTileClass(selected: boolean) {
 }
 
 // ============================================================================
-// 1. IdealTypeTab (Upgraded with Smart Elastic Filter & Clean Collapsible UI)
+// 1. IdealTypeTab (Frequency Filter & Preference Settings)
 // ============================================================================
 export function IdealTypeTab({
   user,
@@ -221,18 +221,18 @@ export function IdealTypeTab({
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-[#F8FAFC]">
+    <div className="flex min-h-full flex-col bg-[#FAF9F6]">
       <PageHeader
-        title={isJa ? "理想の条件" : "이상형 조건"}
+        title={isJa ? "希望条件" : "주파수 조건"}
         back={false}
       />
       <div className="animate-fade-in flex-1 space-y-5 px-5 py-5">
-        {/* AI Smart Elastic Filter Card (Solves Cold-Start NoMatchView Deadlock) */}
-        <div className="rounded-2xl border border-blue-100 bg-white p-4">
+        {/* AI Smart Elastic Filter Card */}
+        <div className="rounded-2xl border border-rose-200/80 bg-white p-4">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <Sparkles className="h-4 w-4 text-primary" />
+                <Sparkles className="h-4 w-4 text-rose-600" />
                 <p className="text-[14px] font-bold text-gray-900">
                   {isJa ? "AIスマート条件緩和" : "AI 스마트 조건 완화"}
                 </p>
@@ -586,7 +586,7 @@ export function IdealTypeTab({
 }
 
 // ============================================================================
-// 2. ProfileTab (Upgraded with Voice Intro & Realistic Vibe Keywords)
+// 2. ProfileTab (Value Note & Profile Card)
 // ============================================================================
 const buildLabelMap = Object.fromEntries(
   BUILD_TYPES.map((b) => [b.value, b.label])
@@ -659,9 +659,9 @@ export function ProfileTab({
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#F8FAFC]">
+    <div className="flex min-h-full flex-col bg-[#FAF9F6]">
       <PageHeader
-        title={isJa ? "プロフィール" : "내 프로필"}
+        title={isJa ? "価値観ノート" : "가치관 노트"}
         back={false}
         right={
           <button
@@ -669,15 +669,15 @@ export function ProfileTab({
             onClick={() => setEditOpen(true)}
             className="rounded-lg bg-gray-900 px-3 py-1.5 text-[12px] font-semibold text-white"
           >
-            {isJa ? "プロフィール編集" : "프로필 편집"}
+            {isJa ? "ノート編集" : "노트 편집"}
           </button>
         }
       />
 
       <div className="animate-fade-in flex-1 space-y-5 px-5 py-5">
         {/* Clean Summary Card */}
-        <section className="flex items-center gap-4 rounded-2xl border border-gray-200/80 bg-white p-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-[24px]">
+        <section className="flex items-center gap-4 rounded-2xl border border-stone-200/80 bg-white p-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-stone-100 text-[24px]">
             {(user.impression && IMPRESSION_EMOJI[user.impression]) || "🙂"}
           </div>
           <div className="min-w-0 flex-1">
@@ -686,7 +686,7 @@ export function ProfileTab({
                 {user.nickname}
               </p>
               {user.verificationStatus === "verified" ? (
-                <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[12px] font-bold text-primary">
+                <span className="rounded-md bg-rose-50 px-1.5 py-0.5 text-[12px] font-bold text-rose-600">
                   {isJa ? "学校認証済み" : "학교 인증됨"}
                 </span>
               ) : (
@@ -1421,7 +1421,7 @@ export function HistoryTab({
             {isJa ? "まだトーク履歴がありません" : "아직 대화 기록이 없어요"}
           </p>
           <Button className="mt-5" onClick={onOpenHomeTab}>
-            {isJa ? "今日の推薦を見に行く" : "오늘의 추천 보러 가기"}
+            {isJa ? "ラウンジで今日の紹介を見る" : "라운지에서 오늘의 소개 보기"}
           </Button>
         </div>
       ) : (
