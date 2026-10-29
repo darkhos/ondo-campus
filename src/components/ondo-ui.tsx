@@ -353,24 +353,16 @@ export function MatchCard({
     }, 160);
     return () => window.clearInterval(id);
   }, [demoChatStep, reduceMotion]);
-  // 화면에 처음 보이면 한 번 자동으로 0 → 3 → 5 시연 (사용자가 먼저 누르면 멈춤)
-  const [demoRef, demoSeen] = useInViewOnce<HTMLDivElement>(0.6);
-  const demoTouchedRef = useRef(false);
+  // 1단계(0) → 2단계(3) → 3단계(5) 자동 순차 조명 반복 (직접 버튼을 눌러도 전환되며 다시 자연스럽게 순환)
+  const [demoRef] = useInViewOnce<HTMLDivElement>(0.2);
   useEffect(() => {
-    if (!demoSeen || reduceMotion || !isDemoPartner) return;
-    const t1 = window.setTimeout(() => {
-      if (!demoTouchedRef.current) setDemoChatStep(3);
-    }, 900);
-    const t2 = window.setTimeout(() => {
-      if (!demoTouchedRef.current) setDemoChatStep(5);
-    }, 2600);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
-  }, [demoSeen, reduceMotion, isDemoPartner]);
+    if (!isDemoPartner) return;
+    const id = window.setInterval(() => {
+      setDemoChatStep((prev) => (prev === 0 ? 3 : prev === 3 ? 5 : 0));
+    }, 2400);
+    return () => window.clearInterval(id);
+  }, [isDemoPartner]);
   const pickDemoStep = (step: 0 | 3 | 5) => {
-    demoTouchedRef.current = true;
     setDemoChatStep(step);
   };
   const [tiltStyle, setTiltStyle] = useState<React.CSSProperties>({});
@@ -720,9 +712,9 @@ export function MatchCard({
                 type="button"
                 onClick={() => pickDemoStep(0)}
                 className={cn(
-                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all sm:text-[11.5px]",
+                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all duration-300 sm:text-[11.5px]",
                   demoChatStep === 0
-                    ? "border-rose-600 bg-rose-600 text-white shadow-2xs"
+                    ? "-translate-y-0.5 border-rose-600 bg-rose-600 text-white shadow-[0_6px_16px_rgba(225,29,72,0.28)] ring-2 ring-rose-300/60"
                     : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
                 )}
               >
@@ -732,9 +724,9 @@ export function MatchCard({
                 type="button"
                 onClick={() => pickDemoStep(3)}
                 className={cn(
-                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all sm:text-[11.5px]",
+                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all duration-300 sm:text-[11.5px]",
                   demoChatStep === 3
-                    ? "border-rose-600 bg-rose-600 text-white shadow-2xs"
+                    ? "-translate-y-0.5 border-rose-600 bg-rose-600 text-white shadow-[0_6px_16px_rgba(225,29,72,0.28)] ring-2 ring-rose-300/60"
                     : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
                 )}
               >
@@ -744,9 +736,9 @@ export function MatchCard({
                 type="button"
                 onClick={() => pickDemoStep(5)}
                 className={cn(
-                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all sm:text-[11.5px]",
+                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all duration-300 sm:text-[11.5px]",
                   demoChatStep === 5
-                    ? "border-emerald-600 bg-emerald-600 text-white shadow-2xs"
+                    ? "-translate-y-0.5 border-emerald-600 bg-emerald-600 text-white shadow-[0_6px_16px_rgba(5,150,105,0.28)] ring-2 ring-emerald-300/60"
                     : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
                 )}
               >
