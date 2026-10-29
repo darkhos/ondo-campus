@@ -41,6 +41,60 @@
   }
 }
 
+@keyframes ondo-marquee-left {
+  0% {
+    transform: translate3d(0%, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes ondo-marquee-right {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0%, 0, 0);
+  }
+}
+
+.ondo-marquee-wrap {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 7%,
+    black 93%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 7%,
+    black 93%,
+    transparent
+  );
+}
+
+.ondo-marquee-track-left {
+  display: flex;
+  width: max-content;
+  animation: ondo-marquee-left 24s linear infinite;
+}
+
+.ondo-marquee-track-right {
+  display: flex;
+  width: max-content;
+  animation: ondo-marquee-right 26s linear infinite;
+}
+
+.ondo-marquee-wrap:hover .ondo-marquee-track-left,
+.ondo-marquee-wrap:hover .ondo-marquee-track-right,
+.ondo-marquee-wrap:active .ondo-marquee-track-left,
+.ondo-marquee-wrap:active .ondo-marquee-track-right {
+  animation-play-state: paused;
+}
+
 .animate-fade-in {
   animation: ondo-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

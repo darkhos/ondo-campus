@@ -118,6 +118,11 @@ export default function LandingPage() {
   };
 
   const univs = isJa ? PARTICIPATING_UNIVS_JA : PARTICIPATING_UNIVS_KO;
+  const univRow1 = univs.slice(0, 7);
+  const univRow2 = [
+    ...univs.slice(7),
+    isJa ? "🇯🇵 日本語学堂・留学生" : "🇯🇵 일본어학당·유학생",
+  ];
   const reviews = isJa ? REVIEWS_JA : REVIEWS_KO;
 
   useEffect(() => {
@@ -330,8 +335,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* University Eligibility & Text Pills (광운대 맨 앞 배치) */}
-        <section className="mt-5 rounded-3xl border border-stone-200/90 bg-white p-4 text-center shadow-2xs sm:mt-8 sm:p-6">
+        {/* University Eligibility & Flowing Marquee Pills */}
+        <section className="mt-5 overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-4 text-center shadow-2xs sm:mt-8 sm:p-6">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[11px] font-extrabold text-rose-600 sm:text-[12px]">
             🎓 {isJa ? "首都圏キャンパス全域対応" : "서울 · 경기 · 인천 전 캠퍼스 오픈"}
           </span>
@@ -346,16 +351,41 @@ export default function LandingPage() {
               : "아래 예시 학교뿐만 아니라 서울·경기·인천 지역 전체 대학교(78개 캠퍼스) 및 대학 부설 어학당(62개교)에 다니는 재학생·휴학생·유학생 모두 가입할 수 있습니다."}
           </p>
 
-          <div className="mt-3 flex flex-wrap justify-center gap-1.5 sm:mt-4 sm:gap-2">
-            {univs.map((u) => (
-              <span
-                key={u}
-                className="rounded-full border border-stone-200/80 bg-[#FAF9F6] px-3 py-1 text-[11.5px] font-semibold text-zinc-600 sm:px-3.5 sm:text-[12px]"
-              >
-                {u}
-              </span>
-            ))}
-            <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11.5px] font-extrabold text-rose-600 sm:px-3.5 sm:text-[12px]">
+          <div className="ondo-marquee-wrap mt-3.5 space-y-2 overflow-hidden py-1 sm:mt-4 sm:space-y-2.5">
+            {/* Row 1: Flows Left */}
+            <div className="ondo-marquee-track-left">
+              {[...univRow1, ...univRow1].map((u, idx) => (
+                <span
+                  key={`r1-${idx}-${u}`}
+                  className="mx-1 shrink-0 rounded-full border border-stone-200/90 bg-[#FAF9F6] px-3.5 py-1.5 text-[11.5px] font-bold text-zinc-700 transition-colors hover:border-rose-400 hover:bg-rose-50/60 hover:text-rose-600 sm:mx-1.5 sm:px-4 sm:text-[12px]"
+                >
+                  🎓 {u}
+                </span>
+              ))}
+            </div>
+
+            {/* Row 2: Flows Right */}
+            <div className="ondo-marquee-track-right">
+              {[...univRow2, ...univRow2].map((u, idx) => {
+                const isJpTag = u.startsWith("🇯🇵");
+                return (
+                  <span
+                    key={`r2-${idx}-${u}`}
+                    className={
+                      isJpTag
+                        ? "mx-1 shrink-0 rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-[11.5px] font-extrabold text-rose-600 sm:mx-1.5 sm:px-4 sm:text-[12px]"
+                        : "mx-1 shrink-0 rounded-full border border-stone-200/90 bg-[#FAF9F6] px-3.5 py-1.5 text-[11.5px] font-bold text-zinc-700 transition-colors hover:border-rose-400 hover:bg-rose-50/60 hover:text-rose-600 sm:mx-1.5 sm:px-4 sm:text-[12px]"
+                    }
+                  >
+                    {isJpTag ? u : `🌸 ${u}`}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-3 flex justify-center sm:mt-3.5">
+            <span className="rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1 text-[11.5px] font-extrabold text-rose-600 sm:px-4 sm:text-[12px]">
               {isJa
                 ? "+ ソウル・京畿・仁川の全大学・語学堂 登録可能"
                 : "+ 서울·경기·인천 전 대학 및 어학당 누구나 가입 가능"}
