@@ -10,7 +10,7 @@ import {
   fetchMyMemberSecure,
   toVerificationStatus,
 } from "@/lib/supabase";
-import { PageHeader, cn } from "@/components/ondo-ui";
+import { Button, PageHeader, cn } from "@/components/ondo-ui";
 
 const READ_KEY = "ondo_read_notifications_v1";
 
@@ -158,6 +158,15 @@ export default function NotificationsPage() {
                 ? "ログインすると21時のマッチングやトークのお知らせが届きます。"
                 : "로그인하면 밤 9시 주파수 매칭과 대화 소식을 알려 드려요."}
             </p>
+            {/* 알림은 로그인한 회원에게만 생기므로, 빈 화면은 로그인하지 않은 경우 */}
+            <div className="mt-6 flex w-full max-w-xs flex-col gap-2">
+              <Button size="lg" fullWidth onClick={() => router.push(ROUTES.LOGIN)}>
+                {isJa ? "ログインする" : "로그인하기"}
+              </Button>
+              <Button size="lg" fullWidth variant="secondary" onClick={() => router.push(ROUTES.JOIN)}>
+                {isJa ? "はじめての方は新規登録" : "처음이라면 회원가입"}
+              </Button>
+            </div>
           </div>
         )}
         {(items ?? []).map((item) => (

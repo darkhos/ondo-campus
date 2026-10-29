@@ -1355,9 +1355,18 @@ export function MatchingToggleCard({
   const isPaused = matchingStatus === "PAUSED";
   const isOn = !isPaused;
   const isDisabled = loading || locked || matchingStatus === null;
+  // 스위치를 누른 순간의 상태를 기억해 두었다가, 서버에서 바뀐 게 확인되면 결과 안내를 잠깐 보여 줌
+  const [clickedFrom, setClickedFrom] = useState<string | null>(null);
+  const changed = clickedFrom !== null && matchingStatus !== null && matchingStatus !== clickedFrom;
+  const handleToggle = () => {
+    setClickedFrom(matchingStatus);
+    window.setTimeout(() => setClickedFrom(null), 4000);
+    onToggle();
+  };
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border border-stone-200/80 bg-white px-5 py-4">
+    <div className="rounded-2xl border border-stone-200/80 bg-white px-5 py-4">
+    <div className="flex items-center justify-between gap-4">
       <div className="min-w-0">
         <p className="text-[14px] font-bold text-zinc-900">
           {isJa ? "毎晩21時の紹介を受け取る" : "매일 밤 9시 매칭 받기"}
@@ -1378,19 +1387,39 @@ export function MatchingToggleCard({
         aria-checked={isOn}
         aria-label={isJa ? "マッチングを受け取る" : "매칭 받기"}
         disabled={isDisabled}
-        onClick={onToggle}
+        onClick={handleToggle}
         className={cn(
-          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors",
+          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors duration-300",
           isOn ? "bg-rose-600" : "bg-stone-300"
         )}
       >
         <span
           className={cn(
-            "inline-block h-5 w-5 rounded-full bg-white transition-transform",
+            "flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
             isOn ? "translate-x-5" : "translate-x-0"
           )}
-        />
+        >
+          {loading && <Spinner className="h-3 w-3 text-zinc-400" />}
+        </span>
       </button>
+    </div>
+      {changed && (
+        <p
+          role="status"
+          className={cn(
+            "animate-fade-in-up mt-3 rounded-xl px-3 py-2 text-[12px] font-semibold",
+            isOn ? "bg-rose-50 text-rose-700" : "bg-stone-100 text-zinc-600"
+          )}
+        >
+          {isOn
+            ? isJa
+              ? "再開しました！今夜21時から紹介が届きます。"
+              : "다시 켰어요! 오늘 밤 9시부터 소개받아요."
+            : isJa
+            ? "今夜21時の紹介からお休みします。いつでも再開できます。"
+            : "오늘 밤 9시 소개부터 쉬어요. 언제든 다시 켤 수 있어요."}
+        </p>
+      )}
     </div>
   );
 }

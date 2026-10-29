@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Check, Copy, Gift } from "lucide-react";
+import { Check, Copy, Gift, Share2 } from "lucide-react";
 import { FIELD_INPUT } from "@/lib/ondo-constants";
 import { useAppLocale } from "@/lib/i18n";
 import {
@@ -37,16 +37,39 @@ export default function InvitePage() {
   const [redeemed, setRedeemed] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
+  const inviteUrl = `https://darkhos.github.io/ondo-campus/?ref=${myCode}`;
+
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(
-        `https://darkhos.github.io/ondo-campus/?ref=${myCode}`
-      );
+      await navigator.clipboard.writeText(inviteUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // ignore
     }
+  };
+
+  // 휴대폰 기본 공유 창을 열어 카카오톡 등으로 바로 보냄 (공유 창이 없는 기기에서는 링크 복사로 대신함)
+  const handleShare = async () => {
+    const text = isJa
+      ? `ONDO 36.5°で一緒に紹介を受けてみませんか？私の招待コード: ${myCode}`
+      : `온도(ONDO 36.5°)에서 같이 소개팅 받아 볼래? 내 초대 코드: ${myCode}`;
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title: "ONDO 36.5°", text, url: inviteUrl });
+        return;
+      } catch (e) {
+        // 사용자가 공유 창을 닫은 경우는 아무것도 하지 않음
+        if (e instanceof DOMException && e.name === "AbortError") return;
+      }
+    }
+    await handleCopy();
+    setToast(
+      isJa
+        ? "招待リンクをコピーしました。カカオトークに貼り付けて送ってください。"
+        : "초대 링크를 복사했어요. 카카오톡 대화방에 붙여 넣어 보내 주세요."
+    );
+    setTimeout(() => setToast(null), 2600);
   };
 
   const handleRedeem = async () => {
@@ -149,11 +172,15 @@ export default function InvitePage() {
             <button
               type="button"
               onClick={handleCopy}
-              className="inline-flex items-center gap-1.5 rounded-full bg-rose-600 px-3.5 py-1.5 text-[12px] font-bold text-white hover:bg-rose-700"
+              className={
+                copied
+                  ? "inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3.5 py-1.5 text-[12px] font-bold text-white transition-colors"
+                  : "inline-flex items-center gap-1.5 rounded-full bg-rose-600 px-3.5 py-1.5 text-[12px] font-bold text-white transition-colors hover:bg-rose-700"
+              }
             >
               {copied ? (
                 <>
-                  <Check className="h-3.5 w-3.5" />
+                  <Check className="ondo-check-pop h-3.5 w-3.5" />
                   {isJa ? "コピー済み" : "복사됨"}
                 </>
               ) : (
@@ -164,6 +191,19 @@ export default function InvitePage() {
               )}
             </button>
           </div>
+          <button
+            type="button"
+            onClick={handleShare}
+            className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#FEE500] text-[14px] font-extrabold text-zinc-900 shadow-xs transition-colors hover:bg-[#FADA0A]"
+          >
+            <Share2 className="h-4 w-4" />
+            {isJa ? "カカオトークなどで招待を送る" : "카카오톡 등으로 초대 보내기"}
+          </button>
+          <p className="mt-1.5 text-center text-[11px] text-zinc-400">
+            {isJa
+              ? "スマホの共有画面からカカオトークを選ぶと、すぐに送れます。"
+              : "휴대폰 공유 창에서 카카오톡을 고르면 바로 보낼 수 있어요."}
+          </p>
         </section>
 
         {/* 초대 코드 입력 */}

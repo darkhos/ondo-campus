@@ -174,6 +174,8 @@ export default function FaqPage() {
                 <button
                   type="button"
                   onClick={() => setOpenIdx(open ? null : idx)}
+                  aria-expanded={open}
+                  aria-controls={`faq-answer-${idx}`}
                   className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
                 >
                   <span className="text-[13px] font-bold text-zinc-900">
@@ -181,16 +183,32 @@ export default function FaqPage() {
                   </span>
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 shrink-0 text-zinc-400 transition-transform",
+                      "h-4 w-4 shrink-0 text-zinc-400 transition-transform duration-300",
                       open && "rotate-180 text-rose-600"
                     )}
                   />
                 </button>
-                {open && (
-                  <div className="border-t border-stone-100 bg-stone-50/60 px-4 py-3.5 text-[12px] leading-relaxed text-zinc-600">
-                    {item.a}
+                {/* 답이 높이 0에서 원래 높이까지 부드럽게 펼쳐지고 접힘 */}
+                <div
+                  id={`faq-answer-${idx}`}
+                  role="region"
+                  aria-hidden={!open}
+                  className={cn(
+                    "grid transition-[grid-template-rows] duration-300 ease-out",
+                    open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                  )}
+                >
+                  <div className="overflow-hidden">
+                    <div
+                      className={cn(
+                        "border-t border-stone-100 bg-stone-50/60 px-4 py-3.5 text-[12px] leading-relaxed text-zinc-600 transition-opacity duration-300",
+                        open ? "opacity-100" : "opacity-0"
+                      )}
+                    >
+                      {item.a}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             );
           })}

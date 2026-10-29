@@ -134,12 +134,15 @@ export default function CampusMissionPage() {
               variant="secondary"
               fullWidth
               size="md"
-              className="mt-4"
+              className={cn(
+                "mt-4 transition-colors duration-300",
+                copied && "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50"
+              )}
               onClick={handleCopy}
             >
               {copied ? (
                 <>
-                  <Check className="h-4 w-4 text-rose-600" />
+                  <Check className="ondo-check-pop h-4 w-4 text-emerald-600" strokeWidth={3} />
                   {isJa
                     ? "クリップボードにコピーされました！"
                     : "문구가 클립보드에 복사되었어요!"}
@@ -171,7 +174,7 @@ export default function CampusMissionPage() {
 
           <div className="mt-3 space-y-3">
             {submitted ? (
-              <div className="rounded-2xl bg-rose-50 p-5 text-center">
+              <div className="ondo-pop-box rounded-2xl bg-rose-50 p-5 text-center">
                 <p className="text-[15px] font-bold text-rose-700">
                   {isJa
                     ? "🎉 紹介認証申請が受付されました！"

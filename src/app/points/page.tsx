@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Megaphone, Send, ShieldCheck, Users } from "lucide-react";
+import { Check, Megaphone, Send, ShieldCheck, Users } from "lucide-react";
 import { INITIAL_USER_PROFILE, ROUTES } from "@/lib/ondo-constants";
 import { useAppLocale } from "@/lib/i18n";
 import { parseJsonObject, useLocalStorageItem } from "@/lib/use-browser-storage";
 import { fetchMyMemberSecure, submitSupportTicket } from "@/lib/supabase";
-import { Button, PageHeader, cn } from "@/components/ondo-ui";
+import { Button, PageHeader, RollingNumber, cn } from "@/components/ondo-ui";
 
 const STORAGE_KEY = "ondo_campus_auth_v3";
 
@@ -240,12 +240,20 @@ export default function PointsPage() {
                     type="button"
                     onClick={() => setSelectedPkg(pkg)}
                     className={cn(
-                      "flex w-full items-center justify-between rounded-2xl border-[1.5px] px-4 py-4 text-left transition-all",
+                      "relative flex w-full items-center justify-between rounded-2xl border-[1.5px] px-4 py-4 text-left transition-all duration-300",
                       active
-                        ? "border-rose-600 bg-rose-50/40"
-                        : "border-stone-200 bg-white"
+                        ? "scale-[1.015] border-rose-600 bg-rose-50/40 shadow-[0_10px_24px_-8px_rgba(225,29,72,0.28)]"
+                        : "border-stone-200 bg-white hover:border-rose-200"
                     )}
                   >
+                    {active && (
+                      <span
+                        aria-hidden
+                        className="ondo-check-pop absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-rose-600 text-white shadow-sm"
+                      >
+                        <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                      </span>
+                    )}
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-[16px] font-black text-zinc-900">
@@ -306,9 +314,17 @@ export default function PointsPage() {
               onClick={handleRequestTopup}
             >
               <Send className="h-4 w-4" />
-              {isJa
-                ? `${selectedPkg.price.toLocaleString("ja-JP")}ウォン分のチャージを申請する`
-                : `${selectedPkg.price.toLocaleString("ko-KR")}원 충전 신청하기`}
+              {isJa ? (
+                <span>
+                  <RollingNumber value={selectedPkg.price} format={(v) => v.toLocaleString("ja-JP")} />
+                  ウォン分のチャージを申請する
+                </span>
+              ) : (
+                <span>
+                  <RollingNumber value={selectedPkg.price} format={(v) => v.toLocaleString("ko-KR")} />
+                  원 충전 신청하기
+                </span>
+              )}
             </Button>
             <p className="px-1 text-[12px] leading-relaxed text-zinc-500">
               {isJa
