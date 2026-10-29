@@ -11,6 +11,7 @@ import {
   Compass,
   Copy,
   Flame,
+  Languages,
   Loader2,
   MessageSquare,
   Send,
@@ -38,7 +39,9 @@ import {
   VIBE_STYLE_LABEL_JA,
   departmentLabelJa,
   locationLabelJa,
+  needsTranslation,
   schoolLabelJa,
+  translateKoJa,
   useAppLocale,
 } from "@/lib/i18n";
 
@@ -141,22 +144,22 @@ export function LanguageToggle({ className }: { className?: string }) {
         type="button"
         onClick={() => setLocale("ko")}
         className={cn(
-          "relative z-10 rounded-full px-2.5 py-1.5 text-center transition-colors duration-300",
+          "relative z-10 rounded-full px-2 py-1 text-center text-[11px] transition-colors duration-300 sm:px-2.5 sm:py-1.5 sm:text-[12px]",
           !isJa ? "text-white" : "text-zinc-500 hover:text-zinc-800"
         )}
       >
-        <span className="sm:hidden">🇰🇷 KO</span>
+        <span className="sm:hidden">KR</span>
         <span className="hidden sm:inline">🇰🇷 한국어</span>
       </button>
       <button
         type="button"
         onClick={() => setLocale("ja")}
         className={cn(
-          "relative z-10 rounded-full px-2.5 py-1.5 text-center transition-colors duration-300",
+          "relative z-10 rounded-full px-2 py-1 text-center text-[11px] transition-colors duration-300 sm:px-2.5 sm:py-1.5 sm:text-[12px]",
           isJa ? "text-white" : "text-zinc-500 hover:text-zinc-800"
         )}
       >
-        <span className="sm:hidden">🇯🇵 JA</span>
+        <span className="sm:hidden">JP</span>
         <span className="hidden sm:inline">🇯🇵 日本語</span>
       </button>
     </div>
@@ -327,6 +330,38 @@ export function MatchCard({
       ? "平日は研究室とワークアウト、週末は美味しいお店巡りやカメラを持って散歩するのが好きです。価値観が合って、穏やかに会話できる方と出会いたいです。"
       : partner.bio;
 
+  const [showTranslated, setShowTranslated] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [translatedIntro, setTranslatedIntro] = useState<string | null>(null);
+  const [translatedBio, setTranslatedBio] = useState<string | null>(null);
+
+  const canTranslateCard =
+    needsTranslation(displayVoiceIntro, locale) ||
+    needsTranslation(displayBio, locale);
+
+  const handleToggleCardTranslate = async () => {
+    if (showTranslated) {
+      setShowTranslated(false);
+      return;
+    }
+    setTranslating(true);
+    try {
+      const [nextIntro, nextBio] = await Promise.all([
+        displayVoiceIntro && needsTranslation(displayVoiceIntro, locale)
+          ? translateKoJa(displayVoiceIntro, locale)
+          : Promise.resolve(null),
+        displayBio && needsTranslation(displayBio, locale)
+          ? translateKoJa(displayBio, locale)
+          : Promise.resolve(null),
+      ]);
+      setTranslatedIntro(nextIntro);
+      setTranslatedBio(nextBio);
+      setShowTranslated(true);
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   const buildLabel = partner.build
     ? isJa
       ? BUILD_LABEL_JA[partner.build] || buildLabelMap[partner.build]
@@ -359,11 +394,11 @@ export function MatchCard({
   return (
     <article className="overflow-hidden rounded-3xl border border-stone-200/90 bg-white shadow-[0_4px_20px_rgba(24,24,27,0.03)]">
       {/* Top Aura Header Banner */}
-      <div className={cn(" bg-gradient-to-r px-6 pt-5 pb-4", auraGradient)}>
+      <div className={cn("bg-gradient-to-r px-4 pt-4 pb-3.5 sm:px-6 sm:pt-5 sm:pb-4", auraGradient)}>
         {partner.relaxedConditionNote && (
-          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-3 py-1 text-[12px] font-semibold text-zinc-700 backdrop-blur-xs">
-            <Sparkles className="h-3 w-3 text-rose-500" />
-            <span>
+          <div className="mb-3 inline-flex max-w-full items-center gap-1.5 rounded-full bg-white/85 px-3 py-1 text-[11px] font-semibold text-zinc-700 backdrop-blur-xs sm:text-[12px]">
+            <Sparkles className="h-3 w-3 shrink-0 text-rose-500" />
+            <span className="truncate">
               {isJa
                 ? `スマート条件緩和: ${partner.relaxedConditionNote}`
                 : `스마트 반경 확장: ${partner.relaxedConditionNote}`}
@@ -371,10 +406,10 @@ export function MatchCard({
           </div>
         )}
 
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold tracking-wider text-white uppercase">
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span className="shrink-0 rounded-full bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold tracking-wider text-white uppercase">
                 {partner.school.includes("어학당") ||
                 partner.department.includes("🇯🇵")
                   ? isJa
@@ -388,10 +423,10 @@ export function MatchCard({
                 {displaySchool} · {displayDept}
               </span>
             </div>
-            <h3 className="mt-2 text-[22px] font-extrabold tracking-tight text-zinc-900">
+            <h3 className="mt-2 text-[20px] font-extrabold tracking-tight text-zinc-900 sm:text-[22px]">
               {displayNickname}
             </h3>
-            <p className="mt-0.5 text-[13px] font-medium text-zinc-600">
+            <p className="mt-0.5 text-[12.5px] font-medium text-zinc-600 sm:text-[13px]">
               {isJa ? `${partner.age}歳` : `${partner.age}세`}
               {partner.height > 0 ? ` · ${partner.height}cm` : ""}
               {displayLoc ? ` · ${displayLoc}` : ""}
@@ -399,19 +434,45 @@ export function MatchCard({
           </div>
 
           {/* 실제 매칭이 반영하는 조건만 표시 */}
-          <div className="rounded-2xl bg-white/90 px-3.5 py-2 text-right shadow-2xs backdrop-blur-xs">
-            <div className="flex items-center justify-end gap-1 text-[13px] font-extrabold text-rose-600">
-              <Flame className="h-3.5 w-3.5" fill="currentColor" />
+          <div className="self-start shrink-0 rounded-2xl bg-white/90 px-3 py-1.5 text-left shadow-2xs backdrop-blur-xs sm:px-3.5 sm:py-2 sm:text-right">
+            <div className="flex items-center gap-1 text-[12px] font-extrabold text-rose-600 sm:justify-end sm:text-[13px]">
+              <Flame className="h-3.5 w-3.5 shrink-0" fill="currentColor" />
               <span>{isJa ? "希望条件クリア" : "선호 조건 충족"}</span>
             </div>
-            <p className="text-[11px] font-semibold text-zinc-500">
+            <p className="text-[10.5px] font-semibold text-zinc-500 sm:text-[11px]">
               {isJa ? "学校・年齢・喫煙・宗教の条件を反映" : "학교·나이·흡연·종교 조건 반영"}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="space-y-5 p-6">
+      <div className="space-y-4 p-4 sm:space-y-5 sm:p-6">
+        {canTranslateCard && (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              disabled={translating}
+              onClick={handleToggleCardTranslate}
+              className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50/70 px-3 py-1 text-[11px] font-extrabold text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-60"
+            >
+              <Languages className="h-3.5 w-3.5" />
+              <span>
+                {translating
+                  ? isJa
+                    ? "翻訳中..."
+                    : "번역 중..."
+                  : showTranslated
+                  ? isJa
+                    ? "原文のみ表示"
+                    : "원문만 보기"
+                  : isJa
+                  ? "🇰🇷→🇯🇵 日本語に翻訳して見る"
+                  : "🇯🇵→🇰🇷 한국어로 번역 보기"}
+              </span>
+            </button>
+          </div>
+        )}
+
         {/* Value & First-Impression One-Line Note */}
         {displayVoiceIntro && (
           <div className="rounded-2xl border border-rose-100/90 bg-rose-50/40 p-4">
@@ -426,6 +487,14 @@ export function MatchCard({
             <p className="mt-2 text-[13px] font-medium leading-relaxed text-zinc-800">
               &ldquo;{displayVoiceIntro}&rdquo;
             </p>
+            {showTranslated && translatedIntro && (
+              <p className="mt-2 border-t border-rose-100 pt-2 text-[13px] font-medium leading-relaxed text-rose-700">
+                <span className="mr-1.5 rounded bg-white px-1.5 py-0.5 text-[10px] font-extrabold text-rose-600 ring-1 ring-rose-200">
+                  {isJa ? "日本語訳" : "한국어 번역"}
+                </span>
+                &ldquo;{translatedIntro}&rdquo;
+              </p>
+            )}
           </div>
         )}
 
@@ -438,6 +507,15 @@ export function MatchCard({
             <p className="mt-1.5 text-[14px] leading-relaxed text-zinc-700">
               {displayBio}
             </p>
+            {showTranslated && translatedBio && (
+              <div className="mt-2 rounded-2xl border border-rose-100 bg-rose-50/30 px-3.5 py-2.5 text-[13px] leading-relaxed text-zinc-800">
+                <span className="mr-1.5 inline-flex items-center gap-1 rounded bg-white px-1.5 py-0.5 text-[10px] font-extrabold text-rose-600 ring-1 ring-rose-200">
+                  <Languages className="h-2.5 w-2.5" />
+                  {isJa ? "自己紹介の日本語訳" : "자기소개 한국어 번역"}
+                </span>
+                <span className="whitespace-pre-wrap">{translatedBio}</span>
+              </div>
+            )}
           </div>
         )}
 

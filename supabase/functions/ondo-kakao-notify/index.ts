@@ -80,23 +80,69 @@ async function accessToken(force = false): Promise<string> {
   return token.access_token;
 }
 
-async function sendMemo(text: string) {
+async function sendMemoWithToken(
+  token: string,
+  text: string,
+  linkUrl = ADMIN_URL,
+  buttonTitle = "관리자 페이지 열기",
+) {
   const res = await fetch("https://kapi.kakao.com/v2/api/talk/memo/default/send", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${await accessToken()}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
     },
     body: new URLSearchParams({
       template_object: JSON.stringify({
         object_type: "text",
         text: text.slice(0, 200),
-        link: { web_url: ADMIN_URL, mobile_web_url: ADMIN_URL },
-        button_title: "관리자 페이지 열기",
+        link: { web_url: linkUrl, mobile_web_url: linkUrl },
+        button_title: buttonTitle,
       }),
     }),
   });
   if (!res.ok) throw new Error(`send error ${res.status} ${await res.text()}`);
+}
+
+async function sendMemo(text: string) {
+  await sendMemoWithToken(await accessToken(), text, ADMIN_URL, "관리자 페이지 열기");
+}
+
+async function memberAccessToken(authUserId: string): Promise<string> {
+  const { data } = await db
+    .from("ondo_member_kakao_tokens")
+    .select("access_token, refresh_token, access_expires_at")
+    .eq("auth_user_id", authUserId)
+    .maybeSingle();
+  if (!data) throw new Error("member kakao token not found");
+  if (
+    data.access_token &&
+    data.access_expires_at &&
+    new Date(data.access_expires_at) > new Date()
+  ) {
+    return data.access_token;
+  }
+  if (!data.refresh_token) {
+    if (data.access_token) return data.access_token;
+    throw new Error("no refresh token for member");
+  }
+  const refreshed = await requestToken({
+    grant_type: "refresh_token",
+    refresh_token: data.refresh_token,
+  });
+  const updateRow: Record<string, unknown> = {
+    auth_user_id: authUserId,
+    access_token: refreshed.access_token,
+    access_expires_at: new Date(
+      Date.now() + (refreshed.expires_in - 60) * 1000,
+    ).toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+  if (refreshed.refresh_token) {
+    updateRow.refresh_token = refreshed.refresh_token;
+  }
+  await db.from("ondo_member_kakao_tokens").upsert(updateRow);
+  return refreshed.access_token;
 }
 
 function redirectToAdmin(result: string) {
@@ -164,12 +210,28 @@ Deno.serve(async (req) => {
     return new Response("forbidden", { status: 403 });
   }
 
-  const { action, text } = await req.json();
+  const { action, text, auth_user_id, link_url, button_title } = await req.json();
   try {
     if (action === "refresh") {
       await accessToken(true);
     } else if (action === "send" && typeof text === "string") {
       await sendMemo(text);
+    } else if (
+      action === "send_member" &&
+      typeof auth_user_id === "string" &&
+      typeof text === "string"
+    ) {
+      const mToken = await memberAccessToken(auth_user_id);
+      await sendMemoWithToken(
+        mToken,
+        text,
+        typeof link_url === "string" && link_url
+          ? link_url
+          : "https://darkhos.github.io/ondo-campus/",
+        typeof button_title === "string" && button_title
+          ? button_title
+          : "온도 라운지 열기",
+      );
     } else {
       return new Response("bad request", { status: 400 });
     }

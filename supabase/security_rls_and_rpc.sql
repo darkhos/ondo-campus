@@ -588,6 +588,72 @@ create table if not exists public.ondo_kakao_connect_states (
 );
 alter table public.ondo_kakao_connect_states enable row level security;
 
+-- 회원별 카카오톡 메시지 발송용 토큰 보관함 (카카오 로그인 시 발급받은 provider_token / provider_refresh_token 저장)
+create table if not exists public.ondo_member_kakao_tokens (
+  auth_user_id uuid primary key,
+  access_token text,
+  refresh_token text,
+  access_expires_at timestamptz,
+  updated_at timestamptz not null default now()
+);
+alter table public.ondo_member_kakao_tokens enable row level security;
+
+-- 로그인 직후 본인의 카카오 provider_token / provider_refresh_token 저장
+create or replace function public.ondo_save_my_kakao_token(
+  p_access_token text,
+  p_refresh_token text default null
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_auth uuid := auth.uid();
+begin
+  if v_auth is null or coalesce(trim(p_access_token), '') = '' then
+    return false;
+  end if;
+
+  insert into public.ondo_member_kakao_tokens (
+    auth_user_id, access_token, refresh_token, access_expires_at, updated_at
+  ) values (
+    v_auth,
+    trim(p_access_token),
+    nullif(trim(coalesce(p_refresh_token, '')), ''),
+    now() + interval '5 hours',
+    now()
+  )
+  on conflict (auth_user_id) do update set
+    access_token = excluded.access_token,
+    refresh_token = coalesce(excluded.refresh_token, public.ondo_member_kakao_tokens.refresh_token),
+    access_expires_at = excluded.access_expires_at,
+    updated_at = now();
+
+  -- 운영자가 카카오 로그인한 경우 운영자 카톡 알림(ondo_kakao_notify)도 자동으로 함께 갱신
+  if public.ondo_is_admin() then
+    insert into public.ondo_kakao_notify (
+      id, access_token, refresh_token, access_expires_at, connected_at, updated_at
+    ) values (
+      1,
+      trim(p_access_token),
+      nullif(trim(coalesce(p_refresh_token, '')), ''),
+      now() + interval '5 hours',
+      now(),
+      now()
+    )
+    on conflict (id) do update set
+      access_token = excluded.access_token,
+      refresh_token = coalesce(excluded.refresh_token, public.ondo_kakao_notify.refresh_token),
+      access_expires_at = excluded.access_expires_at,
+      connected_at = coalesce(public.ondo_kakao_notify.connected_at, now()),
+      updated_at = now();
+  end if;
+
+  return true;
+end;
+$$;
+
 -- Edge Function 호출 (비밀 헤더는 Vault 의 ondo_mail_hook_secret 재사용). 내부 전용
 create or replace function public.ondo_kakao_notify_call(p_body jsonb)
 returns void
@@ -1085,6 +1151,7 @@ end;
 $$;
 
 -- 운영자 승인/반려: 반환값은 지워야 할 사진 경로 (관리자 화면이 보관함에서 삭제)
+-- 승인·반려 결과는 이메일이 아니라 회원의 카카오톡 메시지로 즉시 발송
 create or replace function public.ondo_admin_review_student(p_member_id text, p_approve boolean)
 returns text
 language plpgsql
@@ -1093,15 +1160,16 @@ set search_path = public
 as $$
 declare
   v_path text;
-  v_email text;
-  v_secret text;
+  v_auth_user_id uuid;
+  v_msg text;
+  v_link text;
+  v_btn text;
 begin
   if not public.ondo_is_admin() then
     raise exception 'Admin only';
   end if;
-  select m.student_id_image_path, u.email into v_path, v_email
+  select m.student_id_image_path, m.auth_user_id into v_path, v_auth_user_id
   from public.ondo_members m
-  left join auth.users u on u.id = m.auth_user_id
   where m.id = p_member_id;
 
   update public.ondo_members
@@ -1116,27 +1184,30 @@ begin
   update public.ondo_support_tickets set status = 'DONE'
   where kind = 'VERIFY' and member_id = p_member_id and status = 'OPEN';
 
-  -- 결과를 회원의 카카오 계정 이메일로 알림 (메일이 없거나 발송 설정이 없으면 건너뜀, 실패해도 심사 결과는 유지)
-  select decrypted_secret into v_secret from vault.decrypted_secrets where name = 'ondo_mail_hook_secret' limit 1;
-  if v_email is not null and v_secret is not null then
+  -- 결과를 해당 회원의 카카오톡 메시지로 발송 (이메일 발송 안 함)
+  if v_auth_user_id is not null then
+    v_msg := case when p_approve
+      then '🎉 [ONDO 36.5°] 학생 인증이 완료됐어요!' || chr(10)
+           || '이제 소개팅 매칭에 참여할 수 있어요.' || chr(10)
+           || '(学生認証が完了しました！これから紹介マッチングに参加できます)'
+      else '🪪 [ONDO 36.5°] 보내 주신 학생증(또는 신분 입증 자료)을 확인하지 못했어요.' || chr(10)
+           || '학교 이름과 본인 신분이 잘 보이게 다시 올려 주세요.' || chr(10)
+           || '(学生証を確認できませんでした。再度アップロードしてください)' end;
+    v_link := case when p_approve
+      then 'https://darkhos.github.io/ondo-campus/'
+      else 'https://darkhos.github.io/ondo-campus/join/' end;
+    v_btn := case when p_approve
+      then '온도 라운지 열기'
+      else '다시 인증하러 가기' end;
+
     begin
-      perform net.http_post(
-        url := 'https://ofnechamnjafsjmuydpl.supabase.co/functions/v1/ondo-send-mail',
-        headers := jsonb_build_object('Content-Type', 'application/json', 'x-ondo-mail-secret', v_secret),
-        body := jsonb_build_object(
-          'to', v_email,
-          'subject', case when p_approve
-            then '[ONDO 36.5°] 학생 인증이 완료됐어요 / 学生認証が完了しました'
-            else '[ONDO 36.5°] 학생증을 다시 올려 주세요 / 学生証の再提出のお願い' end,
-          'text', case when p_approve
-            then '학생 인증이 완료됐어요! 이제 소개팅 매칭에 참여할 수 있어요.' || chr(10)
-                 || '学生認証が完了しました！これから紹介マッチングに参加できます。' || chr(10) || chr(10)
-                 || 'https://darkhos.github.io/ondo-campus/'
-            else '보내 주신 학생증(또는 모바일 도서관 이용증 등 신분 입증 자료)을 확인하지 못했어요. 학교 이름과 본인 신분이 잘 보이게 다시 찍거나 캡처해 올려 주세요.' || chr(10)
-                 || '提出された学生証（または図書館モバイル利用証などの身分証明）を確認できませんでした。学校名とご自身の身分がはっきり見えるように再度アップロードしてください。' || chr(10) || chr(10)
-                 || 'https://darkhos.github.io/ondo-campus/' end
-        )
-      );
+      perform public.ondo_kakao_notify_call(jsonb_build_object(
+        'action', 'send_member',
+        'auth_user_id', v_auth_user_id::text,
+        'text', v_msg,
+        'link_url', v_link,
+        'button_title', v_btn
+      ));
     exception when others then
       null;
     end;
@@ -1217,6 +1288,7 @@ begin
   set member_id = null, client_key = null, reply_contact = null
   where member_id = v_member_id;
   delete from public.ondo_members where id = v_member_id;
+  delete from public.ondo_member_kakao_tokens where auth_user_id = v_auth;
   delete from public.ondo_admins where auth_user_id = v_auth;
   delete from auth.users where id = v_auth;
   return true;
@@ -1627,7 +1699,8 @@ revoke all on table public.ondo_members, public.ondo_matches,
   public.ondo_payment_orders, public.ondo_security_audit_log,
   public.ondo_support_tickets, public.ondo_admins,
   public.ondo_univ_email_domains, public.ondo_school_email_codes,
-  public.ondo_kakao_notify, public.ondo_kakao_connect_states
+  public.ondo_kakao_notify, public.ondo_kakao_connect_states,
+  public.ondo_member_kakao_tokens
   from anon, authenticated;
 
 -- 모든 ondo_ 함수의 실행 권한을 일단 전부 회수
@@ -1660,6 +1733,7 @@ grant execute on function public.ondo_set_matching_paused(boolean) to authentica
 grant execute on function public.ondo_get_my_match_partners() to authenticated;
 grant execute on function public.ondo_reset_my_profile() to authenticated;
 grant execute on function public.ondo_delete_my_account() to authenticated;
+grant execute on function public.ondo_save_my_kakao_token(text, text) to authenticated;
 
 -- 어드민 함수: 운영자 명찰(ondo_admins)이 있는 카카오 계정만 실제로 동작
 grant execute on function public.ondo_is_admin() to authenticated;

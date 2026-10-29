@@ -143,9 +143,29 @@ export async function signInWithKakao(nextPath?: string): Promise<void> {
   await supabase.auth.signInWithOAuth({
     provider: "kakao",
     options: {
+      scopes: "talk_message",
       redirectTo: `${window.location.origin}${basePath}/auth/callback/`,
     },
   });
+}
+
+/**
+ * 카카오 로그인 직후 받은 provider_token / provider_refresh_token 을 서버에 저장해
+ * 학생증 승인·반려 결과 등을 이메일 대신 학생 본인의 카카오톡 메시지로 발송할 수 있게 함
+ */
+export async function saveMyKakaoProviderToken(
+  accessToken?: string | null,
+  refreshToken?: string | null
+): Promise<void> {
+  if (!accessToken) return;
+  try {
+    await supabase.rpc("ondo_save_my_kakao_token", {
+      p_access_token: accessToken,
+      p_refresh_token: refreshToken ?? null,
+    });
+  } catch {
+    // ignore
+  }
 }
 
 export function consumeOAuthLoginAttempt(): boolean {

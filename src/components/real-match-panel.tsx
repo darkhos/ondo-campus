@@ -2,7 +2,15 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Coffee, Copy, Lock, MessageCircle, Send, Sparkles } from "lucide-react";
+import {
+  Coffee,
+  Copy,
+  Languages,
+  Lock,
+  MessageCircle,
+  Send,
+  Sparkles,
+} from "lucide-react";
 import {
   BUILD_TYPES,
   IMPRESSION_TYPES,
@@ -13,11 +21,14 @@ import {
 import {
   BUILD_LABEL_JA,
   departmentLabelJa,
+  HOBBY_LABEL_JA,
   IMPRESSION_LABEL_JA,
   locationLabelJa,
+  needsTranslation,
   RELIGION_LABEL_JA,
   schoolLabelJa,
   SMOKING_LABEL_JA,
+  translateKoJa,
   useAppLocale,
   VIBE_STYLE_LABEL_JA,
 } from "@/lib/i18n";
@@ -108,6 +119,12 @@ function MatchCardReal({
   const isJa = locale === "ja";
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [showTranslatedProfile, setShowTranslatedProfile] = useState(false);
+  const [translatingProfile, setTranslatingProfile] = useState(false);
+  const [translatedVoiceIntro, setTranslatedVoiceIntro] = useState<string | null>(
+    null
+  );
+  const [translatedBio, setTranslatedBio] = useState<string | null>(null);
 
   const respond = async (accept: boolean) => {
     if (!accept && !window.confirm(isJa ? "このマッチングをパスしますか？" : "이 매칭을 넘길까요? 되돌릴 수 없어요.")) return;
@@ -136,6 +153,33 @@ function MatchCardReal({
 
   const extra = match.profile_extra ?? undefined;
   const voiceIntroText = extra?.voiceIntroText?.trim() || "";
+  const bioText = match.bio?.trim() || "";
+  const canTranslateProfile =
+    needsTranslation(voiceIntroText, locale) ||
+    needsTranslation(bioText, locale);
+
+  const handleToggleProfileTranslate = async () => {
+    if (showTranslatedProfile) {
+      setShowTranslatedProfile(false);
+      return;
+    }
+    setTranslatingProfile(true);
+    try {
+      const [nextIntro, nextBio] = await Promise.all([
+        needsTranslation(voiceIntroText, locale)
+          ? translateKoJa(voiceIntroText, locale)
+          : Promise.resolve(null),
+        needsTranslation(bioText, locale)
+          ? translateKoJa(bioText, locale)
+          : Promise.resolve(null),
+      ]);
+      setTranslatedVoiceIntro(nextIntro);
+      setTranslatedBio(nextBio);
+      setShowTranslatedProfile(true);
+    } finally {
+      setTranslatingProfile(false);
+    }
+  };
   const vibeKeywords = Array.isArray(extra?.vibeKeywords)
     ? extra.vibeKeywords
         .map((s) => s.trim())
@@ -185,19 +229,45 @@ function MatchCardReal({
   return (
     <section className="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-2xs">
       <div className="border-b border-stone-100 bg-rose-50/50 px-5 py-4">
-        <span className="rounded-full bg-rose-600 px-2.5 py-0.5 text-[12px] font-bold text-white">
-          {match.ticket_status === "PENDING"
-            ? isJa
-              ? "新しいマッチング"
-              : "새 매칭 도착"
-            : match.ticket_status === "CHATTING"
-            ? isJa
-              ? "ブラインドチャット中"
-              : "블라인드 대화 중"
-            : isJa
-            ? "連絡先公開済み"
-            : "연락처 공개됨"}
-        </span>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="rounded-full bg-rose-600 px-2.5 py-0.5 text-[12px] font-bold text-white">
+            {match.ticket_status === "PENDING"
+              ? isJa
+                ? "新しいマッチング"
+                : "새 매칭 도착"
+              : match.ticket_status === "CHATTING"
+              ? isJa
+                ? "ブラインドチャット中"
+                : "블라인드 대화 중"
+              : isJa
+              ? "連絡先公開済み"
+              : "연락처 공개됨"}
+          </span>
+
+          {canTranslateProfile && (
+            <button
+              type="button"
+              disabled={translatingProfile}
+              onClick={handleToggleProfileTranslate}
+              className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-white px-2.5 py-1 text-[11px] font-extrabold text-rose-600 shadow-2xs transition-colors hover:bg-rose-50 disabled:opacity-60"
+            >
+              <Languages className="h-3.5 w-3.5" />
+              <span>
+                {translatingProfile
+                  ? isJa
+                    ? "翻訳中..."
+                    : "번역 중..."
+                  : showTranslatedProfile
+                  ? isJa
+                    ? "原文のみ見る"
+                    : "원문만 보기"
+                  : isJa
+                  ? "🇰🇷→🇯🇵 日本語に翻訳して見る"
+                  : "🇯🇵→🇰🇷 한국어로 번역 보기"}
+              </span>
+            </button>
+          )}
+        </div>
         <h3 className="mt-2 text-[18px] font-extrabold text-zinc-900">
           {match.nickname}
         </h3>
@@ -211,12 +281,31 @@ function MatchCardReal({
             <p className="mt-1 text-[13px] font-semibold leading-relaxed text-zinc-800">
               &ldquo;{voiceIntroText}&rdquo;
             </p>
+            {showTranslatedProfile && translatedVoiceIntro && (
+              <p className="mt-1.5 border-t border-rose-100 pt-1.5 text-[13px] font-medium leading-relaxed text-rose-700">
+                <span className="mr-1.5 rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-extrabold text-rose-600">
+                  {isJa ? "日本語訳" : "한국어 번역"}
+                </span>
+                &ldquo;{translatedVoiceIntro}&rdquo;
+              </p>
+            )}
           </div>
         )}
-        {match.bio && (
-          <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-zinc-700">
-            {match.bio}
-          </p>
+        {bioText && (
+          <div className="mt-2">
+            <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-zinc-700">
+              {bioText}
+            </p>
+            {showTranslatedProfile && translatedBio && (
+              <div className="mt-1.5 rounded-2xl border border-rose-100 bg-white/80 px-3 py-2 text-[13px] leading-relaxed text-zinc-800">
+                <span className="mr-1.5 inline-flex items-center gap-1 rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-extrabold text-rose-600">
+                  <Languages className="h-2.5 w-2.5" />
+                  {isJa ? "自己紹介の日本語訳" : "자기소개 한국어 번역"}
+                </span>
+                <span className="whitespace-pre-wrap">{translatedBio}</span>
+              </div>
+            )}
+          </div>
         )}
         {vibeKeywords.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -237,7 +326,7 @@ function MatchCardReal({
                 key={h}
                 className="rounded-full bg-white px-2.5 py-1 text-[12px] font-semibold text-zinc-700 ring-1 ring-stone-200"
               >
-                {h}
+                {isJa ? HOBBY_LABEL_JA[h] || h : h}
               </span>
             ))}
           </div>
@@ -312,9 +401,41 @@ function MatchChat({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [autoTranslateChat, setAutoTranslateChat] = useState(true);
+  const [translatedMsgMap, setTranslatedMsgMap] = useState<Record<number, string>>(
+    {}
+  );
+  const [translatingMsgIds, setTranslatingMsgIds] = useState<Record<number, boolean>>(
+    {}
+  );
   const lastIdRef = useRef(0);
   const listRef = useRef<HTMLDivElement | null>(null);
   const contactShownRef = useRef(!!match.contact);
+
+  const translateSingleMessage = useCallback(
+    async (msgItem: DbMatchMessage) => {
+      if (translatedMsgMap[msgItem.id] || translatingMsgIds[msgItem.id]) return;
+      setTranslatingMsgIds((prev) => ({ ...prev, [msgItem.id]: true }));
+      try {
+        const res = await translateKoJa(msgItem.body, locale);
+        if (res && res !== msgItem.body.trim()) {
+          setTranslatedMsgMap((prev) => ({ ...prev, [msgItem.id]: res }));
+        }
+      } finally {
+        setTranslatingMsgIds((prev) => ({ ...prev, [msgItem.id]: false }));
+      }
+    },
+    [locale, translatedMsgMap, translatingMsgIds]
+  );
+
+  useEffect(() => {
+    if (!autoTranslateChat) return;
+    for (const m of messages) {
+      if (!m.mine && needsTranslation(m.body, locale) && !translatedMsgMap[m.id]) {
+        translateSingleMessage(m);
+      }
+    }
+  }, [autoTranslateChat, messages, locale, translatedMsgMap, translateSingleMessage]);
 
   const load = useCallback(async () => {
     const fresh = await listMatchMessages(match.match_id, lastIdRef.current);
@@ -412,6 +533,35 @@ function MatchChat({
         </p>
       )}
 
+      <div className="flex items-center justify-between px-1">
+        <span className="text-[11px] font-semibold text-zinc-400">
+          {isJa
+            ? "🇰🇷↔🇯🇵 韓国語メッセージの翻訳サポート"
+            : "🇯🇵↔🇰🇷 일본어 메시지 실시간 번역 지원"}
+        </span>
+        <button
+          type="button"
+          onClick={() => setAutoTranslateChat((v) => !v)}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold transition-colors",
+            autoTranslateChat
+              ? "bg-rose-50 text-rose-600 ring-1 ring-rose-200"
+              : "bg-stone-100 text-zinc-500"
+          )}
+        >
+          <Languages className="h-3 w-3" />
+          <span>
+            {autoTranslateChat
+              ? isJa
+                ? "自動翻訳 ON"
+                : "자동 번역 켜짐"
+              : isJa
+              ? "自動翻訳 OFF"
+              : "자동 번역 꺼짐"}
+          </span>
+        </button>
+      </div>
+
       <div
         ref={listRef}
         className="max-h-80 min-h-32 space-y-2 overflow-y-auto rounded-2xl bg-[#FAF9F6] p-3"
@@ -422,18 +572,58 @@ function MatchChat({
             {isJa ? "最初のメッセージを送ってみましょう" : "첫 메시지를 보내 보세요"}
           </p>
         ) : (
-          messages.map((m) => (
-            <div key={m.id} className={cn("flex", m.mine ? "justify-end" : "justify-start")}>
-              <span
+          messages.map((m) => {
+            const msgNeedsTrans = !m.mine && needsTranslation(m.body, locale);
+            const translatedText = translatedMsgMap[m.id];
+            const isTranslating = !!translatingMsgIds[m.id];
+            return (
+              <div
+                key={m.id}
                 className={cn(
-                  "max-w-[80%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-[14px] leading-relaxed",
-                  m.mine ? "bg-zinc-900 text-white" : "bg-white text-zinc-900 ring-1 ring-stone-200"
+                  "flex flex-col",
+                  m.mine ? "items-end" : "items-start"
                 )}
               >
-                {m.body}
-              </span>
-            </div>
-          ))
+                <div
+                  className={cn(
+                    "max-w-[82%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-[14px] leading-relaxed",
+                    m.mine
+                      ? "bg-zinc-900 text-white"
+                      : "bg-white text-zinc-900 ring-1 ring-stone-200"
+                  )}
+                >
+                  <p>{m.body}</p>
+                  {!m.mine && translatedText && (
+                    <p className="mt-1.5 border-t border-stone-100 pt-1.5 text-[13px] font-medium text-rose-700">
+                      <span className="mr-1 rounded bg-rose-50 px-1 py-0.5 text-[10px] font-extrabold text-rose-600">
+                        {isJa ? "翻訳" : "번역"}
+                      </span>
+                      {translatedText}
+                    </p>
+                  )}
+                </div>
+                {msgNeedsTrans && !translatedText && (
+                  <button
+                    type="button"
+                    disabled={isTranslating}
+                    onClick={() => translateSingleMessage(m)}
+                    className="mt-1 inline-flex items-center gap-1 px-1.5 text-[11px] font-bold text-rose-600 hover:underline disabled:opacity-50"
+                  >
+                    <Languages className="h-3 w-3" />
+                    <span>
+                      {isTranslating
+                        ? isJa
+                          ? "翻訳中..."
+                          : "번역 중..."
+                        : isJa
+                        ? "日本語に翻訳"
+                        : "한국어로 번역 보기"}
+                    </span>
+                  </button>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
 

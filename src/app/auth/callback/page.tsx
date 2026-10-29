@@ -12,6 +12,7 @@ import {
   isStaleAutoCreatedMember,
   persistMemberSession,
   purgeStaleMemberRow,
+  saveMyKakaoProviderToken,
   supabase,
 } from "@/lib/supabase";
 
@@ -53,6 +54,12 @@ export default function AuthCallbackPage() {
       if (!session) {
         setFailed(true);
         return;
+      }
+      if (session.provider_token) {
+        await saveMyKakaoProviderToken(
+          session.provider_token,
+          session.provider_refresh_token
+        );
       }
       consumeOAuthLoginAttempt();
       const nextPath = consumeAuthNextPath();
