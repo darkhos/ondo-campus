@@ -334,6 +334,25 @@ export function MatchCard({
   const [translating, setTranslating] = useState(false);
   const [translatedIntro, setTranslatedIntro] = useState<string | null>(null);
   const [translatedBio, setTranslatedBio] = useState<string | null>(null);
+  const [demoChatStep, setDemoChatStep] = useState<0 | 3 | 5>(0);
+  const [tiltStyle, setTiltStyle] = useState<React.CSSProperties>({});
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const rotateY = (x / rect.width - 0.5) * 10;
+    const rotateX = (0.5 - y / rect.height) * 10;
+    setTiltStyle({
+      transform: `perspective(900px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale(1.01)`,
+    });
+  };
+
+  const handleCardMouseLeave = () => {
+    setTiltStyle({
+      transform: "perspective(900px) rotateX(0deg) rotateY(0deg) scale(1)",
+    });
+  };
 
   const canTranslateCard =
     needsTranslation(displayVoiceIntro, locale) ||
@@ -392,7 +411,12 @@ export function MatchCard({
       : "from-rose-100 via-orange-50 to-stone-200";
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-stone-200/90 bg-white shadow-[0_4px_20px_rgba(24,24,27,0.03)]">
+    <article
+      onMouseMove={handleCardMouseMove}
+      onMouseLeave={handleCardMouseLeave}
+      style={tiltStyle}
+      className="overflow-hidden rounded-3xl border border-stone-200/90 bg-white shadow-[0_8px_28px_rgba(24,24,27,0.05)] transition-[transform,box-shadow] duration-200 ease-out will-change-transform hover:shadow-[0_14px_36px_rgba(225,29,72,0.10)]"
+    >
       {/* Top Aura Header Banner */}
       <div className={cn("bg-gradient-to-r px-4 pt-4 pb-3.5 sm:px-6 sm:pt-5 sm:pb-4", auraGradient)}>
         {partner.relaxedConditionNote && (
@@ -572,6 +596,103 @@ export function MatchCard({
             </span>
           ))}
         </div>
+
+        {/* 첫 페이지 예시 카드 전용: 3단계 블러 해제 & 카카오톡 공개 인터랙티브 체험 */}
+        {isDemoPartner && (
+          <div className="mt-2 rounded-2xl border border-rose-200/90 bg-gradient-to-br from-rose-50/70 via-white to-amber-50/50 p-3.5 sm:p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-[11.5px] font-extrabold text-rose-600 sm:text-[12px]">
+                  {demoChatStep === 0
+                    ? isJa
+                      ? "🔒 会話5回達成までブラインド保護中"
+                      : "🔒 대화 5회 전 블라인드 보호 중"
+                    : demoChatStep === 3
+                    ? isJa
+                      ? "💬 お互いに会話中…あと少しで公開！"
+                      : "💬 서로 대화 중... 조금만 더 얘기해 보세요!"
+                    : isJa
+                    ? "🎉 会話5回達成！カカオトークIDが公開されました"
+                    : "🎉 대화 5회 달성! 카카오톡 ID가 열렸어요"}
+                </p>
+                <p
+                  className={cn(
+                    "mt-1 font-mono text-[13.5px] font-black tracking-tight text-zinc-900 transition-all duration-500 select-none sm:text-[14px]",
+                    demoChatStep === 0
+                      ? "blur-[5px]"
+                      : demoChatStep === 3
+                      ? "blur-[2px]"
+                      : "blur-none text-rose-600"
+                  )}
+                >
+                  kakao_id: anam_jwe24
+                </p>
+              </div>
+              <span
+                className={cn(
+                  "shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-extrabold text-white transition-colors",
+                  demoChatStep === 5 ? "bg-emerald-600" : "bg-rose-600"
+                )}
+              >
+                {demoChatStep === 0
+                  ? isJa
+                    ? "会話 0/5"
+                    : "대화 0/5"
+                  : demoChatStep === 3
+                  ? isJa
+                    ? "会話 3/5"
+                    : "대화 3/5"
+                  : isJa
+                  ? "会話 5/5 完了"
+                  : "대화 5/5 완료"}
+              </span>
+            </div>
+
+            <p className="mt-2.5 text-[11px] font-semibold text-zinc-500">
+              {isJa
+                ? "👇 下のボタンを押して、会話が進むとカカオIDのぼかしが解除される様子を体験してみてください！"
+                : "👇 아래 단계 버튼을 눌러 대화가 쌓이면서 카카오톡 ID 블러가 풀리는 과정을 직접 체험해 보세요!"}
+            </p>
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                onClick={() => setDemoChatStep(0)}
+                className={cn(
+                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all sm:text-[11.5px]",
+                  demoChatStep === 0
+                    ? "border-rose-600 bg-rose-600 text-white shadow-2xs"
+                    : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
+                )}
+              >
+                {isJa ? "1段階: 直後" : "1단계: 매칭 직후"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDemoChatStep(3)}
+                className={cn(
+                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all sm:text-[11.5px]",
+                  demoChatStep === 3
+                    ? "border-rose-600 bg-rose-600 text-white shadow-2xs"
+                    : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
+                )}
+              >
+                {isJa ? "2段階: 会話3回" : "2단계: 대화 3회"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDemoChatStep(5)}
+                className={cn(
+                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all sm:text-[11.5px]",
+                  demoChatStep === 5
+                    ? "border-emerald-600 bg-emerald-600 text-white shadow-2xs"
+                    : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
+                )}
+              >
+                {isJa ? "3段階: カカオ公開!" : "3단계: 카톡 공개!"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </article>
   );
