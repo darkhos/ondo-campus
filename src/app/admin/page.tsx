@@ -205,6 +205,14 @@ export default function AdminDashboardPage() {
       setMembers(result.members);
       setEscrowPairs(result.escrowPairs);
       setTickets(result.tickets);
+      const firstFemale = result.members.find((m) => m.gender === "FEMALE");
+      const firstMale = result.members.find((m) => m.gender === "MALE");
+      if (firstFemale) {
+        setSelectedFemaleUid((prev) => prev || firstFemale.uid);
+      }
+      if (firstMale) {
+        setSelectedMaleUid((prev) => prev || firstMale.uid);
+      }
     }
     setSyncing(false);
   }, []);
@@ -273,9 +281,16 @@ export default function AdminDashboardPage() {
   };
 
   const handleCreateManualMatch = async () => {
-    const female = members.find((m) => m.uid === selectedFemaleUid);
-    const male = members.find((m) => m.uid === selectedMaleUid);
-    if (!female || !male) return;
+    const female =
+      members.find((m) => m.uid === selectedFemaleUid && m.gender === "FEMALE") ??
+      members.find((m) => m.gender === "FEMALE");
+    const male =
+      members.find((m) => m.uid === selectedMaleUid && m.gender === "MALE") ??
+      members.find((m) => m.gender === "MALE");
+    if (!female || !male) {
+      showToast("매칭할 여성 회원과 남성 회원이 각각 1명 이상 필요합니다.");
+      return;
+    }
 
     const { data: created, error } = await supabase.rpc("ondo_admin_create_match", {
       p_match_id: `admin-${Date.now()}`,
@@ -1171,7 +1186,7 @@ export default function AdminDashboardPage() {
                               }
                             );
                             if (error || data !== true) {
-                              showToast("상태 변경에 실패했습니다. PIN과 로그인 상태를 확인해 주세요.");
+                              showToast("상태 변경에 실패했습니다. 운영자 로그인 상태를 확인해 주세요.");
                               return;
                             }
                             setTickets((prev) =>

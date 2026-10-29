@@ -448,6 +448,9 @@ function HomeContent() {
             {activeTab === "archive" && (
               <HistoryTab
                 history={history}
+                serverMatches={serverMatches}
+                isMale={user.gender === "MALE"}
+                onServerChanged={refreshServerState}
                 userPoints={user.points}
                 onUpdateHistory={handleUpdateHistory}
                 onDeductPoints={(pts) =>

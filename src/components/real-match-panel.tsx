@@ -4,7 +4,12 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Coffee, Copy, Lock, MessageCircle, Send } from "lucide-react";
 import { ROUTES } from "@/lib/ondo-constants";
-import { useAppLocale } from "@/lib/i18n";
+import {
+  departmentLabelJa,
+  locationLabelJa,
+  schoolLabelJa,
+  useAppLocale,
+} from "@/lib/i18n";
 import {
   DbMatchMessage,
   DbMatchPartner,
@@ -96,12 +101,14 @@ function MatchCardReal({
   };
 
   const partnerMeta = [
-    match.univ,
-    match.major,
+    isJa ? schoolLabelJa(match.univ) : match.univ,
+    match.major && isJa ? departmentLabelJa(match.major) : match.major,
     match.age ? `${match.age}${isJa ? "歳" : "세"}` : null,
     match.height ? `${match.height}cm` : null,
     match.mbti,
-    match.location_label,
+    match.location_label && isJa
+      ? locationLabelJa(match.location_label)
+      : match.location_label,
   ]
     .filter(Boolean)
     .join(" · ");

@@ -37,6 +37,7 @@ import {
   ProfileCompletionCard,
 } from "@/components/ondo-ui";
 import { useAppLocale } from "@/lib/i18n";
+import { useLocalStorageItem } from "@/lib/use-browser-storage";
 import { DbMatchPartner, logoutEverywhere } from "@/lib/supabase";
 import { RealMatchPanel, isActiveMatch } from "@/components/real-match-panel";
 
@@ -114,16 +115,14 @@ export function HomeMatchTab({
     "LOCKED" | "HELD" | "CONFIRMED" | "REFUNDED"
   >("CONFIRMED");
   const [toast, setToast] = useState<string | null>(null);
-  const [readNotifIds, setReadNotifIds] = useState<Set<string>>(() => new Set());
-
-  useEffect(() => {
+  const readNotifRaw = useLocalStorageItem("ondo_read_notifications_v1");
+  const readNotifIds = (() => {
     try {
-      const raw = window.localStorage.getItem("ondo_read_notifications_v1");
-      if (raw) setReadNotifIds(new Set(JSON.parse(raw)));
+      return new Set<string>(readNotifRaw ? JSON.parse(readNotifRaw) : []);
     } catch {
-      // ignore
+      return new Set<string>();
     }
-  }, []);
+  })();
 
   const computedUnreadCount = (() => {
     if (typeof unreadNotificationCount === "number") {
@@ -256,7 +255,7 @@ export function HomeMatchTab({
 
             <Link
               href={ROUTES.NOTIFICATIONS}
-              aria-label="알림"
+              aria-label={isJa ? "お知らせ" : "알림"}
               className="relative flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-white text-zinc-700 transition-colors hover:bg-stone-50"
             >
               <Bell className="h-4 w-4" strokeWidth={2} />

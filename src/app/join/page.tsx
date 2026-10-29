@@ -382,7 +382,7 @@ function JoinForm({
   const usesStudentIdVerification =
     campusTrack === "KLI_JP" ||
     (campusTrack === "INTL_JP" && intlVerifyMethod === "STUDENT_ID");
-  const emailGuide = getUnivEmailGuide(school);
+  const emailGuide = getUnivEmailGuide(school, isJa);
 
   // 학생증 사진은 자동 검사 없이 그대로 받아 두었다가, 가입 완료 시 운영자 확인용으로 업로드
   const handleStudentIdFile = async (file: File) => {
@@ -1412,7 +1412,7 @@ function JoinForm({
                 </span>
                 <span className="font-black underline">{emailGuide.domainBadge}</span>
                 <span className="text-rose-500">
-                  ({isJa ? emailGuide.placeholder.replace("예:", "例:") : emailGuide.placeholder})
+                  ({emailGuide.placeholder})
                 </span>
               </div>
             )}
@@ -1424,11 +1424,7 @@ function JoinForm({
                 value={schoolEmail}
                 disabled={emailStage === "verified"}
                 onChange={(e) => setSchoolEmail(e.target.value)}
-                placeholder={
-                  isJa
-                    ? emailGuide.placeholder.replace("예:", "例:")
-                    : emailGuide.placeholder
-                }
+                placeholder={emailGuide.placeholder}
               />
               <Button
                 size="lg"

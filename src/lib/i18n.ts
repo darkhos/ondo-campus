@@ -363,19 +363,28 @@ export const CAPITAL_UNIV_GROUPS: Array<{
 export const CAPITAL_UNIV_OPTIONS: CapitalUnivOption[] =
   CAPITAL_UNIV_GROUPS.flatMap((g) => g.items);
 
-export function getUnivEmailGuide(univValue: string): {
+export function getUnivEmailGuide(
+  univValue: string,
+  isJa = false
+): {
   placeholder: string;
   domainBadge: string | null;
 } {
   const matched = CAPITAL_UNIV_OPTIONS.find((u) => u.value === univValue.trim());
   if (!matched) {
     return {
-      placeholder: "위에서 소속 대학교를 선택하면 학교별 웹메일 예시가 표시됩니다",
+      placeholder: isJa
+        ? "上で在籍大学を選ぶと、大学ごとのウェブメール例が表示されます"
+        : "위에서 소속 대학교를 선택하면 학교별 웹메일 예시가 표시됩니다",
       domainBadge: null,
     };
   }
   const primary = `student@${matched.emailDomain}`;
-  const placeholder = matched.altEmailDomain
+  const placeholder = isJa
+    ? matched.altEmailDomain
+      ? `例: ${primary}（または @${matched.altEmailDomain}）`
+      : `例: ${primary}`
+    : matched.altEmailDomain
     ? `예: ${primary} (또는 @${matched.altEmailDomain})`
     : `예: ${primary}`;
   const domainBadge = matched.altEmailDomain
@@ -447,12 +456,74 @@ export const HOBBY_LABEL_JA: Record<string, string> = {
 };
 
 export const VIBE_STYLE_LABEL_JA: Record<string, string> = {
+  "깔끔한 댄디": "清潔感のあるきれいめ",
   "웃는 인상이 다정한": "笑顔が優しくて温かい",
+  "차분한 중저음": "落ち着いた低めの声",
+  "미니멀 캐주얼": "シンプルなカジュアル",
+  "청량한 캠퍼스룩": "爽やかなキャンパスルック",
+  "운동으로 다져진": "運動で引き締まった",
+  "지적인 안경 핏": "メガネが似合う知的な雰囲気",
+  "부드러운 눈웃음": "柔らかい目元の笑顔",
+  // 체험용 샘플 프로필 · 예전 버전에 저장된 키워드
+  "밝게 잘 웃는": "明るくよく笑う",
+  "다정한 한국어 발음": "優しい韓国語の発音",
   "깔끔한 셔츠·니트 코디": "清潔感のあるシャツ・ニット系",
   "대화 템포가 편안한": "会話のテンポが心地よい",
-  "청량한 캠퍼스룩": "爽やかなキャンパスルック",
   "차분하고 지적인 무드": "落ち着いて知的な雰囲気",
   "유머러스하고 리액션 좋은": "ユーモアがあってリアクションが良い",
   "눈웃음이 매력적인": "目元の笑顔が魅力的",
   "운동으로 다져진 탄탄한": "運動で引き締まったスタイル",
 };
+
+const SIDO_ABBR_LABEL_JA: Record<string, string> = {
+  서울: "ソウル",
+  인천: "仁川",
+  경기: "京畿",
+};
+
+// 선택 목록용 번역에 붙은 （위치 설명）을 떼어 프로필에 짧게 보여 줌
+const stripNote = (label: string) => label.replace(/（[^）]*）/g, "").trim();
+
+/** 학교·어학당 이름을 일본어로 (번역표에 없으면 원래 이름 그대로) */
+export function schoolLabelJa(name: string): string {
+  const key = name.trim();
+  const ja = UNIV_LABEL_JA[key] || KLI_INSTITUTE_LABEL_JA[key];
+  return ja ? stripNote(ja) : name;
+}
+
+const LEVEL_STAGE_JA: Record<string, string> = {
+  초급: "初級",
+  중급: "中級",
+  고급: "上級",
+};
+
+/**
+ * 가입할 때 자동으로 붙는 학과 표기(일본인 트랙)를 일본어로.
+ * 예: "🇯🇵 일본인 어학당생 · 3급 (3級 · 중급)" → "🇯🇵 日本人語学堂生 · 3級（中級）"
+ * 회원이 직접 입력한 전공 이름은 그대로 둠.
+ */
+export function departmentLabelJa(dept: string): string {
+  return dept
+    .replace("일본인 어학당생", "日本人語学堂生")
+    .replace("일본인 유학생", "日本人留学生")
+    .replace(" (학부)", "（学部）")
+    .replace(" (교환·방문)", "（交換・訪問）")
+    .replace(" (대학원)", "（大学院）")
+    .replace(
+      /(\d)급 \(\d級 · (초급|중급|고급)\)/,
+      (_, n: string, stage: string) => `${n}級（${LEVEL_STAGE_JA[stage]}）`
+    );
+}
+
+/** "서울특별시 성북구" · "서울 성북구" 같은 지역 표기를 일본어로 (모르는 부분은 그대로) */
+export function locationLabelJa(label: string): string {
+  return label
+    .split(" ")
+    .map(
+      (part) =>
+        SIDO_LABEL_JA[part] ||
+        SIDO_ABBR_LABEL_JA[part] ||
+        (SIGUNGU_LABEL_JA[part] ? stripNote(SIGUNGU_LABEL_JA[part]) : part)
+    )
+    .join(" ");
+}

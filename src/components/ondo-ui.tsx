@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  AudioLines,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -12,26 +11,19 @@ import {
   Compass,
   Copy,
   Flame,
-  Heart,
   Loader2,
   MessageSquare,
-  Mic,
-  Pause,
-  Play,
   Send,
   ShieldCheck,
   Sliders,
   Sparkles,
   User,
-  Volume2,
 } from "lucide-react";
 import {
   BUILD_TYPES,
-  PILL_NAV_HEIGHT,
   CAMPUS_BALANCE_QUESTIONS,
   ChatMessage,
   INITIAL_BLIND_CHAT_MESSAGES,
-  MATCH_REASON_MAP,
   PartnerProfile,
   RELIGIONS,
   ROUTES,
@@ -44,6 +36,9 @@ import {
   RELIGION_LABEL_JA,
   SMOKING_LABEL_JA,
   VIBE_STYLE_LABEL_JA,
+  departmentLabelJa,
+  locationLabelJa,
+  schoolLabelJa,
   useAppLocale,
 } from "@/lib/i18n";
 
@@ -183,6 +178,7 @@ export function PageHeader({
   className?: string;
 }) {
   const router = useRouter();
+  const [locale] = useAppLocale();
   return (
     <header
       className={cn(
@@ -195,7 +191,7 @@ export function PageHeader({
           <button
             type="button"
             onClick={() => (onBack ? onBack() : router.back())}
-            aria-label="뒤로 가기"
+            aria-label={locale === "ja" ? "戻る" : "뒤로 가기"}
             className="-ml-1.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-zinc-700 transition-colors hover:bg-stone-200/60"
           >
             <ChevronLeft className="h-5 w-5" strokeWidth={2} />
@@ -295,8 +291,6 @@ const religionLabelMap = Object.fromEntries(
   RELIGIONS.map((r) => [r.value, r.label])
 );
 
-const WAVE_BARS = [35, 65, 90, 50, 80, 95, 60, 40, 85, 70, 55, 90, 45, 75, 60, 40];
-
 export function MatchCard({
   partner,
 }: {
@@ -305,20 +299,25 @@ export function MatchCard({
 }) {
   const [locale] = useAppLocale();
   const isJa = locale === "ja";
-  const [playingVoice, setPlayingVoice] = useState(false);
-  const [voiceProgress, setVoiceProgress] = useState(0);
 
   const isDemoPartner = partner.uid === "partner-01";
   const displayNickname =
     isJa && isDemoPartner ? "安岩洞ゴールデンレトリバー" : partner.nickname;
-  const displaySchool =
-    isJa && isDemoPartner ? "高麗大学" : partner.school;
-  const displayDept =
-    isJa && isDemoPartner ? "コンピュータ学科" : partner.department;
-  const displayLoc =
-    isJa && isDemoPartner
+  const displaySchool = isJa
+    ? isDemoPartner
+      ? "高麗大学"
+      : schoolLabelJa(partner.school)
+    : partner.school;
+  const displayDept = isJa
+    ? isDemoPartner
+      ? "コンピュータ学科"
+      : departmentLabelJa(partner.department)
+    : partner.department;
+  const displayLoc = isJa
+    ? isDemoPartner
       ? "ソウル特別市 城北区"
-      : partner.locationLabel || "";
+      : locationLabelJa(partner.locationLabel || "")
+    : partner.locationLabel || "";
   const displayVoiceIntro =
     isJa && isDemoPartner
       ? "こんにちは！高麗大でコンピュータを専攻しています。休日は延南洞のカフェや展示会巡りが好きです。楽しくお話ししましょう！"
@@ -349,64 +348,6 @@ export function MatchCard({
     .map((s) => s.trim())
     .filter(Boolean)
     .map((s) => (isJa ? VIBE_STYLE_LABEL_JA[s] || s : s));
-
-  const duration = partner.voiceDurationSec ?? 7;
-
-  useEffect(() => {
-    if (!playingVoice) return;
-    const interval = setInterval(() => {
-      setVoiceProgress((prev) => {
-        if (prev >= duration) {
-          setPlayingVoice(false);
-          return 0;
-        }
-        return prev + 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [playingVoice, duration]);
-
-  const toggleVoice = () => {
-    if (playingVoice) {
-      setPlayingVoice(false);
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-      return;
-    }
-    setVoiceProgress(0);
-    setPlayingVoice(true);
-
-    if (partner.voiceAudioDataUrl && typeof window !== "undefined") {
-      try {
-        const audio = new Audio(partner.voiceAudioDataUrl);
-        audio.onended = () => {
-          setPlayingVoice(false);
-          setVoiceProgress(0);
-        };
-        audio.play().catch(() => {});
-        return;
-      } catch {
-        // fallback to speechSynthesis
-      }
-    }
-
-    if (
-      typeof window !== "undefined" &&
-      "speechSynthesis" in window &&
-      displayVoiceIntro
-    ) {
-      try {
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(displayVoiceIntro);
-        utter.lang = isJa ? "ja-JP" : "ko-KR";
-        utter.rate = 1.0;
-        window.speechSynthesis.speak(utter);
-      } catch {
-        // ignore
-      }
-    }
-  };
 
   const auraGradient =
     partner.silhouetteTheme === "indigo"
@@ -1096,7 +1037,7 @@ export function MatchingToggleCard({
         type="button"
         role="switch"
         aria-checked={isOn}
-        aria-label="주파수 매칭 활성화"
+        aria-label={isJa ? "マッチングを受け取る" : "주파수 매칭 활성화"}
         disabled={isDisabled}
         onClick={onToggle}
         className={cn(
@@ -1236,7 +1177,7 @@ export function VoiceRecorderCard({
   const presets = isJa ? VALUE_NOTE_PRESETS_JA : VALUE_NOTE_PRESETS_KO;
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [scriptText, setScriptText] = useState(
-    voiceIntroText || VALUE_NOTE_PRESETS_KO[0]
+    voiceIntroText || presets[0]
   );
 
   return (

@@ -23,9 +23,11 @@ export default function CampusMissionPage() {
     CAMPUS_POST_TEMPLATES.find((t) => t.key === selectedKey) ??
     CAMPUS_POST_TEMPLATES[0];
 
+  const templateBody = isJa ? currentTemplate.bodyJa : currentTemplate.body;
+
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(currentTemplate.body);
+      await navigator.clipboard.writeText(templateBody);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -117,7 +119,7 @@ export default function CampusMissionPage() {
                         : "bg-stone-200/70 text-zinc-600 hover:bg-stone-200"
                     )}
                   >
-                    {tpl.label}
+                    {isJa ? tpl.labelJa : tpl.label}
                   </button>
                 );
               })}
@@ -126,7 +128,7 @@ export default function CampusMissionPage() {
 
           <div className="mt-3 rounded-3xl border border-stone-200 bg-white p-4">
             <pre className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-zinc-700">
-              {currentTemplate.body}
+              {templateBody}
             </pre>
             <Button
               variant="secondary"
@@ -146,7 +148,7 @@ export default function CampusMissionPage() {
                 <>
                   <Copy className="h-4 w-4" />
                   {isJa
-                    ? `${currentTemplate.label} の紹介文をコピー`
+                    ? `「${currentTemplate.labelJa}」の紹介文をコピー`
                     : `${currentTemplate.label} 문구 복사하기`}
                 </>
               )}

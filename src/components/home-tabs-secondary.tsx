@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { deleteMyAccount, logoutEverywhere } from "@/lib/supabase";
+import { DbMatchPartner, deleteMyAccount, logoutEverywhere } from "@/lib/supabase";
+import { RealMatchPanel } from "@/components/real-match-panel";
 import { useRouter } from "next/navigation";
 import {
   CalendarHeart,
@@ -53,13 +54,14 @@ import {
   IMPRESSION_LABEL_JA,
   HEIGHT_LABEL_JA,
   HOBBY_LABEL_JA,
-  KLI_INSTITUTE_LABEL_JA,
   RELIGION_LABEL_JA,
   SIDO_LABEL_JA,
   SIGUNGU_LABEL_JA,
   SMOKING_LABEL_JA,
-  UNIV_LABEL_JA,
   VIBE_STYLE_LABEL_JA,
+  departmentLabelJa,
+  locationLabelJa,
+  schoolLabelJa,
   useAppLocale,
 } from "@/lib/i18n";
 import {
@@ -620,16 +622,10 @@ export function ProfileTab({
 
   const editLabel = isJa ? "編集" : "편집";
   const unsetLabel = isJa ? "未設定" : "미설정";
-  const dispSchool = isJa
-    ? UNIV_LABEL_JA[user.school] ||
-      KLI_INSTITUTE_LABEL_JA[user.school] ||
-      user.school
-    : user.school;
+  const dispSchool = isJa ? schoolLabelJa(user.school) : user.school;
   const dispLocation = isJa
     ? user.location
-      ? `${SIDO_LABEL_JA[user.location.sido] || user.location.sido} ${
-          SIGUNGU_LABEL_JA[user.location.sigungu] || user.location.sigungu
-        }`
+      ? locationLabelJa(`${user.location.sido} ${user.location.sigungu}`)
       : unsetLabel
     : user.location
     ? formatShortLocation(user.location)
@@ -713,7 +709,8 @@ export function ProfileTab({
               </button>
             </div>
             <p className="mt-0.5 text-[13px] text-gray-600">
-              {dispSchool} · {user.department}
+              {dispSchool} ·{" "}
+              {isJa ? departmentLabelJa(user.department) : user.department}
             </p>
             <p className="text-[12px] text-gray-400">
               {[
@@ -775,11 +772,11 @@ export function ProfileTab({
             editLabel={editLabel}
             onEdit={() => setEditOpen(true)}
           />
-          <div className="flex flex-wrap gap-1.5 rounded-2xl border border-gray-200/80 bg-white p-4">
+          <div className="flex flex-wrap gap-1.5 rounded-2xl border border-stone-200/80 bg-white p-4">
             {user.vibeKeywords.filter(Boolean).map((tag) => (
               <span
                 key={tag}
-                className="rounded-lg bg-blue-50 px-2.5 py-1 text-[12px] font-semibold text-primary"
+                className="rounded-lg bg-rose-50 px-2.5 py-1 text-[12px] font-semibold text-rose-600"
               >
                 #{isJa ? VIBE_STYLE_LABEL_JA[tag] || tag : tag}
               </span>
@@ -1351,15 +1348,21 @@ function PartnerVisibleProfileEditor({
 }
 
 // ============================================================================
-// 3. HistoryTab (Upgraded with In-App Blind Chat & Escrow Status)
+// 3. HistoryTab (Conversation Archive & Blind Chat)
 // ============================================================================
 export function HistoryTab({
   history,
+  serverMatches = [],
+  isMale = false,
+  onServerChanged,
   userPoints,
   onUpdateHistory,
   onOpenHomeTab,
 }: {
   history: MatchHistoryItem[];
+  serverMatches?: DbMatchPartner[];
+  isMale?: boolean;
+  onServerChanged?: () => void;
   userPoints: number;
   onUpdateHistory: (items: MatchHistoryItem[]) => void;
   onDeductPoints: (pts: number) => void;
@@ -1372,6 +1375,8 @@ export function HistoryTab({
 
   const selectedItem =
     history.find((m) => m.matchId === selectedMatchId) ?? null;
+  const selectedServerMatch =
+    serverMatches.find((m) => m.match_id === selectedMatchId) ?? null;
   const feedbackItem =
     history.find((m) => m.matchId === feedbackMatchId) ?? null;
 
@@ -1384,7 +1389,7 @@ export function HistoryTab({
           }
         : {
             label: isJa ? "ブラインドチャット進行中" : "블라인드 대화 진행 중",
-            cls: "bg-blue-50 text-primary",
+            cls: "bg-stone-100 text-zinc-800",
           };
     }
     if (item.resultStatus === "PENDING") {
@@ -1408,9 +1413,9 @@ export function HistoryTab({
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-[#F8FAFC]">
+    <div className="flex min-h-full flex-col bg-[#FAF9F6]">
       <PageHeader
-        title={isJa ? "マッチング履歴" : "매칭 기록"}
+        title={isJa ? "トーク履歴" : "대화 기록"}
         back={false}
       />
 
@@ -1461,7 +1466,8 @@ export function HistoryTab({
                       </span>
                     </div>
                     <p className="mt-0.5 truncate text-[12px] text-gray-500">
-                      {item.partner.school} · {item.partner.department} (
+                      {isJa ? schoolLabelJa(item.partner.school) : item.partner.school} ·{" "}
+                      {isJa ? departmentLabelJa(item.partner.department) : item.partner.department} (
                       {item.matchDate.replace(/-/g, ".")})
                     </p>
                   </div>
@@ -1469,11 +1475,11 @@ export function HistoryTab({
                 </button>
 
                 {!item.feedbackSubmitted && (
-                  <div className="border-t border-gray-100 px-4 py-2">
+                  <div className="border-t border-stone-100 px-4 py-2">
                     <button
                       type="button"
                       onClick={() => setFeedbackMatchId(item.matchId)}
-                      className="flex w-full items-center justify-between text-[12px] font-semibold text-primary"
+                      className="flex w-full items-center justify-between text-[12px] font-semibold text-rose-600"
                     >
                       <span>
                         {isJa
@@ -1512,7 +1518,17 @@ export function HistoryTab({
               </span>
             </div>
             <div className="flex-1 space-y-3.5 overflow-y-auto pr-0.5">
-              {selectedItem.resultStatus === "SUCCESS" ? (
+              {selectedServerMatch &&
+              ["PENDING", "CHATTING", "CONFIRMED"].includes(
+                selectedServerMatch.ticket_status
+              ) ? (
+                <RealMatchPanel
+                  matches={[selectedServerMatch]}
+                  isMale={isMale}
+                  ticketCount={Math.max(0, Math.floor(userPoints / 2900))}
+                  onChanged={() => onServerChanged?.()}
+                />
+              ) : selectedItem.resultStatus === "SUCCESS" ? (
                 <InAppBlindChatCard
                   partner={selectedItem.partner}
                   escrowStatus="CONFIRMED"
@@ -1608,7 +1624,7 @@ export function HistoryTab({
 }
 
 // ============================================================================
-// 4. MyPageTab (Upgraded with Pre-Verified Kakao ID Search Check & Clean Layout)
+// 4. MyPageTab (Account & Contact Settings)
 // ============================================================================
 export function MyPageTab({
   user,
@@ -1630,15 +1646,11 @@ export function MyPageTab({
   const [deleting, setDeleting] = useState(false);
 
   const editLabel = isJa ? "編集" : "편집";
-  const dispSchool = isJa
-    ? UNIV_LABEL_JA[user.school] ||
-      KLI_INSTITUTE_LABEL_JA[user.school] ||
-      user.school
-    : user.school;
+  const dispSchool = isJa ? schoolLabelJa(user.school) : user.school;
 
   return (
-    <div className="flex min-h-full flex-col bg-[#F8FAFC]">
-      <PageHeader title={isJa ? "設定" : "설정"} back={false} />
+    <div className="flex min-h-full flex-col bg-[#FAF9F6]">
+      <PageHeader title={isJa ? "アカウント" : "내 계정"} back={false} />
       <div className="animate-fade-in flex-1 space-y-6 px-5 py-5">
         {/* Account & Pre-verified Contact (KakaoTalk ID Only) */}
         <section>
@@ -1715,23 +1727,27 @@ export function MyPageTab({
                 })
               }
             />
-            <div className="flex items-center justify-between rounded-2xl border border-gray-200/80 bg-white px-4 py-3.5">
+            <button
+              type="button"
+              onClick={() => router.push(ROUTES.NOTIFICATIONS)}
+              className="flex w-full items-center justify-between rounded-2xl border border-stone-200/80 bg-white px-4 py-3.5 text-left transition-colors hover:bg-stone-50"
+            >
               <div>
                 <p className="text-[14px] font-semibold text-gray-900">
                   {isJa
-                    ? "ブラインドチャット＆夜22時の通知"
-                    : "블라인드 채팅 및 밤 10시 알림"}
+                    ? "ブラインドチャット＆夜22時の通知ボックス"
+                    : "블라인드 채팅 및 밤 10시 알림함"}
                 </p>
                 <p className="text-[12px] text-gray-500">
                   {isJa
-                    ? "通知機能は準備中です。マッチング結果はアプリでご確認ください"
-                    : "알림 기능은 준비 중이에요. 매칭 결과는 앱에서 확인해 주세요"}
+                    ? "マッチング到着・チャット・学生認証結果のお知らせを確認します"
+                    : "매칭 도착, 대화방 오픈, 학생 인증 결과 알림을 확인해요"}
                 </p>
               </div>
-              <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-[12px] font-bold text-gray-500">
-                {isJa ? "準備中" : "준비 중"}
+              <span className="shrink-0 rounded-full bg-rose-50 px-2.5 py-1 text-[12px] font-bold text-rose-600">
+                {isJa ? "通知を見る →" : "알림함 보기 →"}
               </span>
-            </div>
+            </button>
           </div>
         </section>
 
@@ -1846,7 +1862,7 @@ export function MyPageTab({
         </div>
       </div>
 
-      {/* Pre-Verified Kakao ID Modal (Solves CI_SEARCH_BLOCKED) */}
+      {/* Kakao ID Contact Modal */}
       <Modal open={kakaoModalOpen} onClose={() => setKakaoModalOpen(false)}>
         <h3 className="text-[17px] font-bold text-gray-900">
           {isJa
