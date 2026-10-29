@@ -7,21 +7,26 @@ export type AppLocale = "ko" | "ja";
 const LOCALE_STORAGE_KEY = "ondo_locale_v1";
 const LOCALE_EVENT_NAME = "ondo-locale-change";
 
+let initialUrlLocaleApplied = false;
+
 export function getSavedLocale(): AppLocale {
   if (typeof window === "undefined") return "ko";
   try {
-    const params = new URLSearchParams(window.location.search);
-    const urlLang = params.get("lang");
-    if (urlLang === "ja" || urlLang === "ko") {
-      window.localStorage.setItem(LOCALE_STORAGE_KEY, urlLang);
-      return urlLang;
-    }
-    if (
-      window.location.pathname.endsWith("/jp") ||
-      window.location.pathname.endsWith("/jp/")
-    ) {
-      window.localStorage.setItem(LOCALE_STORAGE_KEY, "ja");
-      return "ja";
+    if (!initialUrlLocaleApplied) {
+      initialUrlLocaleApplied = true;
+      const params = new URLSearchParams(window.location.search);
+      const urlLang = params.get("lang");
+      if (urlLang === "ja" || urlLang === "ko") {
+        window.localStorage.setItem(LOCALE_STORAGE_KEY, urlLang);
+        return urlLang;
+      }
+      if (
+        window.location.pathname.endsWith("/jp") ||
+        window.location.pathname.endsWith("/jp/")
+      ) {
+        window.localStorage.setItem(LOCALE_STORAGE_KEY, "ja");
+        return "ja";
+      }
     }
     const raw = window.localStorage.getItem(LOCALE_STORAGE_KEY);
     if (raw === "ja" || raw === "ko") return raw;
