@@ -1,5 +1,5 @@
-:HL["/ondo-campus/_next/static/chunks/2lsu7msmfgw0_.css","style"]
+:HL["/ondo-campus/_next/static/chunks/3afmykm79upx7.css","style"]
 :HL["https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css","style",{"crossOrigin":"anonymous"}]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"login","h":96,"c":"$Q2"}]]
-0:{"b":"gHw5VhSjvUDrp0S7XwSWl","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"qbpbC5pVpJcb8aXOhFtmg","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
