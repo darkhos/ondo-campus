@@ -377,7 +377,7 @@ export default function LandingPage() {
               : "아래 예시 학교뿐만 아니라 서울·경기·인천 지역 전체 대학교(78개 캠퍼스) 및 대학 부설 어학당(62개교)에 다니는 재학생·휴학생·유학생 모두 가입할 수 있습니다."}
           </p>
 
-          <div className="mt-3 sm:mt-4">
+          <div className="-mx-2 mt-3 sm:mx-0 sm:mt-4">
             <UniversityCircularCarousel isJa={isJa} />
           </div>
 

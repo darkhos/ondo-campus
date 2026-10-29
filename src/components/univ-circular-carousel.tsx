@@ -151,6 +151,7 @@ export function UniversityCircularCarousel({
   compact?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const pivotRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(3); // 광운대학교 초기 중앙 포커스
 
@@ -202,12 +203,19 @@ export function UniversityCircularCarousel({
 
       const containerWidth = containerRef.current?.clientWidth ?? 360;
       const isWide = !compact && containerWidth >= 720;
-      const isNarrow = containerWidth < 430;
 
-      const cardW = isWide ? 154 : isNarrow ? 138 : 146;
-      const radius = isWide ? 420 : isNarrow ? 292 : 365;
-      // 화면 폭에 따라 측면 코너를 돌아나가는 각도 임계값 설정 (컨테이너 벽에 걸려 잘리지 않도록 처리)
-      const visibleCosThreshold = isWide ? 0.42 : 0.68;
+      // PC와 모바일 모두 3D 원기둥 아크가 글자 잘림/겹침 없이 한눈에 보이도록
+      // 가상 스테이지 폭 기준으로 원기둥을 배치한 뒤 컨테이너 폭에 맞춰 스케일링
+      const cardW = isWide ? 154 : 144;
+      const radius = isWide ? 420 : 292;
+      const virtualWidth = isWide ? 760 : 480;
+      const stageScale = Math.min(1, containerWidth / virtualWidth);
+      const visibleCosThreshold = 0.42;
+
+      if (pivotRef.current) {
+        pivotRef.current.style.transform =
+          stageScale < 0.999 ? `scale(${stageScale.toFixed(3)})` : "none";
+      }
 
       let frontIdx = 0;
       let bestCos = -2;
@@ -226,26 +234,38 @@ export function UniversityCircularCarousel({
           frontIdx = i;
         }
 
-        // 정면 아크에 있는 카드들은 선명하게 표시하고, 원기둥 양 끝 모서리를 도는 카드는 부드럽게 페이드아웃해 잘림/겹침 방지
-        const fadeRange = 0.18;
-        const arcVis = Math.max(
-          0,
-          Math.min(1, (cosVal - (visibleCosThreshold - fadeRange)) / fadeRange)
-        );
-        const depthNorm = (cosVal + 1) / 2; // 0(뒤) ~ 1(앞)
-        const opacity = arcVis * (0.48 + 0.52 * Math.pow(Math.max(0, cosVal), 0.6));
-        const scale = 0.88 + depthNorm * 0.12;
-        const zIndex = Math.round(depthNorm * 100);
-        const isFront = cosVal > 0.94;
-
         // 3D 원기둥 궤도 좌표 계산:
         // - 모든 인접 카드 사이에 여백(Gap > 0)을 보장해 앞 카드가 옆 카드 글자를 가리지 않음
         // - 상하 아치(y)는 정면(+8px) ~ 측면(-6px)으로 입체적인 링 형태를 유지하되 상하단 잘림 완벽 방지
         const x = sinVal * radius;
         const y = cosVal * (compact ? 8 : 10) - 2;
         const z = (cosVal - 1) * (compact ? 120 : 150);
-        const rotMultiplier = isWide ? 1.08 : isNarrow ? 1.65 : 1.32;
+        const rotMultiplier = isWide ? 1.08 : 1.48;
         const rotY = Math.max(-78, Math.min(78, -normThetaDeg * rotMultiplier));
+
+        // 카드의 바깥쪽 끝이 스테이지 좌우 경계에 닿기 전에 부드럽게 페이드아웃해 좌우 잘림을 100% 방지
+        const projHalfW =
+          (cardW / 2) * Math.cos((Math.abs(rotY) * Math.PI) / 180);
+        const outerEdge = Math.abs(x) + projHalfW;
+        const halfStage = virtualWidth / 2 - 4;
+        const edgeFade = Math.max(
+          0,
+          Math.min(1, (halfStage - outerEdge) / 34)
+        );
+
+        const fadeRange = 0.18;
+        const arcVis = Math.max(
+          0,
+          Math.min(1, (cosVal - (visibleCosThreshold - fadeRange)) / fadeRange)
+        );
+        const depthNorm = (cosVal + 1) / 2; // 0(뒤) ~ 1(앞)
+        const opacity =
+          arcVis *
+          edgeFade *
+          (0.54 + 0.46 * Math.pow(Math.max(0, cosVal), 0.55));
+        const scale = 0.88 + depthNorm * 0.12;
+        const zIndex = Math.round(depthNorm * 100);
+        const isFront = cosVal > 0.94;
 
         el.style.width = `${cardW}px`;
         el.style.transform = `perspective(1600px) translate3d(calc(-50% + ${x.toFixed(
@@ -329,7 +349,12 @@ export function UniversityCircularCarousel({
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         onMouseEnter={() => {
-          stateRef.current.isHovered = true;
+          if (
+            typeof window !== "undefined" &&
+            window.matchMedia("(hover: hover) and (pointer: fine)").matches
+          ) {
+            stateRef.current.isHovered = true;
+          }
         }}
         onMouseLeave={() => {
           stateRef.current.isHovered = false;
@@ -339,21 +364,15 @@ export function UniversityCircularCarousel({
           touchAction: "pan-y",
         }}
         className={`relative w-full cursor-grab overflow-hidden active:cursor-grabbing ${
-          compact ? "h-[176px] sm:h-[188px]" : "h-[192px] sm:h-[212px]"
+          compact ? "h-[136px] sm:h-[188px]" : "h-[148px] sm:h-[212px]"
         }`}
       >
-        {/* 좌우 입체 Depth Fade 마스크 */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 left-0 z-[120] w-6 bg-gradient-to-r from-white via-white/60 to-transparent sm:w-12"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 right-0 z-[120] w-6 bg-gradient-to-l from-white via-white/60 to-transparent sm:w-12"
-        />
-
         {/* 3D Ring Center Pivot */}
-        <div className="relative h-full w-full">
+        <div
+          ref={pivotRef}
+          style={{ transformOrigin: "center center" }}
+          className="relative h-full w-full"
+        >
           {UNIV_RING_ITEMS.map((item, idx) => (
             <button
               key={item.id}
@@ -367,7 +386,7 @@ export function UniversityCircularCarousel({
               }}
               className={`absolute top-1/2 left-1/2 rounded-2xl border bg-white bg-gradient-to-br text-left transition-colors ${
                 item.accent
-              } ${compact ? "h-[104px] px-3 py-2.5" : "h-[114px] px-3 py-3 sm:h-[120px] sm:px-3.5 sm:py-3"}`}
+              } ${compact ? "h-[106px] px-2.5 py-2.5 sm:px-3 sm:py-2.5" : "h-[112px] px-2.5 py-2.5 sm:h-[120px] sm:px-3.5 sm:py-3"}`}
             >
               <div className="flex h-full w-full flex-col justify-between transition-opacity duration-150">
                 <div className="flex w-full items-center justify-between gap-1">
