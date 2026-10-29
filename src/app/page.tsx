@@ -87,6 +87,13 @@ export default function RootPage() {
           }
         }
 
+        // ?landing=1 로 접속하면 로그인 상태여도 첫 소개 화면(LandingPage) 미리보기 허용
+        if (params.get("landing") === "1") {
+          setIsLoggedIn(false);
+          setChecked(true);
+          return;
+        }
+
         const raw = window.localStorage.getItem(STORAGE_KEY);
         if (!raw) {
           setIsLoggedIn(false);
