@@ -262,8 +262,8 @@ function MatchCardReal({
                     ? "原文のみ見る"
                     : "원문만 보기"
                   : isJa
-                  ? "🇰🇷→🇯🇵 日本語に翻訳して見る"
-                  : "🇯🇵→🇰🇷 한국어로 번역 보기"}
+                  ? "🇰🇷→🇯🇵 日本語に翻訳して見る・Google翻訳"
+                  : "🇯🇵→🇰🇷 한국어로 번역 보기 · 구글 번역"}
               </span>
             </button>
           )}
@@ -401,7 +401,11 @@ function MatchChat({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [autoTranslateChat, setAutoTranslateChat] = useState(true);
+  // 대화 번역은 기본으로 꺼 둠 — 켜면 상대 메시지가 외부 번역 서비스(구글 번역)로 전송되므로 본인이 직접 켜야 함
+  const [autoTranslateChat, setAutoTranslateChat] = useState(false);
+  const autoTranslateRef = useRef(false);
+  // 한 번 번역을 시도한 메시지는 실패해도 다시 보내지 않음 (외부 요청이 반복되지 않게)
+  const translateTriedRef = useRef<Set<number>>(new Set());
   const [translatedMsgMap, setTranslatedMsgMap] = useState<Record<number, string>>(
     {}
   );
@@ -412,40 +416,46 @@ function MatchChat({
   const listRef = useRef<HTMLDivElement | null>(null);
   const contactShownRef = useRef(!!match.contact);
 
-  const translateSingleMessage = useCallback(
-    async (msgItem: DbMatchMessage) => {
-      if (translatedMsgMap[msgItem.id] || translatingMsgIds[msgItem.id]) return;
-      setTranslatingMsgIds((prev) => ({ ...prev, [msgItem.id]: true }));
-      try {
-        const res = await translateKoJa(msgItem.body, locale);
-        if (res && res !== msgItem.body.trim()) {
-          setTranslatedMsgMap((prev) => ({ ...prev, [msgItem.id]: res }));
-        }
-      } finally {
-        setTranslatingMsgIds((prev) => ({ ...prev, [msgItem.id]: false }));
+  // 번역이 켜져 있을 때만, 아직 시도하지 않은 상대 메시지를 번역
+  const translateMessages = useCallback(
+    (list: DbMatchMessage[]) => {
+      for (const m of list) {
+        if (m.mine || !needsTranslation(m.body, locale)) continue;
+        if (translateTriedRef.current.has(m.id)) continue;
+        translateTriedRef.current.add(m.id);
+        setTranslatingMsgIds((prev) => ({ ...prev, [m.id]: true }));
+        translateKoJa(m.body, locale)
+          .then((res) => {
+            if (res && res !== m.body.trim()) {
+              setTranslatedMsgMap((prev) => ({ ...prev, [m.id]: res }));
+            }
+          })
+          .catch(() => {})
+          .finally(() => {
+            setTranslatingMsgIds((prev) => ({ ...prev, [m.id]: false }));
+          });
       }
     },
-    [locale, translatedMsgMap, translatingMsgIds]
+    [locale]
   );
 
-  useEffect(() => {
-    if (!autoTranslateChat) return;
-    for (const m of messages) {
-      if (!m.mine && needsTranslation(m.body, locale) && !translatedMsgMap[m.id]) {
-        translateSingleMessage(m);
-      }
-    }
-  }, [autoTranslateChat, messages, locale, translatedMsgMap, translateSingleMessage]);
+  const toggleAutoTranslate = () => {
+    const next = !autoTranslateChat;
+    autoTranslateRef.current = next;
+    setAutoTranslateChat(next);
+    if (next) translateMessages(messages);
+  };
 
   const load = useCallback(async () => {
     const fresh = await listMatchMessages(match.match_id, lastIdRef.current);
     if (fresh.length === 0) return;
     lastIdRef.current = fresh[fresh.length - 1].id;
     setMessages((prev) => [...prev, ...fresh]);
+    if (autoTranslateRef.current) translateMessages(fresh);
     requestAnimationFrame(() => {
       listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
     });
-  }, [match.match_id]);
+  }, [match.match_id, translateMessages]);
 
   useEffect(() => {
     load();
@@ -541,7 +551,8 @@ function MatchChat({
         </span>
         <button
           type="button"
-          onClick={() => setAutoTranslateChat((v) => !v)}
+          onClick={toggleAutoTranslate}
+          aria-pressed={autoTranslateChat}
           className={cn(
             "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold transition-colors",
             autoTranslateChat
@@ -561,6 +572,11 @@ function MatchChat({
           </span>
         </button>
       </div>
+      <p className="px-1 text-[10.5px] leading-snug text-zinc-400">
+        {isJa
+          ? "翻訳をオンにすると、お相手のメッセージが翻訳のためGoogle翻訳（米国）に送信されます。"
+          : "번역을 켜면 상대 메시지가 번역을 위해 구글 번역(미국)으로 전송돼요."}
+      </p>
 
       <div
         ref={listRef}
@@ -606,7 +622,11 @@ function MatchChat({
                   <button
                     type="button"
                     disabled={isTranslating}
-                    onClick={() => translateSingleMessage(m)}
+                    onClick={() => {
+                      // 직접 누른 경우에는 예전에 실패한 메시지도 다시 시도
+                      translateTriedRef.current.delete(m.id);
+                      translateMessages([m]);
+                    }}
                     className="mt-1 inline-flex items-center gap-1 px-1.5 text-[11px] font-bold text-rose-600 hover:underline disabled:opacity-50"
                   >
                     <Languages className="h-3 w-3" />
