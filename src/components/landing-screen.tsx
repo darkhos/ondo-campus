@@ -178,11 +178,10 @@ export default function LandingPage() {
         {/* Hero */}
         <section className="mx-auto max-w-2xl text-center">
           <div className="inline-flex items-center gap-1.5 rounded-2xl border border-stone-200 bg-white px-3.5 py-1.5 text-[12px] font-bold leading-snug text-zinc-700 shadow-2xs">
-            <Flame className="h-3.5 w-3.5 shrink-0 text-rose-600" fill="currentColor" />
             <span>
               {isJa
-                ? "韓国の大学生 ＆ 🇯🇵 日本人の語学堂生・留学生　学生認証済みの人だけの 1:1 ブラインド紹介"
-                : "한국 대학생 & 🇯🇵 일본인 어학당생·유학생, 학생 인증한 사람끼리만 하는 1:1 블라인드 소개팅"}
+                ? "🇰🇷 韓国の大学生 ＆ 🇯🇵 日本人の語学堂生・留学生　学生認証済みの人だけの 1:1 ブラインド紹介"
+                : "🇰🇷 한국 대학생 & 🇯🇵 일본인 어학당생·유학생, 학생 인증한 사람끼리만 하는 1:1 블라인드 소개팅"}
             </span>
           </div>
 
@@ -251,18 +250,35 @@ export default function LandingPage() {
                 {isJa ? "カカオでログイン" : "카카오로 로그인하기"}
               </Button>
             </div>
+            {/* 카카오 로그인 안내 — Supabase 카카오 로그인 기본 범위(닉네임·프로필 사진·이메일) 기준 */}
+            <ul className="mt-3 space-y-1 text-[12px] leading-relaxed text-zinc-500">
+              <li>
+                {isJa
+                  ? "・カカオアカウントで本人確認をするためのログインです。別途パスワードを作る必要はありません。"
+                  : "· 카카오 계정으로 본인 확인을 하는 로그인이에요. 따로 비밀번호를 만들 필요가 없어요."}
+              </li>
+              <li>
+                {isJa
+                  ? "・カカオから受け取るのはニックネーム・プロフィール写真・メールだけで、友だちリストやトーク内容は受け取りません。"
+                  : "· 카카오에서는 닉네임·프로필 사진·이메일만 받고, 친구 목록이나 대화 내용은 받지 않아요."}
+              </li>
+              <li>
+                {isJa
+                  ? "・お相手に公開されるカカオトークIDは登録時にご自身で入力するもので、会話の条件を満たすまで公開されません。"
+                  : "· 상대에게 공개되는 카카오톡 ID는 가입할 때 직접 입력하는 것이고, 대화 조건을 채우기 전에는 공개되지 않아요."}
+              </li>
+              <li>
+                {isJa
+                  ? "・初めての方はログイン後、そのまま新規登録画面に移動します。"
+                  : "· 처음이라면 로그인 후 바로 회원가입 화면으로 이어져요."}
+              </li>
+            </ul>
           </div>
 
           {/* Dedicated Japanese Tracks Quick Entry Card */}
           <div className="mx-auto mt-6 max-w-xl rounded-3xl border border-rose-200/80 bg-white p-4 text-left shadow-2xs">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-1.5 text-[12px] font-extrabold text-rose-700">
-                🇯🇵{" "}
-                {isJa
-                  ? "在韓日本人学生 専用クイック登録（語学堂生 / 大学留学生）"
-                  : "일본인 학생 전용 트랙 바로가기 (어학당생 / 대학 유학생 분리)"}
-              </span>
-              {!isJa && (
+            {!isJa && (
+              <div className="mb-3 flex justify-end">
                 <button
                   type="button"
                   onClick={() => setLocale("ja")}
@@ -270,9 +286,9 @@ export default function LandingPage() {
                 >
                   🇯🇵 일본어 화면으로 전환하기 →
                 </button>
-              )}
-            </div>
-            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              </div>
+            )}
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button
                 type="button"
                 onClick={() => {
@@ -397,7 +413,7 @@ export default function LandingPage() {
                   {
                     icon: Sparkles,
                     title: "写真より先に、人柄を知る",
-                    desc: "一行紹介と連絡のテンポ、ライフスタイルを見てから会うかどうか決められます。",
+                    desc: "一行紹介と関心事、ライフスタイルを見てから会うかどうか決められます。",
                   },
                   {
                     icon: MessageSquare,
@@ -414,7 +430,7 @@ export default function LandingPage() {
                   {
                     icon: Sparkles,
                     title: "사진보다 사람을 먼저",
-                    desc: "한 줄 소개, 연락 템포, 라이프스타일을 보고 만날지 말지 정해요. 외모 품평 없는 소개팅이에요.",
+                    desc: "한 줄 소개, 관심사, 라이프스타일을 보고 만날지 말지 정해요. 외모 품평 없는 소개팅이에요.",
                   },
                   {
                     icon: MessageSquare,
