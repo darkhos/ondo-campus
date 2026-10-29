@@ -16,23 +16,16 @@ import {
 } from "lucide-react";
 import {
   KAKAO_OPENCHAT_URL,
-  PREFERRED_HEIGHT_RANGES,
   EMPTY_USER_PROFILE,
   FIELD_INPUT,
   FIELD_LABEL,
   ROUTES,
-  SIDO_LIST,
   DISTRICTS_BY_SIDO,
-  buildLocationValue,
-  toggleHeightPreference,
 } from "@/lib/ondo-constants";
 import {
   CAPITAL_UNIV_GROUPS,
   CAPITAL_UNIV_OPTIONS,
-  HEIGHT_LABEL_JA,
   KLI_INSTITUTE_LABEL_JA,
-  SIDO_LABEL_JA,
-  SIGUNGU_LABEL_JA,
   UNIV_LABEL_JA,
   getUnivEmailGuide,
   useAppLocale,
@@ -280,7 +273,7 @@ function JoinForm({
   );
   const [sido, setSido] = useState(() => draftText("sido") ?? "서울특별시");
   const [sigungu, setSigungu] = useState(() => draftText("sigungu") ?? "서대문구");
-  const [heightPrefs, setHeightPrefs] = useState<string[]>(() =>
+  const [heightPrefs] = useState<string[]>(() =>
     Array.isArray(d?.heightPrefs)
       ? (d.heightPrefs as string[])
       : ["171_175", "176_180", "181_185"]

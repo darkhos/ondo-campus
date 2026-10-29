@@ -385,7 +385,7 @@ end;
 $$;
 
 -- ============================================================================
--- [비밀 주방 7] 24시간 무인 자동화 엔진 (밤 10시 자동 매칭 + 24h 미응답 티켓 자동 환급)
+-- [비밀 주방 7] 24시간 무인 자동화 엔진 (밤 9시 자동 매칭 + 24h 미응답 티켓 자동 환급)
 -- 컴퓨터가 꺼져 있어도 클라우드 DB가 스스로 실행합니다.
 -- ============================================================================
 -- (ondo_run_autonomous_batch 는 아래 [매칭 2.0] 에서 정의)
@@ -405,7 +405,7 @@ begin
 end;
 $$;
 
--- 3) Supabase 클라우드 pg_cron 스케줄러 자동 등록 (매일 밤 10시 KST = 13:00 UTC + 매시간 환급 체크)
+-- 3) Supabase 클라우드 pg_cron 스케줄러 자동 등록 (매시간 실행: 밤 9시 KST 이후 자동 매칭 + 미응답 환급 체크)
 do $$
 begin
   create extension if not exists pg_cron;
@@ -1457,10 +1457,9 @@ begin
     end if;
   end loop;
 
-  -- 2) 밤 10시(KST) 이후 또는 오늘 자동 매칭이 아직 없을 때 실행
-  if v_kst_hour >= 22 or not exists (
-    select 1 from public.ondo_matches where id like v_today_prefix || '%'
-  ) then
+  -- 2) 매일 밤 9시(KST) 이후에만 실행 (운영자가 수동으로 실행한 경우는 시간과 관계없이 실행)
+  --    예전에는 "오늘 매칭이 아직 없으면" 조건 때문에 자정 직후 첫 실행에서 매칭이 만들어졌음
+  if v_kst_hour >= 21 or public.ondo_is_admin() then
     for r_female in
       select f.* from public.ondo_members f
       where f.gender in ('F', 'FEMALE') and f.verified
@@ -1501,7 +1500,7 @@ begin
           id, female_id, female_name, male_id, male_name, score, ticket_status, created_at, created_at_ts
         ) values (
           v_match_id, r_female.id, r_female.nickname, r_male.id, r_male.nickname, v_score, 'PENDING',
-          to_char(now() at time zone 'Asia/Seoul', 'MM/DD') || ' 밤 10시 자동 매칭', now()
+          to_char(now() at time zone 'Asia/Seoul', 'MM/DD') || ' 밤 9시 자동 매칭', now()
         )
         on conflict (id) do nothing;
         if found then

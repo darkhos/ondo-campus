@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Check, Coffee, Copy, Gift } from "lucide-react";
+import { Check, Copy, Gift } from "lucide-react";
 import { FIELD_INPUT } from "@/lib/ondo-constants";
 import { useAppLocale } from "@/lib/i18n";
 import {

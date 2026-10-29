@@ -5,11 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Bell,
-  ChevronDown,
   Clock,
   Coffee,
   Flame,
-  Moon,
   Pause,
   ShieldCheck,
   Sparkles,
@@ -50,14 +48,14 @@ export type MatchViewState =
   | "paused"
   | "cancelled_after_success";
 
-function useNext10PMCountdown(): string {
+function useNextMatchCountdown(): string {
   const [countdown, setCountdown] = useState<string>("04:12:30");
 
   useEffect(() => {
     const update = () => {
       const now = new Date();
       const target = new Date(now);
-      target.setHours(22, 0, 0, 0);
+      target.setHours(21, 0, 0, 0);
       if (now >= target) {
         target.setDate(target.getDate() + 1);
       }
@@ -85,7 +83,6 @@ export function HomeMatchTab({
   history = [],
   onUpdateUser,
   onNavigateTab,
-  onAddHistory,
   unreadNotificationCount,
   serverMatches = [],
   onServerChanged,
@@ -103,7 +100,7 @@ export function HomeMatchTab({
   const router = useRouter();
   const [locale] = useAppLocale();
   const isJa = locale === "ja";
-  const countdown = useNext10PMCountdown();
+  const countdown = useNextMatchCountdown();
 
   const [matchState, setMatchState] =
     useState<MatchViewState>("recommendation");
@@ -316,7 +313,7 @@ export function HomeMatchTab({
 
           <div className="hidden items-center gap-1.5 text-[12px] font-medium text-zinc-400 sm:flex">
             <span>
-              {isJa ? "今夜22時のマッチングまで" : "다음 밤 10시 주파수까지"}
+              {isJa ? "今夜21時のマッチングまで" : "다음 밤 9시 주파수까지"}
             </span>
             <span className="font-mono font-bold text-rose-600">
               {countdown}
@@ -413,13 +410,13 @@ export function HomeMatchTab({
                     <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[12px] font-extrabold text-rose-600">
                       <Sparkles className="h-3.5 w-3.5" />
                       {isJa
-                        ? "今夜 22:00 定刻マッチング待機中"
+                        ? "今夜 21:00 定刻マッチング待機中"
                         : "오늘 밤 10:00 정각 주파수 매칭 대기 중"}
                     </span>
                     <h2 className="mt-3 text-[20px] font-black tracking-tight text-zinc-900">
                       {isJa
-                        ? "今夜22時のマッチングまで "
-                        : "다음 밤 10시 매칭까지 "}
+                        ? "今夜21時のマッチングまで "
+                        : "다음 밤 9시 매칭까지 "}
                       <span className="font-mono text-rose-600">
                         {countdown}
                       </span>
@@ -471,8 +468,8 @@ export function HomeMatchTab({
                 {!hasRealMatch && (
                   <div className="rounded-2xl border border-amber-200 bg-amber-50/90 px-4 py-3 text-[12px] font-medium text-amber-800">
                     {isJa
-                      ? "💡 現在は22:00本マッチング前の「ブラインド・ルーム体験プレビュー」モードです。実際のマッチング成立時、お相手との専用トークルームがここに開きます。"
-                      : "💡 현재는 밤 10시 실제 매칭 전 '블라인드 룸 체험 미리보기' 화면입니다. 실제 매칭이 성사되면 이곳에 상대방과의 전용 대화방이 열립니다."}
+                      ? "💡 現在は21:00本マッチング前の「ブラインド・ルーム体験プレビュー」モードです。実際のマッチング成立時、お相手との専用トークルームがここに開きます。"
+                      : "💡 현재는 밤 9시 실제 매칭 전 '블라인드 룸 체험 미리보기' 화면입니다. 실제 매칭이 성사되면 이곳에 상대방과의 전용 대화방이 열립니다."}
                   </div>
                 )}
                 <div className="flex items-center justify-between">

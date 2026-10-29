@@ -57,8 +57,8 @@ async function buildNotifications(): Promise<NotificationItem[]> {
       type: "POINT_REWARD",
       title: status === "pending_review" ? "학생증 확인 중이에요" : status === "rejected" ? "학생증 확인이 반려됐어요" : "학생 인증을 마쳐 주세요",
       titleJa: status === "pending_review" ? "学生証を確認中です" : status === "rejected" ? "学生証の確認が却下されました" : "学生認証を完了してください",
-      body: status === "pending_review" ? "운영팀이 확인을 마치면 매칭에 참여할 수 있어요." : "학생 인증을 마쳐야 매일 밤 10시 매칭에 참여할 수 있어요.",
-      bodyJa: status === "pending_review" ? "運営チームの確認後、マッチングに参加できます。" : "学生認証を完了すると毎晩22時のマッチングに参加できます。",
+      body: status === "pending_review" ? "운영팀이 확인을 마치면 매칭에 참여할 수 있어요." : "학생 인증을 마쳐야 매일 밤 9시 매칭에 참여할 수 있어요.",
+      bodyJa: status === "pending_review" ? "運営チームの確認後、マッチングに参加できます。" : "学生認証を完了すると毎晩21時のマッチングに参加できます。",
       href: status === "pending_review" ? ROUTES.HOME : ROUTES.JOIN,
     });
   }
@@ -155,8 +155,8 @@ export default function NotificationsPage() {
             </p>
             <p className="mt-1 text-[12px] text-zinc-500">
               {isJa
-                ? "ログインすると22時のマッチングやトークのお知らせが届きます。"
-                : "로그인하면 밤 10시 주파수 매칭과 대화 소식을 알려 드려요."}
+                ? "ログインすると21時のマッチングやトークのお知らせが届きます。"
+                : "로그인하면 밤 9시 주파수 매칭과 대화 소식을 알려 드려요."}
             </p>
           </div>
         )}

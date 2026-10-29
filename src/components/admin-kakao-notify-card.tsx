@@ -37,9 +37,11 @@ export function AdminKakaoNotifyCard() {
       setMessage("⚠️ 연결을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.");
       return;
     }
-    window.location.href = `${KAKAO_NOTIFY_FUNCTION_URL}?start=1&state=${encodeURIComponent(
-      state as string
-    )}`;
+    // 카카오 연결은 외부(Supabase Edge Function) 주소로 이동
+    const connectUrl = new URL(KAKAO_NOTIFY_FUNCTION_URL);
+    connectUrl.searchParams.set("start", "1");
+    connectUrl.searchParams.set("state", String(state));
+    window.location.assign(connectUrl.toString());
   };
 
   const sendTest = async () => {

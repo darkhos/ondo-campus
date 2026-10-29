@@ -6,13 +6,9 @@ import { RealMatchPanel } from "@/components/real-match-panel";
 import { useRouter } from "next/navigation";
 import {
   CalendarHeart,
-  CheckCircle2,
   ChevronDown,
   ChevronRight,
-  Mic,
-  ShieldCheck,
   Sparkles,
-  UserRound,
 } from "lucide-react";
 import {
   AGE_MAX,
@@ -23,7 +19,6 @@ import {
   KAKAO_OPENCHAT_URL,
   IMPRESSION_TYPES,
   IMPRESSION_EMOJI,
-  FAQ_URL,
   HEIGHT_MAX,
   HEIGHT_MIN,
   PREFERRED_HEIGHT_RANGES,
@@ -229,20 +224,20 @@ export function IdealTypeTab({
         back={false}
       />
       <div className="animate-fade-in flex-1 space-y-5 px-5 py-5">
-        {/* AI Smart Elastic Filter Card */}
+        {/* 조건 유연하게 받기 (선호 저장) */}
         <div className="rounded-2xl border border-rose-200/80 bg-white p-4">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="h-4 w-4 text-rose-600" />
                 <p className="text-[14px] font-bold text-gray-900">
-                  {isJa ? "AIスマート条件緩和" : "AI 스마트 조건 완화"}
+                  {isJa ? "条件を柔軟にする" : "조건 유연하게 받기"}
                 </p>
               </div>
               <p className="mt-0.5 text-[12px] leading-relaxed text-gray-500">
                 {isJa
-                  ? "100%一致する候補がいない日でもマッチングが途切れないよう、近隣エリア・類似傾向の候補を次善策として推薦します。"
-                  : "100% 일치하는 후보가 없는 날에도 매칭이 끊기지 않도록 인접 지역·유사 성향 후보를 차선책으로 추천해요."}
+                  ? "オンにすると、条件にぴったり合う相手がいない日は条件を少し広げても大丈夫、という希望として保存されます。"
+                  : "켜 두면 딱 맞는 상대가 없는 날에는 조건을 조금 넓혀도 괜찮다는 희망 사항으로 저장돼요."}
               </p>
             </div>
             <button
@@ -879,7 +874,7 @@ function PartnerVisibleProfileEditor({
   const isJa = locale === "ja";
 
   const [nickname, setNickname] = useState(user.nickname);
-  const [department, setDepartment] = useState(user.department);
+  const [department] = useState(user.department);
   const [height, setHeight] = useState(user.height > 0 ? String(user.height) : "");
   const [sido, setSido] = useState(user.location?.sido ?? "서울특별시");
   const [sigungu, setSigungu] = useState(
@@ -1561,8 +1556,8 @@ export function HistoryTab({
           </h3>
           <p className="mt-1 text-[12px] text-gray-500">
             {isJa
-              ? "いただいたフィードバックはAIスマート推薦の改善に反映されます。"
-              : "남겨주신 피드백은 AI 스마트 추천 가중치 개선에 바로 반영됩니다."}
+              ? "選んだ感想はこの端末のトーク履歴に保存され、あとで振り返ることができます。"
+              : "남겨 주신 만족도는 이 기기의 대화 기록에 저장돼서 나중에 다시 볼 수 있어요."}
           </p>
           <div className="mt-4 space-y-1.5">
             {(
@@ -1735,8 +1730,8 @@ export function MyPageTab({
               <div>
                 <p className="text-[14px] font-semibold text-gray-900">
                   {isJa
-                    ? "ブラインドチャット＆夜22時の通知ボックス"
-                    : "블라인드 채팅 및 밤 10시 알림함"}
+                    ? "ブラインドチャット＆夜21時の通知ボックス"
+                    : "블라인드 채팅 및 밤 9시 알림함"}
                 </p>
                 <p className="text-[12px] text-gray-500">
                   {isJa

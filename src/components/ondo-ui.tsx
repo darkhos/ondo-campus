@@ -863,8 +863,8 @@ export function CampusBalanceLoungeCard({
       </div>
       <p className="mt-1 text-[13px] text-zinc-500">
         {isJa
-          ? "投票した恋愛価値観データは、今夜22時の波長マッチングに反映されます。"
-          : "투표한 가치관 데이터는 오늘 밤 10시 나와 결이 맞는 상대를 찾는 데 반영됩니다."}
+          ? "投票した恋愛価値観データは、今夜21時の波長マッチングに反映されます。"
+          : "투표한 가치관 데이터는 오늘 밤 9시 나와 결이 맞는 상대를 찾는 데 반영됩니다."}
       </p>
 
       <div className="mt-5 space-y-3.5">
@@ -1021,7 +1021,7 @@ export function MatchingToggleCard({
     <div className="flex items-center justify-between gap-4 rounded-2xl border border-stone-200/80 bg-white px-5 py-4">
       <div className="min-w-0">
         <p className="text-[14px] font-bold text-zinc-900">
-          {isJa ? "毎晩22時 マッチング稼働中" : "밤 10시 주파수 매칭 활성화"}
+          {isJa ? "毎晩21時 マッチング稼働中" : "밤 9시 주파수 매칭 활성화"}
         </p>
         <p className="mt-0.5 text-[12px] text-zinc-500">
           {isOn

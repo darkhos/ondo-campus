@@ -12,7 +12,6 @@ import {
   Flame,
   Inbox,
   Link2,
-  Play,
   Plus,
   RefreshCw,
   ShieldCheck,
@@ -837,16 +836,16 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            {/* Night 10 PM Batch Matching Trigger */}
+            {/* Night 9 PM Batch Matching Trigger */}
             <div className="rounded-3xl border border-stone-200 bg-white p-6">
               <span className="text-[12px] font-bold text-zinc-400 uppercase">
                 Automated Cron Engine
               </span>
               <h3 className="mt-1 text-[18px] font-extrabold text-zinc-900">
-                밤 10시 AI 가치관 배치 매칭 실행기
+                밤 9시 가치관 배치 매칭 실행기
               </h3>
               <p className="mt-1 text-[13px] text-zinc-500">
-                매일 밤 10시 정각에 실행되는 자동 매칭 알고리즘(같은 학교 제외 + 생활권 클러스터 + 가치관 투표 일치율 계산)을 지금 즉시 수동 트리거합니다.
+                매일 밤 9시(KST) 이후 매시간 실행되는 자동 매칭(다른 학교 · 서로의 선호 나이 · 진행 중인 매칭 없음 · 예전에 만난 적 없는 상대 중 나이가 가까운 순)을 지금 바로 실행합니다.
               </p>
 
               <div className="mt-5 rounded-2xl bg-[#FAF9F6] p-4 text-[12px] text-zinc-600">
@@ -866,7 +865,7 @@ export default function AdminDashboardPage() {
                 onClick={handleRunNightBatchMatching}
               >
                 <Zap className="h-4 w-4 text-amber-400" fill="currentColor" />
-                오늘 밤 10시 일괄 매칭 즉시 실행
+                밤 9시 일괄 매칭 지금 실행
               </Button>
             </div>
           </section>
