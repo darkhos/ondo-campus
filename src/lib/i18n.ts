@@ -10,8 +10,23 @@ const LOCALE_EVENT_NAME = "ondo-locale-change";
 export function getSavedLocale(): AppLocale {
   if (typeof window === "undefined") return "ko";
   try {
+    const params = new URLSearchParams(window.location.search);
+    const urlLang = params.get("lang");
+    if (urlLang === "ja" || urlLang === "ko") {
+      window.localStorage.setItem(LOCALE_STORAGE_KEY, urlLang);
+      return urlLang;
+    }
+    if (
+      window.location.pathname.endsWith("/jp") ||
+      window.location.pathname.endsWith("/jp/")
+    ) {
+      window.localStorage.setItem(LOCALE_STORAGE_KEY, "ja");
+      return "ja";
+    }
     const raw = window.localStorage.getItem(LOCALE_STORAGE_KEY);
     if (raw === "ja" || raw === "ko") return raw;
+    const browserLang = (window.navigator.language || "").toLowerCase();
+    if (browserLang.startsWith("ja")) return "ja";
   } catch {
     // ignore
   }
