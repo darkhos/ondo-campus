@@ -698,6 +698,8 @@ export const DEMO_PARTNERS: PartnerProfile[] = [
 export const INITIAL_MATCH_HISTORY: MatchHistoryItem[] = [];
 
 const WITTY_NICKNAME_PREFIX_KO = [
+  "줴줴이야",
+  "야르",
   "원영적사고",
   "설렘추구미",
   "감다살",
@@ -721,6 +723,8 @@ const WITTY_NICKNAME_PREFIX_KO = [
 ];
 
 const WITTY_NICKNAME_NOUN_KO = [
+  "줴줴이야",
+  "야르요정",
   "럭키비키",
   "아기쿼카",
   "골든리트리버",
@@ -739,6 +743,10 @@ const WITTY_NICKNAME_NOUN_KO = [
 ];
 
 const WITTY_NICKNAME_FULL_KO = [
+  "줴줴이야설렘장인",
+  "오늘기분완전야르",
+  "야르캠퍼스호감상",
+  "줴줴이야럭키비키",
   "완전럭키비키잖아",
   "한강위걸어다니는고양이",
   "공강시간아망추요정",
