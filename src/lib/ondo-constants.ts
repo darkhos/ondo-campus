@@ -697,6 +697,110 @@ export const DEMO_PARTNERS: PartnerProfile[] = [
 
 export const INITIAL_MATCH_HISTORY: MatchHistoryItem[] = [];
 
+const WITTY_NICKNAME_PREFIX_KO = [
+  "원영적사고",
+  "설렘추구미",
+  "감다살",
+  "무해한설렘",
+  "꽁꽁얼어붙은",
+  "아망추중독",
+  "텍스트힙",
+  "도파민충전",
+  "확신의호감상",
+  "플러팅장인",
+  "달디단밤양갱",
+  "갓생러버",
+  "낭만치사량",
+  "맑눈광캠퍼스",
+  "성수동팝업러",
+  "연남동추구미",
+  "공강엔아망추",
+  "수줍은외향인",
+  "사르르녹는",
+  "중꺾마설렘",
+];
+
+const WITTY_NICKNAME_NOUN_KO = [
+  "럭키비키",
+  "아기쿼카",
+  "골든리트리버",
+  "한강고양이",
+  "말랑콩떡",
+  "인간비타민",
+  "다정곰돌이",
+  "첫사랑재질",
+  "설렘요정",
+  "산책메이트",
+  "맛집탐험가",
+  "인디리스너",
+  "솜사탕",
+  "복숭아",
+  "댕댕이",
+];
+
+const WITTY_NICKNAME_FULL_KO = [
+  "완전럭키비키잖아",
+  "한강위걸어다니는고양이",
+  "공강시간아망추요정",
+  "감다살캠퍼스호감상",
+  "낭만치사량리트리버",
+  "도파민대신설렘충전",
+  "달디달고달디단밤양갱",
+  "추구미는다정한연애",
+  "무해한웃음보유자",
+  "텍스트힙산책러",
+  "플러팅만렙아기쿼카",
+  "확신의첫사랑기억조작단",
+  "말랑콩떡캠퍼스요정",
+  "맑눈광맛집헌터",
+  "오늘부터갓생연애러",
+];
+
+const WITTY_NICKNAME_JA = [
+  "ラッキービッキー妖精",
+  "ときめき追求ミー",
+  "漢江の上を歩く猫",
+  "アマンチュ中毒うさぎ",
+  "甘くて優しい栗羊羹",
+  "無害な笑顔のレトリバー",
+  "聖水ポップアップ巡り",
+  "延南洞カフェ日和",
+  "ドーパミンよりときめき",
+  "初恋記憶操作クォッカ",
+  "テキストヒップ読書家",
+  "放課後ラテメイト",
+];
+
+export function generateWittyNickname(isJa: boolean, current?: string): string {
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const num = Math.floor(10 + Math.random() * 89);
+    let candidate = "";
+    if (isJa) {
+      const base =
+        WITTY_NICKNAME_JA[Math.floor(Math.random() * WITTY_NICKNAME_JA.length)];
+      candidate = `${base}${num}`;
+    } else if (Math.random() < 0.45) {
+      const base =
+        WITTY_NICKNAME_FULL_KO[
+          Math.floor(Math.random() * WITTY_NICKNAME_FULL_KO.length)
+        ];
+      candidate = `${base}${num}`;
+    } else {
+      const prefix =
+        WITTY_NICKNAME_PREFIX_KO[
+          Math.floor(Math.random() * WITTY_NICKNAME_PREFIX_KO.length)
+        ];
+      const noun =
+        WITTY_NICKNAME_NOUN_KO[
+          Math.floor(Math.random() * WITTY_NICKNAME_NOUN_KO.length)
+        ];
+      candidate = `${prefix}${noun}${num}`;
+    }
+    if (candidate !== current) return candidate;
+  }
+  return isJa ? "ラッキービッキー77" : "완전럭키비키잖아77";
+}
+
 export function calculateProfileCompletion(user: UserProfile): number {
   const checks = [
     user.nickname.trim().length >= 2,

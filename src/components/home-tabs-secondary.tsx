@@ -41,6 +41,7 @@ import {
   VIBE_STYLE_KEYWORDS,
   buildLocationValue,
   formatShortLocation,
+  generateWittyNickname,
   parseHeightPreferences,
   toggleHeightPreference,
 } from "@/lib/ondo-constants";
@@ -1045,9 +1046,20 @@ function PartnerVisibleProfileEditor({
               />
             </div>
             <div>
-              <label className={FIELD_LABEL}>
-                {isJa ? "ニックネーム" : "닉네임"}
-              </label>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label className="text-[13px] font-medium text-gray-600">
+                  {isJa ? "ニックネーム" : "닉네임"}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNickname((prev) => generateWittyNickname(isJa, prev));
+                  }}
+                  className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-600 hover:bg-rose-100"
+                >
+                  {isJa ? "🎲 おすすめ" : "🎲 자동 추천"}
+                </button>
+              </div>
               <input
                 className={FIELD_INPUT}
                 value={nickname}

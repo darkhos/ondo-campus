@@ -21,6 +21,7 @@ import {
   FIELD_LABEL,
   ROUTES,
   DISTRICTS_BY_SIDO,
+  generateWittyNickname,
 } from "@/lib/ondo-constants";
 import {
   CAPITAL_UNIV_GROUPS,
@@ -918,27 +919,7 @@ function JoinForm({
               <button
                 type="button"
                 onClick={() => {
-                  const samplesKo = [
-                    "연희동민트초코",
-                    "신촌동라떼요정",
-                    "안암동골든리트리버",
-                    "성수동밤산책러",
-                    "연남동햇살냥이",
-                    "혜화동인디리스너",
-                    "홍대앞복숭아티",
-                  ];
-                  const samplesJa = [
-                    "新村カフェ好きハルカ",
-                    "延南洞ラテ日和",
-                    "弘大さんぽユイ",
-                    "聖水カフェ巡り",
-                    "ソウル読書クラブ",
-                  ];
-                  const pool = isJa ? samplesJa : samplesKo;
-                  const pick =
-                    pool[Math.floor(Math.random() * pool.length)] +
-                    Math.floor(10 + Math.random() * 89);
-                  setNickname(pick);
+                  setNickname((prev) => generateWittyNickname(isJa, prev));
                 }}
                 className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-600 hover:bg-rose-100"
               >
