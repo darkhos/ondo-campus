@@ -1577,6 +1577,20 @@ as $$
   limit 300;
 $$;
 
+-- 상대의 값이 내가 고른 선호 목록에 들어 있으면 1 (목록이 비어 있으면 '상관없음'으로 보고 1)
+create or replace function public.ondo_pref_hit(p_prefs jsonb, p_value text)
+returns integer
+language sql
+immutable
+set search_path = public
+as $$
+  select case
+    when p_prefs is null or jsonb_typeof(p_prefs) <> 'array' or jsonb_array_length(p_prefs) = 0 then 1
+    when coalesce(p_value, '') <> '' and (p_prefs ? p_value or p_prefs ? upper(p_value)) then 1
+    else 0
+  end;
+$$;
+
 -- 자동 매칭 + 24시간 미응답 정리 (pg_cron 매시간 / 운영자 수동 실행)
 create or replace function public.ondo_run_autonomous_batch()
 returns jsonb
@@ -1639,8 +1653,8 @@ begin
       order by f.updated_at desc
       limit 50
     loop
-      v_f_min := coalesce(nullif(r_female.profile_extra ->> 'preferredAgeMin', '')::integer, 19);
-      v_f_max := coalesce(nullif(r_female.profile_extra ->> 'preferredAgeMax', '')::integer, 40);
+      v_f_min := coalesce(nullif(r_female.profile_extra ->> 'preferredAgeMin', '')::integer, 18);
+      v_f_max := coalesce(nullif(r_female.profile_extra ->> 'preferredAgeMax', '')::integer, 30);
 
       -- 다른 학교 · 활성 매칭 없음 · 오늘 자동 매칭 이력 없음 · 과거 매칭 이력 없음
       -- 서로의 선호 나이·흡연·종교 조건을 우선 반영하되 (예전 버전에 저장된 선호 값도 같은 뜻으로 인식), 스마트 조건 완화(smartRelaxFilter)가 켜져 있으면 차순위 후보도 허용
@@ -1660,16 +1674,16 @@ begin
           (
             coalesce(m.age, 24) between v_f_min and v_f_max
             and coalesce(r_female.age, 22) between
-                  coalesce(nullif(m.profile_extra ->> 'preferredAgeMin', '')::integer, 19)
-              and coalesce(nullif(m.profile_extra ->> 'preferredAgeMax', '')::integer, 40)
+                  coalesce(nullif(m.profile_extra ->> 'preferredAgeMin', '')::integer, 18)
+              and coalesce(nullif(m.profile_extra ->> 'preferredAgeMax', '')::integer, 30)
           )
           or (
             coalesce((r_female.profile_extra ->> 'smartRelaxFilter')::boolean, true)
             and coalesce((m.profile_extra ->> 'smartRelaxFilter')::boolean, true)
             and coalesce(m.age, 24) between (v_f_min - 2) and (v_f_max + 2)
             and coalesce(r_female.age, 22) between
-                  (coalesce(nullif(m.profile_extra ->> 'preferredAgeMin', '')::integer, 19) - 2)
-              and (coalesce(nullif(m.profile_extra ->> 'preferredAgeMax', '')::integer, 40) + 2)
+                  (coalesce(nullif(m.profile_extra ->> 'preferredAgeMin', '')::integer, 18) - 2)
+              and (coalesce(nullif(m.profile_extra ->> 'preferredAgeMax', '')::integer, 30) + 2)
           )
         )
         and (
@@ -1692,8 +1706,8 @@ begin
         -- 1순위: 엄격한 선호 나이 범위 일치 여부
         case when coalesce(m.age, 24) between v_f_min and v_f_max
               and coalesce(r_female.age, 22) between
-                    coalesce(nullif(m.profile_extra ->> 'preferredAgeMin', '')::integer, 19)
-                and coalesce(nullif(m.profile_extra ->> 'preferredAgeMax', '')::integer, 40)
+                    coalesce(nullif(m.profile_extra ->> 'preferredAgeMin', '')::integer, 18)
+                and coalesce(nullif(m.profile_extra ->> 'preferredAgeMax', '')::integer, 30)
              then 0 else 1 end asc,
         -- 2순위: 흡연 선호 일치 여부
         case when (coalesce(r_female.profile_extra ->> 'preferredSmoking', 'any') not in ('no_smoke', 'non_smoker_only')
@@ -1706,7 +1720,15 @@ begin
                    or (r_female.profile_extra ->> 'preferredReligion' in ('none_only', 'nonreligious_preferred') and coalesce(m.profile_extra ->> 'religion', 'NONE') = 'NONE')
                    or (r_female.profile_extra ->> 'preferredReligion' in ('same_only', 'same_as_me') and coalesce(m.profile_extra ->> 'religion', 'NONE') = coalesce(r_female.profile_extra ->> 'religion', 'NONE')))
              then 0 else 1 end asc,
-        -- 4순위: 나이 차이 및 최근 활동 순
+        -- 4순위: 서로 고른 MBTI·첫인상·체격이 상대와 많이 맞을수록 먼저 (거르지는 않고 순서만 앞당김)
+        ( public.ondo_pref_hit(r_female.profile_extra -> 'preferredMbti', m.mbti)
+        + public.ondo_pref_hit(r_female.profile_extra -> 'preferredImpressions', m.profile_extra ->> 'impression')
+        + public.ondo_pref_hit(r_female.profile_extra -> 'preferredBuilds', m.profile_extra ->> 'build')
+        + public.ondo_pref_hit(m.profile_extra -> 'preferredMbti', r_female.mbti)
+        + public.ondo_pref_hit(m.profile_extra -> 'preferredImpressions', r_female.profile_extra ->> 'impression')
+        + public.ondo_pref_hit(m.profile_extra -> 'preferredBuilds', r_female.profile_extra ->> 'build')
+        ) desc,
+        -- 5순위: 나이 차이 및 최근 활동 순
         abs(coalesce(m.age, 24) - coalesce(r_female.age, 22)) asc,
         m.updated_at desc
       limit 1;

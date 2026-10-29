@@ -408,29 +408,29 @@ export function MatchCard({
 
   const isDemoPartner = partner.uid === "partner-01";
   const displayNickname =
-    isJa && isDemoPartner ? "安岩洞ジェジェイヤ" : partner.nickname;
+    isJa && isDemoPartner ? "蘆原区ジェジェイヤ" : partner.nickname;
   const displaySchool = isJa
     ? isDemoPartner
-      ? "高麗大学"
+      ? "光云大学"
       : schoolLabelJa(partner.school)
     : partner.school;
   const displayDept = isJa
     ? isDemoPartner
-      ? "コンピュータ学科"
+      ? "経営学科"
       : departmentLabelJa(partner.department)
     : partner.department;
   const displayLoc = isJa
     ? isDemoPartner
-      ? "ソウル特別市 城北区"
+      ? "ソウル特別市 蘆原区"
       : locationLabelJa(partner.locationLabel || "")
     : partner.locationLabel || "";
   const displayVoiceIntro =
     isJa && isDemoPartner
-      ? "こんにちは！高麗大でコンピュータを専攻しています。休日は延南洞のカフェや展示会巡りが好きです。楽しくお話ししましょう！"
+      ? "こんにちは！光云大で経営学を専攻しています。週末は静かなカフェや展示会に行くのが好きです。よろしくお願いします！"
       : partner.voiceIntroText;
   const displayBio =
     isJa && isDemoPartner
-      ? "平日は研究室とワークアウト、週末は美味しいお店巡りやカメラを持って散歩するのが好きです。価値観が合って、穏やかに会話できる方と出会いたいです。"
+      ? "平日は学校の近くで運動して、週末は美味しいデザートカフェや展示会を巡るのが好きです。一緒に歩きながら、何気ない日常の話ができる方と出会いたいです。"
       : partner.bio;
 
   const [showTranslated, setShowTranslated] = useState(false);
