@@ -1,0 +1,32 @@
+1:"$Sreact.fragment"
+2:"/ondo-campus/_next/static/chunks/07ng603xils4k.js"
+3:I[96179,["$2"],"SecurityShield"]
+4:I[39756,["$2"],"default"]
+5:I[37457,["$2"],"default"]
+6:"/ondo-campus/_next/static/chunks/0zr3p8a5zmnyj.js"
+7:"/ondo-campus/_next/static/chunks/133wygo8mhs-8.js"
+8:"/ondo-campus/_next/static/chunks/110k0eyb_ipyt.js"
+9:I[29306,["$2","$6","$7","$8"],"default"]
+d:I[47257,["$2"],"ClientPageRoot"]
+e:"/ondo-campus/_next/static/chunks/07z8xjy3txpt9.js"
+f:I[67102,["$2","$e","$7"],"default"]
+12:I[97367,["$2"],"OutletBoundary"]
+13:"$Sreact.suspense"
+15:"ViewportBoundary"
+16:I[97367,["$2"],"$15"]
+18:"MetadataBoundary"
+19:I[97367,["$2"],"$18"]
+1b:I[68027,["$2"],"default",1]
+:HL["/ondo-campus/_next/static/chunks/2lsu7msmfgw0_.css","style"]
+:HL["https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css","style",{"crossOrigin":"anonymous"}]
+b:X
+c:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":[["$","$Ld",null,{"Component":"$f","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@10","$@11"]}}],[["$","script","script-0",{"src":"/ondo-campus/_next/static/chunks/07z8xjy3txpt9.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/ondo-campus/_next/static/chunks/133wygo8mhs-8.js","async":true,"nonce":"$undefined"}]],["$","$L12",null,{"children":["$","$13",null,{"name":"Next.MetadataOutlet","children":"$@14"}]}]]}],"p":false,"v":null}}]]
+a:[["children",{"s":"terms","h":512,"d":{"r":["$","$1","c",{"children":[null,["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L5",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$b"},"c":"$Qc"}]]
+0:{"P":null,"c":["","terms",""],"q":"","i":false,"t":{"t":{"s":"","h":528,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/ondo-campus/_next/static/chunks/2lsu7msmfgw0_.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/ondo-campus/_next/static/chunks/07ng603xils4k.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"ko","className":"h-full","children":[["$","head",null,{"children":["$","link",null,{"rel":"stylesheet","as":"style","crossOrigin":"anonymous","href":"https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"}]}],["$","body",null,{"className":"min-h-full bg-[#FAF9F6] text-zinc-900 antialiased selection:bg-rose-500 selection:text-white","children":[["$","$L3",null,{}],["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L5",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","$L9",null,{}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]]}]]}]]}],"p":false,"v":null},"c":"$Qa"},"h":{"r":["$","$1","h",{"children":[null,["$","$L16",null,{"children":"$L17"}],["$","$L19",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$13",null,{"name":"Next.Metadata","children":"$L1a"}]}],null]}],null]}],"p":false,"v":null}},"m":"$undefined","G":["$1b",[["$","link","0",{"rel":"stylesheet","href":"/ondo-campus/_next/static/chunks/2lsu7msmfgw0_.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"gHw5VhSjvUDrp0S7XwSWl"}
+b:C
+10:{}
+11:"$c:0:1:d:r:props:children:0:props:serverProvidedParams:params"
+17:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#FAF9F6"}]]
+1c:I[27201,["$2"],"IconMark"]
+14:null
+1a:[["$","title","0",{"children":"온도 (ONDO 36.5°) — 학생 인증한 대학생끼리 하는 1:1 블라인드 소개팅"}],["$","meta","1",{"name":"description","content":"서울·경기·인천권 대학생 & 일본인 유학생·어학당생 전용 1:1 블라인드 소개팅. 학생 인증을 마친 사람끼리 서로 수락하면 대화부터 시작하고, 말이 통하면 카카오톡을 교환해요."}],["$","meta","2",{"name":"referrer","content":"strict-origin-when-cross-origin"}],["$","meta","3",{"name":"robots","content":"index, follow, nocache"}],["$","meta","4",{"property":"og:title","content":"온도 (ONDO 36.5°) — 대학생 1:1 블라인드 소개팅"}],["$","meta","5",{"property":"og:description","content":"친구가 주선해 주듯, 결 맞는 대학생과 소개팅. 서로 수락하면 대화부터, 말이 통하면 카톡 교환."}],["$","meta","6",{"property":"og:url","content":"https://darkhos.github.io/ondo-campus/"}],["$","meta","7",{"property":"og:site_name","content":"ONDO 36.5° (온도)"}],["$","meta","8",{"property":"og:locale","content":"ko_KR"}],["$","meta","9",{"property":"og:image","content":"https://darkhos.github.io/ondo-campus/ondo-kakao-profile.jpg"}],["$","meta","10",{"property":"og:image:width","content":"1024"}],["$","meta","11",{"property":"og:image:height","content":"1024"}],["$","meta","12",{"property":"og:image:alt","content":"ONDO 36.5° OFFICIAL SUPPORT"}],["$","meta","13",{"property":"og:type","content":"website"}],["$","meta","14",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","15",{"name":"twitter:title","content":"온도 (ONDO 36.5°) — 대학생 1:1 블라인드 소개팅"}],["$","meta","16",{"name":"twitter:description","content":"학생 인증한 서울·수도권 대학생 & 일본인 유학생 전용 1:1 블라인드 소개팅"}],["$","meta","17",{"name":"twitter:image","content":"https://darkhos.github.io/ondo-campus/ondo-kakao-profile.jpg"}],["$","link","18",{"rel":"icon","href":"/ondo-campus/favicon.ico?favicon.1vq4sk8ntwk3j.ico","sizes":"32x32","type":"image/x-icon"}],["$","$L1c","19",{}]]
