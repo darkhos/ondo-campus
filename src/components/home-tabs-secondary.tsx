@@ -167,8 +167,6 @@ export function IdealTypeTab({
   const [avoidSameSchool, setAvoidSameSchool] = useState(user.avoidSameSchool);
   const [smartRelax, setSmartRelax] = useState(user.smartRelaxFilter ?? true);
   const [includeJapaneseGlobal, setIncludeJapaneseGlobal] = useState(true);
-  const [sido, setSido] = useState(user.location?.sido ?? "서울특별시");
-  const [sigungu, setSigungu] = useState(user.location?.sigungu ?? "서대문구");
 
   const [advancedOpen, setAdvancedOpen] = useState(true);
   const [prefMbti, setPrefMbti] = useState<string[]>(user.preferredMbti);
@@ -193,7 +191,6 @@ export function IdealTypeTab({
     prefBuilds.length === 0 && (isJa ? "体格" : "체격"),
   ].filter(Boolean) as string[];
 
-  const sigunguList = sido ? DISTRICTS_BY_SIDO[sido] ?? [] : [];
 
   const toggleItem = (list: string[], val: string) =>
     list.includes(val) ? list.filter((x) => x !== val) : [...list, val];
@@ -226,15 +223,6 @@ export function IdealTypeTab({
       );
       return;
     }
-    const loc = buildLocationValue(sido, sigungu);
-    if (!loc) {
-      setError(
-        isJa
-          ? "生活エリアを選択してください。"
-          : "생활 지역을 선택해 주세요."
-      );
-      return;
-    }
     setError("");
     onUserUpdate({
       preferredAgeMin: min,
@@ -242,7 +230,6 @@ export function IdealTypeTab({
       preferredHeight: heightPrefs.join(","),
       avoidSameSchool,
       smartRelaxFilter: smartRelax,
-      location: loc,
       preferredMbti: prefMbti,
       preferredSmoking: prefSmoking,
       preferredImpressions: prefImpressions,
@@ -272,8 +259,8 @@ export function IdealTypeTab({
               </div>
               <p className="mt-0.5 text-[12px] leading-relaxed text-gray-500">
                 {isJa
-                  ? "オンにすると、条件にぴったり合う相手がいないとき、希望年齢を前後2歳まで広げ、喫煙の条件も柔軟に考慮します。"
-                  : "켜 두면 딱 맞는 상대가 없을 때 선호 나이를 앞뒤 2살까지 넓히고, 흡연 조건도 유연하게 봐요."}
+                  ? "オンにすると、条件にぴったり合う相手がいないとき、希望年齢を前後2歳まで広げ、身長・喫煙の条件も柔軟に考慮します。"
+                  : "켜 두면 딱 맞는 상대가 없을 때 선호 나이를 앞뒤 2살까지 넓히고, 키·흡연 조건도 유연하게 봐요."}
               </p>
             </div>
             <button
@@ -319,34 +306,6 @@ export function IdealTypeTab({
               labelLow={isJa ? "希望年齢の下限" : "선호 나이 최소"}
               labelHigh={isJa ? "希望年齢の上限" : "선호 나이 최대"}
             />
-          </div>
-
-          <div>
-            <label className={FIELD_LABEL}>
-              {isJa ? "主な生活エリア" : "주요 생활권"}
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <SelectField
-                value={sido}
-                onChange={(v) => {
-                  setSido(v);
-                  setSigungu(DISTRICTS_BY_SIDO[v]?.[0] ?? "");
-                }}
-              >
-                {SIDO_LIST.map((s) => (
-                  <option key={s} value={s}>
-                    {isJa ? SIDO_LABEL_JA[s] || s : s}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField value={sigungu} onChange={setSigungu}>
-                {sigunguList.map((sg) => (
-                  <option key={sg} value={sg}>
-                    {isJa ? SIGUNGU_LABEL_JA[sg] || sg : sg}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
           </div>
 
           <div>
@@ -1566,8 +1525,8 @@ export function HistoryTab({
     if (item.resultStatus === "EXPIRED" || item.escrowStatus === "REFUNDED") {
       return {
         label: isJa
-          ? "24時間未応答で終了（使用チケットは返還）"
-          : "24시간 미응답으로 종료 (사용한 티켓은 반환)",
+          ? "応答・会話がなく自動終了"
+          : "응답·대화가 없어 자동 종료",
         cls: "bg-emerald-50 text-emerald-700",
       };
     }

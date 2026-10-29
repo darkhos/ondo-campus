@@ -86,14 +86,15 @@ const VALID_HEIGHT_PREF_VALUES = new Set<string>(
   PREFERRED_HEIGHT_RANGES.map((h) => h.value)
 );
 
+// 선호 키는 실제 매칭 조건이라, 저장한 적이 없으면 "상관없어요"로 시작
 export function parseHeightPreferences(raw?: string | null): string[] {
-  if (!raw) return ["171_175", "176_180"];
+  if (!raw) return ["any"];
   const tokens = raw
     .split(",")
     .map((s) => s.trim())
     .filter((s) => VALID_HEIGHT_PREF_VALUES.has(s));
   if (tokens.length === 0) {
-    return ["171_175", "176_180"];
+    return ["any"];
   }
   if (tokens.includes("any")) {
     return ["any"];

@@ -163,6 +163,12 @@ begin
       v := v - k;
     end if;
   end loop;
+  if v ? 'height' and not (coalesce(v ->> 'height', '') ~ '^\d{2,3}$' and (v ->> 'height')::integer between 120 and 230) then
+    v := v - 'height';
+  end if;
+  if v ? 'preferredHeight' and jsonb_typeof(v -> 'preferredHeight') not in ('string', 'null') then
+    v := v - 'preferredHeight';
+  end if;
   foreach k in array array['avoidSameSchool', 'smartRelaxFilter'] loop
     if v ? k and jsonb_typeof(v -> k) <> 'null' and coalesce(v ->> k, '') not in ('true', 'false') then
       v := v - k;
@@ -1696,7 +1702,53 @@ as $$
   end;
 $$;
 
--- 자동 매칭 + 24시간 미응답 정리 (pg_cron 매시간 / 운영자 수동 실행)
+-- 프로필 부가 정보에서 숫자·참거짓 값을 안전하게 꺼내기 (이상한 값이면 기본값)
+create or replace function public.ondo_extra_int(p jsonb, p_key text, p_default integer)
+returns integer
+language sql
+immutable
+set search_path = public
+as $$
+  select case when coalesce(p ->> p_key, '') ~ '^\d{1,3}$' then (p ->> p_key)::integer else p_default end;
+$$;
+
+create or replace function public.ondo_extra_bool(p jsonb, p_key text, p_default boolean)
+returns boolean
+language sql
+immutable
+set search_path = public
+as $$
+  select case when p ->> p_key in ('true', 'false') then (p ->> p_key)::boolean else p_default end;
+$$;
+
+-- 선호 키 구간(예: '171_175,176_180')에 상대 키가 들어가는지. 키를 모르거나 '상관없음'이면 통과
+create or replace function public.ondo_height_ok(p_pref text, p_height integer)
+returns boolean
+language sql
+immutable
+set search_path = public
+as $$
+  with t as (
+    select trim(v) as v from unnest(string_to_array(coalesce(p_pref, ''), ',')) as v
+    where trim(v) in ('any', 'under_155', '156_160', '161_165', '166_170', '171_175', '176_180', '181_185', 'over_185')
+  )
+  select p_height is null
+      or not exists (select 1 from t)
+      or exists (
+        select 1 from t
+        where t.v = 'any'
+           or (t.v = 'under_155' and p_height <= 155)
+           or (t.v = '156_160' and p_height between 156 and 160)
+           or (t.v = '161_165' and p_height between 161 and 165)
+           or (t.v = '166_170' and p_height between 166 and 170)
+           or (t.v = '171_175' and p_height between 171 and 175)
+           or (t.v = '176_180' and p_height between 176 and 180)
+           or (t.v = '181_185' and p_height between 181 and 185)
+           or (t.v = 'over_185' and p_height >= 185)
+      );
+$$;
+
+-- 자동 매칭 + 미응답·멈춘 대화 정리 (pg_cron 매시간 / 운영자 수동 실행)
 create or replace function public.ondo_run_autonomous_batch()
 returns jsonb
 language plpgsql
@@ -1706,16 +1758,16 @@ as $$
 declare
   v_refunded_count integer := 0;
   v_matched_count integer := 0;
+  v_stale_count integer := 0;
   v_today_prefix text := 'auto-' || to_char(now() at time zone 'Asia/Seoul', 'YYYYMMDD') || '-';
   v_kst_hour integer := extract(hour from (now() at time zone 'Asia/Seoul'));
+  v_admin boolean := public.ondo_is_admin();
   r_expired record;
-  r_female public.ondo_members;
-  r_male public.ondo_members;
+  r_pair record;
   v_score integer;
   v_match_id text;
+  v_used_females text[] := array[]::text[];
   v_used_males text[] := array[]::text[];
-  v_f_min integer;
-  v_f_max integer;
 begin
   -- 0) 학생 인증은 1년마다 다시 받기 (졸업생 걸러내기)
   update public.ondo_members
@@ -1744,120 +1796,138 @@ begin
     end if;
   end loop;
 
+  -- 1-2) 대화가 오가다 3일 동안 멈추면 종료 → 두 사람 모두 다시 새 소개를 받을 수 있게 함
+  --      (여학생이 이미 답한 대화이므로 티켓은 사용된 것으로 봄)
+  update public.ondo_matches m
+  set ticket_status = 'EXPIRED'
+  where m.ticket_status = 'CHATTING'
+    and exists (select 1 from public.ondo_match_messages x
+                where x.match_id = m.id and x.sender_id = m.female_id)
+    and coalesce((select max(x.created_at) from public.ondo_match_messages x where x.match_id = m.id),
+                 m.chat_opened_at, now()) < now() - interval '3 days';
+  get diagnostics v_stale_count = row_count;
+
   -- 2) 매일 밤 9시(KST) 이후에만 실행 (운영자가 수동으로 실행한 경우는 시간과 관계없이 실행)
   --    같은 날(21시·22시·23시) 이미 자동 매칭을 받은 회원은 중복 매칭하지 않음
-  if v_kst_hour >= 21 or public.ondo_is_admin() then
-    for r_female in
-      select f.* from public.ondo_members f
-      where f.gender in ('F', 'FEMALE') and f.verified
-        and not coalesce(f.matching_paused, false)
-        and not exists (select 1 from public.ondo_matches om
-                        where om.female_id = f.id
-                          and (om.ticket_status in ('PENDING', 'HELD', 'CHATTING')
-                               or (not public.ondo_is_admin() and om.id like v_today_prefix || '%')))
-      order by f.updated_at desc
-      limit 50
-    loop
-      v_f_min := coalesce(nullif(r_female.profile_extra ->> 'preferredAgeMin', '')::integer, 18);
-      v_f_max := coalesce(nullif(r_female.profile_extra ->> 'preferredAgeMax', '')::integer, 30);
-
-      -- 다른 학교 · 활성 매칭 없음 · 오늘 자동 매칭 이력 없음 · 과거 매칭 이력 없음
-      -- 서로의 선호 나이·흡연·종교 조건을 우선 반영하되 (예전 버전에 저장된 선호 값도 같은 뜻으로 인식), 스마트 조건 완화(smartRelaxFilter)가 켜져 있으면 차순위 후보도 허용
-      select * into r_male
-      from public.ondo_members m
-      where m.gender in ('M', 'MALE') and m.verified
-        and not coalesce(m.matching_paused, false)
-        and (
-          m.univ <> r_female.univ
-          or (
-            coalesce((r_female.profile_extra ->> 'avoidSameSchool')::boolean, true) = false
-            and coalesce((m.profile_extra ->> 'avoidSameSchool')::boolean, true) = false
-          )
-        )
-        and not (m.id = any(v_used_males))
-        and (
-          (
-            coalesce(m.age, 24) between v_f_min and v_f_max
-            and coalesce(r_female.age, 22) between
-                  coalesce(nullif(m.profile_extra ->> 'preferredAgeMin', '')::integer, 18)
-              and coalesce(nullif(m.profile_extra ->> 'preferredAgeMax', '')::integer, 30)
-          )
-          or (
-            coalesce((r_female.profile_extra ->> 'smartRelaxFilter')::boolean, true)
-            and coalesce((m.profile_extra ->> 'smartRelaxFilter')::boolean, true)
-            and coalesce(m.age, 24) between (v_f_min - 2) and (v_f_max + 2)
-            and coalesce(r_female.age, 22) between
-                  (coalesce(nullif(m.profile_extra ->> 'preferredAgeMin', '')::integer, 18) - 2)
-              and (coalesce(nullif(m.profile_extra ->> 'preferredAgeMax', '')::integer, 30) + 2)
-          )
-        )
-        and (
-          coalesce(r_female.profile_extra ->> 'preferredSmoking', 'any') not in ('no_smoke', 'non_smoker_only')
-          or coalesce(m.profile_extra ->> 'smokingStatus', 'NON_SMOKER') = 'NON_SMOKER'
-          or coalesce((r_female.profile_extra ->> 'smartRelaxFilter')::boolean, true)
-        )
-        and (
-          coalesce(m.profile_extra ->> 'preferredSmoking', 'any') not in ('no_smoke', 'non_smoker_only')
-          or coalesce(r_female.profile_extra ->> 'smokingStatus', 'NON_SMOKER') = 'NON_SMOKER'
-          or coalesce((m.profile_extra ->> 'smartRelaxFilter')::boolean, true)
-        )
-        and not exists (select 1 from public.ondo_matches om
-                        where om.male_id = m.id
-                          and (om.ticket_status in ('PENDING', 'HELD', 'CHATTING')
-                               or (not public.ondo_is_admin() and om.id like v_today_prefix || '%')))
-        and not exists (select 1 from public.ondo_matches om
-                        where om.female_id = r_female.id and om.male_id = m.id)
+  --    가능한 모든 짝을 한꺼번에 비교해 가장 잘 맞는 짝부터 정함 (먼저 차례가 온 사람이 좋은 짝을 가져가지 않도록)
+  if v_kst_hour >= 21 or v_admin then
+    for r_pair in
+      with f as (
+        select f.* from public.ondo_members f
+        where f.gender in ('F', 'FEMALE') and f.verified
+          and not coalesce(f.matching_paused, false)
+          and not exists (select 1 from public.ondo_matches om
+                          where om.female_id = f.id
+                            and (om.ticket_status in ('PENDING', 'HELD', 'CHATTING')
+                                 or (not v_admin and om.id like v_today_prefix || '%')))
+        order by f.updated_at desc
+        limit 300
+      ),
+      mm as (
+        select m.* from public.ondo_members m
+        where m.gender in ('M', 'MALE') and m.verified
+          and not coalesce(m.matching_paused, false)
+          and not exists (select 1 from public.ondo_matches om
+                          where om.male_id = m.id
+                            and (om.ticket_status in ('PENDING', 'HELD', 'CHATTING')
+                                 or (not v_admin and om.id like v_today_prefix || '%')))
+        order by m.updated_at desc
+        limit 300
+      ),
+      c as (
+        select f.id as f_id, f.nickname as f_name, m.id as m_id, m.nickname as m_name,
+               coalesce(f.age, 22) as fa, coalesce(m.age, 24) as ma,
+               public.ondo_extra_int(f.profile_extra, 'preferredAgeMin', 18) as f_min,
+               public.ondo_extra_int(f.profile_extra, 'preferredAgeMax', 30) as f_max,
+               public.ondo_extra_int(m.profile_extra, 'preferredAgeMin', 18) as m_min,
+               public.ondo_extra_int(m.profile_extra, 'preferredAgeMax', 30) as m_max,
+               public.ondo_extra_bool(f.profile_extra, 'smartRelaxFilter', true) as f_relax,
+               public.ondo_extra_bool(m.profile_extra, 'smartRelaxFilter', true) as m_relax,
+               f.profile_extra as fx, m.profile_extra as mx, f.mbti as f_mbti, m.mbti as m_mbti,
+               f.updated_at as f_upd, m.updated_at as m_upd
+        from f
+        join mm m
+          on m.univ <> f.univ
+          or (not public.ondo_extra_bool(f.profile_extra, 'avoidSameSchool', true)
+              and not public.ondo_extra_bool(m.profile_extra, 'avoidSameSchool', true))
+        where not exists (select 1 from public.ondo_matches om
+                          where om.female_id = f.id and om.male_id = m.id)
+      ),
+      s as (
+        select c.*,
+          (c.ma between c.f_min and c.f_max and c.fa between c.m_min and c.m_max) as age_strict,
+          (c.f_relax and c.m_relax
+           and c.ma between c.f_min - 2 and c.f_max + 2
+           and c.fa between c.m_min - 2 and c.m_max + 2) as age_relaxed,
+          (public.ondo_height_ok(c.fx ->> 'preferredHeight', public.ondo_extra_int(c.mx, 'height', null))
+           and public.ondo_height_ok(c.mx ->> 'preferredHeight', public.ondo_extra_int(c.fx, 'height', null))) as height_ok,
+          (coalesce(c.fx ->> 'preferredSmoking', 'any') not in ('no_smoke', 'non_smoker_only')
+           or coalesce(c.mx ->> 'smokingStatus', 'NON_SMOKER') = 'NON_SMOKER') as f_smoke_ok,
+          (coalesce(c.mx ->> 'preferredSmoking', 'any') not in ('no_smoke', 'non_smoker_only')
+           or coalesce(c.fx ->> 'smokingStatus', 'NON_SMOKER') = 'NON_SMOKER') as m_smoke_ok,
+          ((coalesce(c.fx ->> 'preferredReligion', 'any') = 'any'
+            or (c.fx ->> 'preferredReligion' in ('none_only', 'nonreligious_preferred') and coalesce(c.mx ->> 'religion', 'NONE') = 'NONE')
+            or (c.fx ->> 'preferredReligion' in ('same_only', 'same_as_me') and coalesce(c.mx ->> 'religion', 'NONE') = coalesce(c.fx ->> 'religion', 'NONE')))
+           and (coalesce(c.mx ->> 'preferredReligion', 'any') = 'any'
+            or (c.mx ->> 'preferredReligion' in ('none_only', 'nonreligious_preferred') and coalesce(c.fx ->> 'religion', 'NONE') = 'NONE')
+            or (c.mx ->> 'preferredReligion' in ('same_only', 'same_as_me') and coalesce(c.fx ->> 'religion', 'NONE') = coalesce(c.mx ->> 'religion', 'NONE')))) as religion_ok,
+          ( public.ondo_pref_hit(c.fx -> 'preferredMbti', c.m_mbti)
+          + public.ondo_pref_hit(c.fx -> 'preferredImpressions', c.mx ->> 'impression')
+          + public.ondo_pref_hit(c.fx -> 'preferredBuilds', c.mx ->> 'build')
+          + public.ondo_pref_hit(c.mx -> 'preferredMbti', c.f_mbti)
+          + public.ondo_pref_hit(c.mx -> 'preferredImpressions', c.fx ->> 'impression')
+          + public.ondo_pref_hit(c.mx -> 'preferredBuilds', c.fx ->> 'build')) as pref_score
+        from c
+      ),
+      e as (
+        select * from s
+      -- 꼭 지킬 조건: 서로의 선호 나이 · 선호 키 · 흡연
+      -- (둘 다 '조건 유연하게'를 켜면 나이는 앞뒤 2살, 키는 순서만 뒤로. 흡연은 본인이 켜 두면 완화)
+      where (s.age_strict or s.age_relaxed)
+        and (s.height_ok or (s.f_relax and s.m_relax))
+        and (s.f_smoke_ok or s.f_relax)
+        and (s.m_smoke_ok or s.m_relax)
+      ),
+      o as (
+        -- 각 사람이 짝이 될 수 있는 상대 수 (적은 사람부터 챙겨야 더 많은 사람이 짝을 만남)
+        select e.*,
+               count(*) over (partition by e.f_id) as f_opts,
+               count(*) over (partition by e.m_id) as m_opts
+        from e
+      )
+      select * from o
       order by
-        -- 1순위: 엄격한 선호 나이 범위 일치 여부
-        case when coalesce(m.age, 24) between v_f_min and v_f_max
-              and coalesce(r_female.age, 22) between
-                    coalesce(nullif(m.profile_extra ->> 'preferredAgeMin', '')::integer, 18)
-                and coalesce(nullif(m.profile_extra ->> 'preferredAgeMax', '')::integer, 30)
-             then 0 else 1 end asc,
-        -- 2순위: 흡연 선호 일치 여부
-        case when (coalesce(r_female.profile_extra ->> 'preferredSmoking', 'any') not in ('no_smoke', 'non_smoker_only')
-                   or coalesce(m.profile_extra ->> 'smokingStatus', 'NON_SMOKER') = 'NON_SMOKER')
-              and (coalesce(m.profile_extra ->> 'preferredSmoking', 'any') not in ('no_smoke', 'non_smoker_only')
-                   or coalesce(r_female.profile_extra ->> 'smokingStatus', 'NON_SMOKER') = 'NON_SMOKER')
-             then 0 else 1 end asc,
-        -- 3순위: 종교 선호 일치 여부
-        case when (coalesce(r_female.profile_extra ->> 'preferredReligion', 'any') = 'any'
-                   or (r_female.profile_extra ->> 'preferredReligion' in ('none_only', 'nonreligious_preferred') and coalesce(m.profile_extra ->> 'religion', 'NONE') = 'NONE')
-                   or (r_female.profile_extra ->> 'preferredReligion' in ('same_only', 'same_as_me') and coalesce(m.profile_extra ->> 'religion', 'NONE') = coalesce(r_female.profile_extra ->> 'religion', 'NONE')))
-             then 0 else 1 end asc,
-        -- 4순위: 서로 고른 MBTI·첫인상·체격이 상대와 많이 맞을수록 먼저 (거르지는 않고 순서만 앞당김)
-        ( public.ondo_pref_hit(r_female.profile_extra -> 'preferredMbti', m.mbti)
-        + public.ondo_pref_hit(r_female.profile_extra -> 'preferredImpressions', m.profile_extra ->> 'impression')
-        + public.ondo_pref_hit(r_female.profile_extra -> 'preferredBuilds', m.profile_extra ->> 'build')
-        + public.ondo_pref_hit(m.profile_extra -> 'preferredMbti', r_female.mbti)
-        + public.ondo_pref_hit(m.profile_extra -> 'preferredImpressions', r_female.profile_extra ->> 'impression')
-        + public.ondo_pref_hit(m.profile_extra -> 'preferredBuilds', r_female.profile_extra ->> 'build')
-        ) desc,
-        -- 5순위: 나이 차이 및 최근 활동 순
-        abs(coalesce(m.age, 24) - coalesce(r_female.age, 22)) asc,
-        m.updated_at desc
-      limit 1;
-
-      if r_male.id is not null then
-        v_used_males := v_used_males || r_male.id;
-        v_score := least(99, greatest(85, 95 - abs(coalesce(r_male.age, 24) - coalesce(r_female.age, 22))));
-        v_match_id := v_today_prefix || substr(md5(r_female.id || ':' || r_male.id), 1, 6);
-        insert into public.ondo_matches (
-          id, female_id, female_name, male_id, male_name, score, ticket_status, created_at, created_at_ts
-        ) values (
-          v_match_id, r_female.id, r_female.nickname, r_male.id, r_male.nickname, v_score, 'PENDING',
-          to_char(now() at time zone 'Asia/Seoul', 'MM/DD') || ' 밤 9시 자동 매칭', now()
-        )
-        on conflict (id) do nothing;
-        if found then
-          v_matched_count := v_matched_count + 1;
-        end if;
+        o.age_strict desc,       -- 1순위: 선호 나이에 딱 맞음
+        o.height_ok desc,        -- 2순위: 선호 키에 맞음
+        (o.f_smoke_ok and o.m_smoke_ok) desc,  -- 3순위: 흡연 조건 맞음
+        o.religion_ok desc,      -- 4순위: 종교 조건 맞음
+        o.pref_score desc,       -- 5순위: 서로 고른 MBTI·첫인상·체격이 많이 맞음
+        least(o.f_opts, o.m_opts) asc,  -- 6순위: 고를 수 있는 상대가 적은 사람 먼저
+        abs(o.ma - o.fa) asc,    -- 7순위: 나이 차이가 적음
+        greatest(o.f_upd, o.m_upd) desc,
+        o.f_id, o.m_id
+    loop
+      continue when r_pair.f_id = any(v_used_females) or r_pair.m_id = any(v_used_males);
+      v_score := least(99, greatest(85, 95 - abs(r_pair.ma - r_pair.fa)));
+      v_match_id := v_today_prefix || substr(md5(r_pair.f_id || ':' || r_pair.m_id), 1, 6);
+      insert into public.ondo_matches (
+        id, female_id, female_name, male_id, male_name, score, ticket_status, created_at, created_at_ts
+      ) values (
+        v_match_id, r_pair.f_id, r_pair.f_name, r_pair.m_id, r_pair.m_name, v_score, 'PENDING',
+        to_char(now() at time zone 'Asia/Seoul', 'MM/DD') || ' 밤 9시 자동 매칭', now()
+      )
+      on conflict (id) do nothing;
+      if found then
+        v_matched_count := v_matched_count + 1;
+        v_used_females := v_used_females || r_pair.f_id;
+        v_used_males := v_used_males || r_pair.m_id;
       end if;
     end loop;
   end if;
 
   return jsonb_build_object(
     'refunded_count', v_refunded_count,
+    'stale_closed_count', v_stale_count,
     'matched_count', v_matched_count,
     'executed_at_kst', to_char(now() at time zone 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS')
   );
