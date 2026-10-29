@@ -26,6 +26,7 @@ import {
   HOBBIES,
   FIELD_INPUT,
   FIELD_LABEL,
+  MBTI_BEST_MATCH,
   MBTI_TYPES,
   MatchHistoryItem,
   RELIGION_PREFS,
@@ -153,8 +154,11 @@ export function IdealTypeTab({
 }) {
   const [locale] = useAppLocale();
   const isJa = locale === "ja";
-  const [minAge, setMinAge] = useState(String(user.preferredAgeMin));
-  const [maxAge, setMaxAge] = useState(String(user.preferredAgeMax));
+  // 예전에 저장된 범위가 만 18~30세를 벗어나면 그 안으로 맞춰서 보여 줌
+  const clampAge = (v: number, fallback: number) =>
+    Number.isFinite(v) && v > 0 ? Math.min(AGE_MAX, Math.max(AGE_MIN, v)) : fallback;
+  const [minAge, setMinAge] = useState(() => String(clampAge(user.preferredAgeMin, AGE_MIN)));
+  const [maxAge, setMaxAge] = useState(() => String(clampAge(user.preferredAgeMax, AGE_MAX)));
   const [heightPrefs, setHeightPrefs] = useState<string[]>(() =>
     parseHeightPreferences(user.preferredHeight)
   );
@@ -164,7 +168,7 @@ export function IdealTypeTab({
   const [sido, setSido] = useState(user.location?.sido ?? "서울특별시");
   const [sigungu, setSigungu] = useState(user.location?.sigungu ?? "서대문구");
 
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(true);
   const [prefMbti, setPrefMbti] = useState<string[]>(user.preferredMbti);
   const [prefSmoking, setPrefSmoking] = useState(user.preferredSmoking || "any");
   const [prefImpressions, setPrefImpressions] = useState<string[]>(user.preferredImpressions);
@@ -175,6 +179,14 @@ export function IdealTypeTab({
 
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+
+  const myMbti = (user.mbti ?? "").toUpperCase();
+  const recommendedMbti = MBTI_BEST_MATCH[myMbti] ?? [];
+  const missingDetail = [
+    prefMbti.length === 0 && "MBTI",
+    prefImpressions.length === 0 && (isJa ? "第一印象" : "첫인상"),
+    prefBuilds.length === 0 && (isJa ? "体格" : "체격"),
+  ].filter(Boolean) as string[];
 
   const sigunguList = sido ? DISTRICTS_BY_SIDO[sido] ?? [] : [];
 
@@ -189,6 +201,23 @@ export function IdealTypeTab({
         isJa
           ? "希望する年齢範囲を正しく選択してください。"
           : "선호 나이 범위를 올바르게 선택해 주세요."
+      );
+      return;
+    }
+    if (min < AGE_MIN || max > AGE_MAX) {
+      setError(
+        isJa
+          ? `希望する年齢は満${AGE_MIN}〜${AGE_MAX}歳の間で選択してください。`
+          : `선호 나이는 만 ${AGE_MIN}~${AGE_MAX}세 사이로 골라 주세요.`
+      );
+      return;
+    }
+    if (missingDetail.length > 0) {
+      setAdvancedOpen(true);
+      setError(
+        isJa
+          ? `性格・スタイルの詳細設定で「${missingDetail.join("・")}」を1つ以上選択してください。`
+          : `성향·스타일 세부 선호도에서 ${missingDetail.join(", ")} 항목을 하나 이상 골라 주세요.`
       );
       return;
     }
@@ -438,13 +467,16 @@ export function IdealTypeTab({
             <div>
               <h2 className="text-[14px] font-bold text-gray-900">
                 {isJa
-                  ? "性格・スタイルの詳細設定（任意）"
-                  : "성향·스타일 세부 선호도 (선택)"}
+                  ? "性格・スタイルの詳細設定"
+                  : "성향·스타일 세부 선호도"}
+                <span className="ml-1.5 rounded-full bg-rose-50 px-1.5 py-0.5 align-middle text-[10.5px] font-bold text-rose-600">
+                  {isJa ? "必須" : "필수"}
+                </span>
               </h2>
               <p className="mt-0.5 text-[12px] text-gray-500">
                 {isJa
-                  ? `MBTI ${prefMbti.length || "すべて"} · 喫煙 · 第一印象 · 体格`
-                  : `MBTI ${prefMbti.length || "전체"} · 흡연 · 첫인상 · 체격`}
+                  ? `MBTI ${prefMbti.length}つ · 喫煙 · 第一印象 · 体格 · 宗教`
+                  : `MBTI ${prefMbti.length}개 · 흡연 · 첫인상 · 체격 · 종교`}
               </p>
             </div>
             <ChevronDown
@@ -461,6 +493,30 @@ export function IdealTypeTab({
                 <label className={FIELD_LABEL}>
                   {isJa ? "希望するMBTI（複数選択）" : "선호 MBTI (복수 선택)"}
                 </label>
+                {recommendedMbti.length > 0 && (
+                  <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-rose-100 bg-rose-50/70 px-3 py-2.5">
+                    <p className="min-w-0 text-[12px] leading-relaxed text-rose-700">
+                      💡{" "}
+                      {isJa
+                        ? `私のMBTI（${myMbti}）と相性が良いと言われるのは `
+                        : `내 MBTI(${myMbti})와 잘 맞는다고 알려진 유형은 `}
+                      <b className="font-black">{recommendedMbti.join(" · ")}</b>
+                      {isJa ? " です" : "예요"}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPrefMbti((prev) => [
+                          ...prev,
+                          ...recommendedMbti.filter((m) => !prev.includes(m)),
+                        ])
+                      }
+                      className="shrink-0 rounded-full bg-rose-600 px-2.5 py-1 text-[11px] font-bold text-white"
+                    >
+                      {isJa ? "おすすめを選ぶ" : "추천 고르기"}
+                    </button>
+                  </div>
+                )}
                 <div className="grid grid-cols-4 gap-1.5">
                   {MBTI_TYPES.map((m) => (
                     <button
@@ -469,12 +525,27 @@ export function IdealTypeTab({
                       onClick={() =>
                         setPrefMbti((prev) => toggleItem(prev, m))
                       }
-                      className={OptionTileClass(prefMbti.includes(m))}
+                      className={cn(
+                        OptionTileClass(prefMbti.includes(m)),
+                        "relative"
+                      )}
                     >
                       {m}
+                      {recommendedMbti.includes(m) && (
+                        <span className="absolute -right-1 -top-1.5 rounded-full bg-rose-600 px-1 text-[9px] font-bold leading-[14px] text-white">
+                          {isJa ? "おすすめ" : "추천"}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
+                {recommendedMbti.length === 0 && (
+                  <p className="mt-1.5 text-[11.5px] text-gray-400">
+                    {isJa
+                      ? "プロフィールにMBTIを入れると、相性の良いタイプをおすすめします。"
+                      : "프로필에 내 MBTI를 넣으면 잘 맞는 유형을 추천해 드려요."}
+                  </p>
+                )}
               </div>
 
               <div>

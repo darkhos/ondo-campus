@@ -20,8 +20,8 @@ export const ROUTES = {
 export const KAKAO_OPENCHAT_URL = "https://open.kakao.com/o/sIwbmqUi";
 export const FAQ_URL = "/faq";
 
-export const AGE_MIN = 19;
-export const AGE_MAX = 40;
+export const AGE_MIN = 18;
+export const AGE_MAX = 30;
 export const HEIGHT_MIN = 140;
 export const HEIGHT_MAX = 210;
 
@@ -226,6 +226,26 @@ export const MBTI_TYPES = [
   "ESTP",
   "ESFP",
 ] as const;
+
+// 흔히 알려진 MBTI 궁합표 기준으로 잘 맞는다고 하는 유형 (재미로 보는 참고용)
+export const MBTI_BEST_MATCH: Record<string, string[]> = {
+  INTJ: ["ENFP", "ENTP"],
+  INTP: ["ENTJ", "ESTJ"],
+  ENTJ: ["INFP", "INTP"],
+  ENTP: ["INFJ", "INTJ"],
+  INFJ: ["ENFP", "ENTP"],
+  INFP: ["ENFJ", "ENTJ"],
+  ENFJ: ["INFP", "ISFP"],
+  ENFP: ["INFJ", "INTJ"],
+  ISTJ: ["ESFP", "ESTP"],
+  ISFJ: ["ESFP", "ESTP"],
+  ESTJ: ["ISTP", "INTP"],
+  ESFJ: ["ISFP", "ISTP"],
+  ISTP: ["ESFJ", "ESTJ"],
+  ISFP: ["ENFJ", "ESFJ"],
+  ESTP: ["ISFJ", "ISTJ"],
+  ESFP: ["ISFJ", "ISTJ"],
+};
 
 export const RELIGION_PREFS = [
   { value: "any", label: "상관없어요" },
@@ -588,8 +608,8 @@ export const EMPTY_USER_PROFILE: UserProfile = {
   vibeKeywords: [],
   location: null,
   matchingStatus: "ACTIVE",
-  preferredAgeMin: 19,
-  preferredAgeMax: 40,
+  preferredAgeMin: AGE_MIN,
+  preferredAgeMax: AGE_MAX,
   preferredHeight: "any",
   avoidSameSchool: true,
   preferredMbti: [],
