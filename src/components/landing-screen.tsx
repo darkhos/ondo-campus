@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -28,6 +28,7 @@ import {
   signInWithKakao,
 } from "@/lib/supabase";
 import { Button, LanguageToggle, MatchCard } from "@/components/ondo-ui";
+import { Reveal, useInViewOnce } from "@/components/reveal";
 
 // 가나다순 정렬
 const PARTICIPATING_UNIVS_KO = [
@@ -91,6 +92,20 @@ export default function LandingPage() {
 
   const [quickLoading, setQuickLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const [stepsRef, stepsSeen] = useInViewOnce<HTMLOListElement>();
+
+  // 첫 화면의 가입 버튼이 위로 지나가면 휴대폰 화면 아래에 가입 버튼을 띄움
+  const heroCtaRef = useRef<HTMLDivElement | null>(null);
+  const [showStickyCta, setShowStickyCta] = useState(false);
+  useEffect(() => {
+    const el = heroCtaRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => {
+      setShowStickyCta(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -191,7 +206,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 py-5 sm:px-5 sm:py-10">
+      <main className="mx-auto max-w-4xl px-4 pt-5 pb-28 sm:px-5 sm:py-10">
         {/* Hero */}
         <section className="mx-auto max-w-2xl text-center">
           <div className="inline-flex max-w-full items-center gap-1.5 rounded-2xl border border-stone-200 bg-white px-3 py-1 text-[11px] font-bold leading-snug text-zinc-700 shadow-2xs sm:px-3.5 sm:py-1.5 sm:text-[12px]">
@@ -233,7 +248,7 @@ export default function LandingPage() {
             )}
           </p>
 
-          <div className="mx-auto mt-4 flex max-w-md flex-col gap-2 sm:mt-6">
+          <div ref={heroCtaRef} className="mx-auto mt-4 flex max-w-md flex-col gap-2 sm:mt-6">
             <Button
               size="lg"
               fullWidth
@@ -346,7 +361,7 @@ export default function LandingPage() {
         </section>
 
         {/* University Eligibility & Flowing Marquee Pills */}
-        <section className="mt-5 overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-4 text-center shadow-2xs sm:mt-8 sm:p-6">
+        <Reveal as="section" className="mt-5 overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-4 text-center shadow-2xs sm:mt-8 sm:p-6">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[11px] font-extrabold text-rose-600 sm:text-[12px]">
             🎓 {isJa ? "首都圏キャンパス全域対応" : "서울 · 경기 · 인천 전 캠퍼스 오픈"}
           </span>
@@ -401,14 +416,17 @@ export default function LandingPage() {
                 : "+ 서울·경기·인천 전 대학 및 어학당 누구나 가입 가능"}
             </span>
           </div>
-        </section>
+        </Reveal>
 
         {/* 소개팅 진행 순서 — 모바일에서도 한눈에 들어오도록 2x2 그리드 배치 */}
         <section className="mt-8 sm:mt-10">
           <h2 className="text-center text-[18px] font-black tracking-tight text-zinc-900 sm:text-[24px]">
             {isJa ? "紹介はこんなふうに進みます" : "소개팅은 이렇게 진행돼요"}
           </h2>
-          <ol className="mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:gap-3 lg:grid-cols-4">
+          <ol
+            ref={stepsRef}
+            className="mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:gap-3 lg:grid-cols-4"
+          >
             {(isJa
               ? [
                   { emoji: "🪪", title: "学生認証とプロフィール", desc: "学校メールまたは学生証で認証し、好みや価値観を書きます。" },
@@ -427,12 +445,16 @@ export default function LandingPage() {
               return (
                 <li
                   key={step.title}
+                  className={stepsSeen ? "ondo-reveal is-visible" : "ondo-reveal"}
+                  style={{ "--ondo-reveal-delay": `${idx * 90}ms` } as React.CSSProperties}
+                >
+                <div
                   onClick={() => setActiveStep(idx)}
                   onMouseEnter={() => setActiveStep(idx)}
                   className={
                     isActive
-                      ? "cursor-pointer rounded-2xl border-2 border-rose-500 bg-rose-50/40 p-3.5 shadow-[0_10px_24px_rgba(225,29,72,0.12)] transition-all duration-300 -translate-y-1 sm:rounded-3xl sm:p-5"
-                      : "cursor-pointer rounded-2xl border border-stone-200/90 bg-white p-3.5 transition-all duration-300 hover:border-rose-200 sm:rounded-3xl sm:p-5"
+                      ? "h-full cursor-pointer rounded-2xl border-2 border-rose-500 bg-rose-50/40 p-3.5 shadow-[0_10px_24px_rgba(225,29,72,0.12)] transition-all duration-300 -translate-y-1 sm:rounded-3xl sm:p-5"
+                      : "h-full cursor-pointer rounded-2xl border border-stone-200/90 bg-white p-3.5 transition-all duration-300 hover:border-rose-200 sm:rounded-3xl sm:p-5"
                   }
                 >
                   <div className="flex items-center gap-1.5 sm:gap-2">
@@ -462,6 +484,7 @@ export default function LandingPage() {
                   <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-500 sm:text-[13px]">
                     {step.desc}
                   </p>
+                </div>
                 </li>
               );
             })}
@@ -470,7 +493,7 @@ export default function LandingPage() {
 
         {/* Interactive Live Preview + Features Grid */}
         <section className="mt-10 grid grid-cols-1 items-start gap-6 sm:mt-12 sm:gap-8 lg:grid-cols-12">
-          <div className="min-w-0 lg:col-span-7">
+          <Reveal className="min-w-0 lg:col-span-7">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-[13px] font-extrabold text-zinc-900">
                 {isJa
@@ -482,7 +505,7 @@ export default function LandingPage() {
               </span>
             </div>
             <MatchCard partner={DEMO_PARTNERS[0]} />
-          </div>
+          </Reveal>
 
           <div className="min-w-0 space-y-3 sm:space-y-4 lg:col-span-5">
             {(isJa
@@ -521,8 +544,9 @@ export default function LandingPage() {
                   },
                 ]
             ).map((item, idx) => (
-              <div
+              <Reveal
                 key={idx}
+                delay={idx * 110}
                 className="rounded-3xl border border-stone-200/90 bg-white p-5"
               >
                 <div className="flex items-center gap-2.5">
@@ -536,7 +560,7 @@ export default function LandingPage() {
                 <p className="mt-2 text-[13px] leading-relaxed text-zinc-500">
                   {item.desc}
                 </p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </section>
@@ -549,8 +573,9 @@ export default function LandingPage() {
         </p>
         <section className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {reviews.map((r, i) => (
-            <div
+            <Reveal
               key={i}
+              delay={i * 120}
               className="rounded-3xl border border-stone-200/90 bg-white p-6"
             >
               <span className="text-[12px] font-bold text-rose-600">
@@ -559,12 +584,12 @@ export default function LandingPage() {
               <p className="mt-2 text-[14px] leading-relaxed text-zinc-700">
                 &ldquo;{r.body}&rdquo;
               </p>
-            </div>
+            </Reveal>
           ))}
         </section>
 
         {/* Official KakaoTalk 1:1 Customer Center Banner */}
-        <section className="mt-10 rounded-3xl border border-amber-200/90 bg-white p-5 shadow-2xs sm:p-6">
+        <Reveal as="section" className="mt-10 rounded-3xl border border-amber-200/90 bg-white p-5 shadow-2xs sm:p-6">
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="min-w-0 w-full flex-1">
               <span className="inline-flex items-center gap-1 rounded-full bg-[#FEE500] px-2.5 py-0.5 text-[12px] font-extrabold text-zinc-900">
@@ -602,7 +627,7 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
-        </section>
+        </Reveal>
 
         <footer className="mt-10 border-t border-stone-200/80 pt-6 text-center text-[12px] text-zinc-400">
           <p className="font-bold text-zinc-600">
@@ -634,6 +659,25 @@ export default function LandingPage() {
           </div>
         </footer>
       </main>
+
+      {/* 휴대폰 하단 고정 가입 버튼 — 첫 화면의 가입 버튼이 위로 지나가면 나타남 */}
+      <div
+        className="ondo-sticky-cta fixed inset-x-0 bottom-0 z-40 border-t border-stone-200/80 bg-[#FAF9F6]/95 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-md sm:hidden"
+        data-shown={showStickyCta ? "true" : "false"}
+        aria-hidden={!showStickyCta}
+      >
+        <Button
+          size="lg"
+          fullWidth
+          className="bg-rose-600 hover:bg-rose-700"
+          onClick={() => router.push(ROUTES.JOIN)}
+          tabIndex={showStickyCta ? 0 : -1}
+        >
+          {isJa
+            ? "プロフィールを登録して紹介を受ける 💌"
+            : "프로필 등록하고 소개팅 받기 💌"}
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useInViewOnce, usePrefersReducedMotion } from "@/components/reveal";
 import { useRouter } from "next/navigation";
 import {
   Check,
@@ -335,6 +336,43 @@ export function MatchCard({
   const [translatedIntro, setTranslatedIntro] = useState<string | null>(null);
   const [translatedBio, setTranslatedBio] = useState<string | null>(null);
   const [demoChatStep, setDemoChatStep] = useState<0 | 3 | 5>(0);
+  // 체험 화면: 대화 수를 0→3→5로 한 칸씩 올리며 보여 줌 (동작 줄이기를 켠 경우 바로 표시)
+  const reduceMotion = usePrefersReducedMotion();
+  const [demoCount, setDemoCount] = useState(0);
+  const shownCount = reduceMotion ? demoChatStep : demoCount;
+  useEffect(() => {
+    if (reduceMotion) return;
+    const id = window.setInterval(() => {
+      setDemoCount((c) => {
+        if (c === demoChatStep) {
+          window.clearInterval(id);
+          return c;
+        }
+        return c + (demoChatStep > c ? 1 : -1);
+      });
+    }, 160);
+    return () => window.clearInterval(id);
+  }, [demoChatStep, reduceMotion]);
+  // 화면에 처음 보이면 한 번 자동으로 0 → 3 → 5 시연 (사용자가 먼저 누르면 멈춤)
+  const [demoRef, demoSeen] = useInViewOnce<HTMLDivElement>(0.6);
+  const demoTouchedRef = useRef(false);
+  useEffect(() => {
+    if (!demoSeen || reduceMotion || !isDemoPartner) return;
+    const t1 = window.setTimeout(() => {
+      if (!demoTouchedRef.current) setDemoChatStep(3);
+    }, 900);
+    const t2 = window.setTimeout(() => {
+      if (!demoTouchedRef.current) setDemoChatStep(5);
+    }, 2600);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [demoSeen, reduceMotion, isDemoPartner]);
+  const pickDemoStep = (step: 0 | 3 | 5) => {
+    demoTouchedRef.current = true;
+    setDemoChatStep(step);
+  };
   const [tiltStyle, setTiltStyle] = useState<React.CSSProperties>({});
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLElement>) => {
@@ -599,7 +637,10 @@ export function MatchCard({
 
         {/* 첫 페이지 예시 카드 전용: 3단계 블러 해제 & 카카오톡 공개 인터랙티브 체험 */}
         {isDemoPartner && (
-          <div className="mt-2 rounded-2xl border border-rose-200/90 bg-gradient-to-br from-rose-50/70 via-white to-amber-50/50 p-3.5 sm:p-4">
+          <div
+            ref={demoRef}
+            className="mt-2 rounded-2xl border border-rose-200/90 bg-gradient-to-br from-rose-50/70 via-white to-amber-50/50 p-3.5 sm:p-4"
+          >
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-[11.5px] font-extrabold text-rose-600 sm:text-[12px]">
@@ -618,34 +659,55 @@ export function MatchCard({
                 <p
                   className={cn(
                     "mt-1 font-mono text-[13.5px] font-black tracking-tight text-zinc-900 transition-all duration-500 select-none sm:text-[14px]",
-                    demoChatStep === 0
+                    shownCount <= 1
                       ? "blur-[5px]"
-                      : demoChatStep === 3
+                      : shownCount < 5
                       ? "blur-[2px]"
                       : "blur-none text-rose-600"
                   )}
                 >
-                  kakao_id: anam_jwe24
+                  <span key={shownCount === 5 ? "open" : "closed"} className={shownCount === 5 ? "ondo-pop" : undefined}>
+                    kakao_id: anam_jwe24
+                  </span>
                 </p>
               </div>
               <span
                 className={cn(
-                  "shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-extrabold text-white transition-colors",
-                  demoChatStep === 5 ? "bg-emerald-600" : "bg-rose-600"
+                  "shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-extrabold tabular-nums text-white transition-colors",
+                  shownCount === 5 ? "bg-emerald-600" : "bg-rose-600"
                 )}
               >
-                {demoChatStep === 0
-                  ? isJa
-                    ? "会話 0/5"
-                    : "대화 0/5"
-                  : demoChatStep === 3
-                  ? isJa
-                    ? "会話 3/5"
-                    : "대화 3/5"
-                  : isJa
-                  ? "会話 5/5 完了"
-                  : "대화 5/5 완료"}
+                {isJa ? `会話 ${shownCount}/5` : `대화 ${shownCount}/5`}
+                {shownCount === 5 ? (isJa ? " 完了" : " 완료") : ""}
               </span>
+            </div>
+
+            {/* 대화가 쌓이는 모습: 점 5개 + 진행 막대 */}
+            <div className="mt-2.5 flex items-center gap-2" aria-hidden>
+              <div className="flex gap-1">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <span
+                    key={i}
+                    className={cn(
+                      "h-2 w-2 rounded-full transition-all duration-300",
+                      i < shownCount
+                        ? shownCount === 5
+                          ? "scale-110 bg-emerald-500"
+                          : "scale-110 bg-rose-500"
+                        : "bg-stone-200"
+                    )}
+                  />
+                ))}
+              </div>
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-stone-200/80">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-[width] duration-300 ease-out",
+                    shownCount === 5 ? "bg-emerald-500" : "bg-rose-500"
+                  )}
+                  style={{ width: `${(shownCount / 5) * 100}%` }}
+                />
+              </div>
             </div>
 
             <p className="mt-2.5 text-[11px] font-semibold text-zinc-500">
@@ -656,7 +718,7 @@ export function MatchCard({
             <div className="mt-2 grid grid-cols-3 gap-1.5">
               <button
                 type="button"
-                onClick={() => setDemoChatStep(0)}
+                onClick={() => pickDemoStep(0)}
                 className={cn(
                   "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all sm:text-[11.5px]",
                   demoChatStep === 0
@@ -668,7 +730,7 @@ export function MatchCard({
               </button>
               <button
                 type="button"
-                onClick={() => setDemoChatStep(3)}
+                onClick={() => pickDemoStep(3)}
                 className={cn(
                   "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all sm:text-[11.5px]",
                   demoChatStep === 3
@@ -680,7 +742,7 @@ export function MatchCard({
               </button>
               <button
                 type="button"
-                onClick={() => setDemoChatStep(5)}
+                onClick={() => pickDemoStep(5)}
                 className={cn(
                   "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all sm:text-[11.5px]",
                   demoChatStep === 5
