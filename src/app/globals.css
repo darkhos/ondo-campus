@@ -498,6 +498,42 @@ body {
   box-decoration-break: clone;
 }
 
+/* 첫 화면 커플 그림: 숨 쉬듯 살짝 오르내림, 말풍선·하트 톡 튀어나오기, 반짝임 */
+@keyframes ondo-breathe {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.6px);
+  }
+}
+.ondo-breathe {
+  animation: ondo-breathe 3.2s ease-in-out infinite;
+}
+.ondo-svg-pop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: ondo-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes ondo-svg-sparkle {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.6);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(1.1);
+  }
+}
+.ondo-svg-sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ondo-svg-sparkle 1.4s ease-out both;
+}
+
 /* 휴대폰에서 "동작 줄이기"를 켠 사람에게는 움직임을 멈추고 바로 보여 줌 */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -515,7 +551,8 @@ body {
   .ondo-radar-ring-1,
   .ondo-radar-ring-2,
   .ondo-step-emoji-bounce,
-  .ondo-attention-ring {
+  .ondo-attention-ring,
+  .ondo-breathe {
     animation: none !important;
   }
   .ondo-confetti,

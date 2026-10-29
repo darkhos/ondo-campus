@@ -24,6 +24,30 @@ import {
 import { Button, LanguageToggle, MatchCard } from "@/components/ondo-ui";
 import { Reveal, useInViewOnce } from "@/components/reveal";
 import { UniversityCircularCarousel } from "@/components/univ-circular-carousel";
+import { CoupleHero } from "@/components/couple-hero";
+
+// 이용 장면 예시 (화면에 "실제 이용자 후기가 아니에요"라고 함께 표시)
+const REVIEWS_KO = [
+  {
+    meta: "광운대 22세 · 경영학과",
+    body: "친구한테 소개팅 부탁하기는 눈치 보이고, 사진 앱은 부담스러웠어요. 여기선 서로 수락한 다음에 대화부터 해 보고, 말이 잘 통하면 그때 카톡을 주고받으니까 첫 만남이 훨씬 덜 어색했어요.",
+  },
+  {
+    meta: "이화여대 언어교육원 21세 · 🇯🇵 일본인 어학당생",
+    body: "한국 대학생과 소개팅을 해 보고 싶었지만 어디서 만나야 할지 몰랐어요. 학생 인증을 한 사람끼리만 연결되고, 대화를 충분히 나눈 뒤에 연락처가 열려서 안심하고 만날 수 있었어요.",
+  },
+];
+
+const REVIEWS_JA = [
+  {
+    meta: "梨花女子大学 言語教育院 21歳 · 🇯🇵 日本人語学堂生",
+    body: "韓国の大学生と合コンや紹介で出会う機会がなかなか無かったのですが、ここでは学生認証済みの人とだけつながり、お互いOKしてから会話を始められるので安心してお見合いのような出会いを楽しめました。",
+  },
+  {
+    meta: "光云大学 22歳 · 🇯🇵 日本人正規留学生",
+    body: "写真で選ばれるアプリは苦手でしたが、ここはプロフィールと会話で相手を知ってから連絡先を交換するので、友達に紹介してもらう感覚に近いです。日本語表示にも対応していて使いやすいです。",
+  },
+];
 
 export default function LandingPage() {
   const router = useRouter();
@@ -33,6 +57,9 @@ export default function LandingPage() {
   const [quickLoading, setQuickLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [stepsRef, stepsSeen] = useInViewOnce<HTMLOListElement>();
+  const reviews = isJa ? REVIEWS_JA : REVIEWS_KO;
+  const reviewsRef = useRef<HTMLElement | null>(null);
+  const [reviewIdx, setReviewIdx] = useState(0);
 
   // 첫 화면의 가입 버튼이 위로 지나가면 휴대폰 화면 아래에 가입 버튼을 띄움
   const heroCtaRef = useRef<HTMLDivElement | null>(null);
@@ -158,10 +185,15 @@ export default function LandingPage() {
               : "매일 밤 9시, 조건이 맞는 다른 학교 학생을 1:1로 소개해 드려요."}
           </p>
 
+          {/* 커플 그림: 대화를 나눌수록 온도가 올라가 36.5°에서 카톡 공개 */}
+          <div className="ondo-rise mt-3 sm:mt-4" style={{ "--ondo-rise-delay": "230ms" } as React.CSSProperties}>
+            <CoupleHero isJa={isJa} />
+          </div>
+
           {/* Clean Hero CTA */}
           <div
             ref={heroCtaRef}
-            className="ondo-rise mx-auto mt-5 max-w-md sm:mt-6"
+            className="ondo-rise mx-auto mt-3 max-w-md sm:mt-4"
             style={{ "--ondo-rise-delay": "270ms" } as React.CSSProperties}
           >
             <Button
@@ -313,6 +345,70 @@ export default function LandingPage() {
               ))}
             </div>
           </Reveal>
+        </section>
+
+        {/* 이용 장면 예시 — 휴대폰에서는 옆으로 넘겨 보는 카드 */}
+        <section className="mx-auto mt-12 max-w-2xl">
+          <div className="flex items-end justify-between gap-2">
+            <h2 className="text-[16px] font-black tracking-tight text-zinc-900 sm:text-[18px]">
+              {isJa ? "こんなふうに出会えます" : "이렇게 만나요"}
+            </h2>
+            <span className="text-[11px] font-semibold text-zinc-400 sm:hidden">
+              {isJa ? "横にスワイプ →" : "옆으로 넘겨 보세요 →"}
+            </span>
+          </div>
+          <p className="mt-1 text-[11.5px] font-semibold text-zinc-400">
+            {isJa
+              ? "※ 想定利用シーンの例であり、実際の利用者のレビューではありません。"
+              : "※ 이용 장면을 보여 주는 예시이며, 실제 이용자 후기가 아니에요."}
+          </p>
+          <div
+            ref={reviewsRef as React.RefObject<HTMLDivElement>}
+            onScroll={(e) => {
+              const el = e.currentTarget;
+              const card = el.firstElementChild as HTMLElement | null;
+              if (!card) return;
+              const idx = Math.round(el.scrollLeft / (card.offsetWidth + 12));
+              setReviewIdx(Math.max(0, Math.min(reviews.length - 1, idx)));
+            }}
+            className="-mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
+          >
+            {reviews.map((r, i) => (
+              <Reveal
+                key={i}
+                delay={i * 120}
+                className="w-[86%] shrink-0 snap-start rounded-3xl border border-stone-200/90 bg-white p-5 sm:w-auto sm:p-6"
+              >
+                <span className="text-[12px] font-bold text-rose-600">{r.meta}</span>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-zinc-700 sm:text-[14px]">
+                  &ldquo;{r.body}&rdquo;
+                </p>
+              </Reveal>
+            ))}
+          </div>
+          {/* 휴대폰: 지금 보고 있는 카드 위치 (누르면 그 카드로 이동) */}
+          <div className="mt-3 flex justify-center gap-1.5 sm:hidden">
+            {reviews.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={isJa ? `例 ${i + 1}` : `예시 ${i + 1}`}
+                aria-current={reviewIdx === i ? "true" : undefined}
+                onClick={() => {
+                  const el = reviewsRef.current;
+                  const card = el?.children[i] as HTMLElement | undefined;
+                  if (!el || !card) return;
+                  const left = card.getBoundingClientRect().left - el.getBoundingClientRect().left + el.scrollLeft - 16;
+                  el.scrollTo({ left, behavior: "smooth" });
+                }}
+                className={
+                  reviewIdx === i
+                    ? "h-1.5 w-5 rounded-full bg-rose-500 transition-all duration-300"
+                    : "h-1.5 w-1.5 rounded-full bg-stone-300 transition-all duration-300"
+                }
+              />
+            ))}
+          </div>
         </section>
 
         <footer className="mt-10 border-t border-stone-200/80 pt-6 text-center text-[12px] text-zinc-400">
