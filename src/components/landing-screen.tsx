@@ -29,33 +29,36 @@ import {
 } from "@/lib/supabase";
 import { Button, LanguageToggle, MatchCard } from "@/components/ondo-ui";
 
+// 가나다순 정렬
 const PARTICIPATING_UNIVS_KO = [
-  "연세대",
+  "건국대",
+  "경희대",
   "고려대",
+  "광운대",
+  "서강대",
   "서울대",
   "성균관대",
-  "한양대",
-  "서강대",
+  "연세대",
   "이화여대",
   "중앙대",
-  "경희대",
   "한국외대",
-  "건국대",
+  "한양대",
   "홍익대",
 ];
 
 const PARTICIPATING_UNIVS_JA = [
-  "延世大学",
+  "建国大学",
+  "慶熙大学",
   "高麗大学",
+  "光云大学",
+  "西江大学",
   "ソウル大学",
   "成均館大学",
-  "漢陽大学",
-  "西江大学",
+  "延世大学",
   "梨花女子大学",
   "中央大学",
-  "慶熙大学",
   "韓国外国語大学",
-  "建国大学",
+  "漢陽大学",
   "弘益大学",
 ];
 
@@ -133,25 +136,26 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] text-zinc-900">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#FAF9F6] text-zinc-900">
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-stone-200/80 bg-[#FAF9F6]/90 backdrop-blur-md">
-        <div className="mx-auto flex h-15 max-w-4xl items-center justify-between gap-2 px-3.5 sm:px-5">
-          <div className="flex shrink-0 items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900 text-rose-400">
-              <Flame className="h-4 w-4" fill="currentColor" />
+        <div className="mx-auto flex h-13 max-w-4xl items-center justify-between gap-1.5 px-3 sm:h-15 sm:gap-2 sm:px-5">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-rose-400 sm:h-8 sm:w-8">
+              <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="currentColor" />
             </div>
-            <span className="whitespace-nowrap text-[16px] font-black tracking-tight text-zinc-900 sm:text-[17px]">
+            <span className="whitespace-nowrap text-[14px] font-black tracking-tight text-zinc-900 sm:text-[17px]">
               ONDO <span className="text-rose-600">36.5°</span>
             </span>
           </div>
-          <div className="flex items-center gap-1.5 whitespace-nowrap sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1 whitespace-nowrap sm:gap-2">
             <LanguageToggle />
             <a
               href={KAKAO_OPENCHAT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 rounded-full bg-[#FEE500] px-2.5 py-1.5 text-[12px] font-extrabold text-zinc-900 shadow-2xs transition-transform hover:brightness-95 sm:px-3 sm:py-2"
+              aria-label={isJa ? "1:1相談" : "카톡문의"}
+              className="inline-flex items-center gap-1 rounded-full bg-[#FEE500] px-2 py-1 text-[11px] font-extrabold text-zinc-900 shadow-2xs transition-transform hover:brightness-95 sm:px-3 sm:py-2 sm:text-[12px]"
             >
               <span>💬</span>
               <span className="hidden sm:inline">
@@ -160,13 +164,13 @@ export default function LandingPage() {
             </a>
             <Link
               href={ROUTES.LOGIN}
-              className="inline-block rounded-full border border-stone-200 bg-white px-2.5 py-1.5 text-[12px] font-bold text-zinc-800 transition-colors hover:bg-stone-50 sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className="inline-block rounded-full border border-stone-200 bg-white px-2 py-1 text-[11px] font-bold text-zinc-800 transition-colors hover:bg-stone-50 sm:px-3.5 sm:py-2 sm:text-[13px]"
             >
               {isJa ? "ログイン" : "로그인"}
             </Link>
             <Link
               href={ROUTES.JOIN}
-              className="rounded-full bg-zinc-900 px-2.5 py-1.5 text-[12px] font-bold text-white transition-colors hover:bg-zinc-800 sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className="rounded-full bg-zinc-900 px-2.5 py-1 text-[11px] font-bold text-white transition-colors hover:bg-zinc-800 sm:px-3.5 sm:py-2 sm:text-[13px]"
             >
               {isJa ? "新規登録" : "회원가입"}
             </Link>
@@ -174,18 +178,18 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-5 py-12">
+      <main className="mx-auto max-w-4xl px-4 py-5 sm:px-5 sm:py-10">
         {/* Hero */}
         <section className="mx-auto max-w-2xl text-center">
-          <div className="inline-flex items-center gap-1.5 rounded-2xl border border-stone-200 bg-white px-3.5 py-1.5 text-[12px] font-bold leading-snug text-zinc-700 shadow-2xs">
+          <div className="inline-flex max-w-full items-center gap-1.5 rounded-2xl border border-stone-200 bg-white px-3 py-1 text-[11px] font-bold leading-snug text-zinc-700 shadow-2xs sm:px-3.5 sm:py-1.5 sm:text-[12px]">
             <span>
               {isJa
-                ? "🇰🇷 韓国の大学生 ＆ 🇯🇵 日本人の語学堂生・留学生　学生認証済みの人だけの 1:1 ブラインド紹介"
-                : "🇰🇷 한국 대학생 & 🇯🇵 일본인 어학당생·유학생, 학생 인증한 사람끼리만 하는 1:1 블라인드 소개팅"}
+                ? "🇰🇷 韓国の大学生 ＆ 🇯🇵 日本人の語学堂生・留学生 1:1 ブラインド紹介"
+                : "🇰🇷 한국 대학생 & 🇯🇵 일본인 어학당생·유학생 1:1 블라인드 소개팅"}
             </span>
           </div>
 
-          <h1 className="mt-5 text-[32px] font-black leading-[1.25] tracking-tight text-zinc-900 sm:text-[40px]">
+          <h1 className="mt-3 text-[26px] font-black leading-[1.25] tracking-tight text-zinc-900 sm:mt-5 sm:text-[40px]">
             {isJa ? (
               <>
                 友達の紹介みたいに、
@@ -200,23 +204,23 @@ export default function LandingPage() {
               </>
             )}
           </h1>
-          <p className="mt-4 text-[15px] leading-relaxed text-zinc-500">
+          <p className="mt-2.5 text-[13.5px] leading-relaxed text-zinc-500 sm:mt-4 sm:text-[15px]">
             {isJa ? (
               <>
                 ONDOが希望条件に合う他大学の学生を紹介します。
-                <br />
+                <br className="hidden sm:inline" />{" "}
                 お互いOKしたらまず会話から。話が弾んだらカカオトークを交換して会いましょう。
               </>
             ) : (
               <>
                 ONDO가 선호 조건이 맞는 다른 학교 학생을 소개해 드려요.
-                <br />
+                <br className="hidden sm:inline" />{" "}
                 서로 수락하면 대화부터, 말이 통하면 카톡을 주고받고 만나 보세요.
               </>
             )}
           </p>
 
-          <div className="mx-auto mt-7 flex max-w-md flex-col gap-2.5">
+          <div className="mx-auto mt-4 flex max-w-md flex-col gap-2 sm:mt-6">
             <Button
               size="lg"
               fullWidth
@@ -230,10 +234,10 @@ export default function LandingPage() {
           </div>
 
           {/* Existing member login (Kakao identity check) */}
-          <div className="mx-auto mt-4 max-w-xl rounded-3xl border border-stone-200/90 bg-white p-4 text-left shadow-2xs">
+          <div className="mx-auto mt-3 max-w-xl rounded-3xl border border-stone-200/90 bg-white p-3.5 text-left shadow-2xs sm:mt-4 sm:p-4">
             <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1 text-[12px] font-extrabold text-zinc-800">
-                <Zap className="h-3.5 w-3.5 text-rose-600" />
+              <span className="inline-flex items-center gap-1 text-[11.5px] font-extrabold text-zinc-800 sm:text-[12px]">
+                <Zap className="h-3.5 w-3.5 shrink-0 text-rose-600" />
                 {isJa
                   ? "既存会員はすぐに入場・未登録の場合は新規登録へ移動"
                   : "기존 회원은 바로 입장 · 미가입 시 회원가입으로 자동 연결"}
@@ -250,63 +254,53 @@ export default function LandingPage() {
                 {isJa ? "カカオでログイン" : "카카오로 로그인하기"}
               </Button>
             </div>
-            {/* 카카오 로그인 안내 — Supabase 카카오 로그인 기본 범위(닉네임·프로필 사진·이메일) 기준 */}
-            <ul className="mt-3 space-y-1 text-[12px] leading-relaxed text-zinc-500">
+            {/* 카카오 로그인 안내 — 모바일에서는 한눈에 들어오도록 핵심 요약 + 상세 펼치기 */}
+            <ul className="mt-2.5 space-y-1 text-[11.5px] leading-relaxed text-zinc-500 sm:mt-3 sm:text-[12px]">
               <li>
                 {isJa
-                  ? "・カカオアカウントで本人確認をするためのログインです。別途パスワードを作る必要はありません。"
-                  : "· 카카오 계정으로 본인 확인을 하는 로그인이에요. 따로 비밀번호를 만들 필요가 없어요."}
+                  ? "・カカオで本人確認のみ行い、友だちリストやトーク内容は一切受け取りません。"
+                  : "· 카카오로 본인 확인만 진행하며, 친구 목록이나 대화 내용은 일절 받지 않아요."}
               </li>
               <li>
                 {isJa
-                  ? "・カカオから受け取るのはニックネーム・プロフィール写真・メールだけで、友だちリストやトーク内容は受け取りません。"
-                  : "· 카카오에서는 닉네임·프로필 사진·이메일만 받고, 친구 목록이나 대화 내용은 받지 않아요."}
-              </li>
-              <li>
-                {isJa
-                  ? "・お相手に公開されるカカオトークIDは登録時にご自身で入力するもので、会話の条件を満たすまで公開されません。"
-                  : "· 상대에게 공개되는 카카오톡 ID는 가입할 때 직접 입력하는 것이고, 대화 조건을 채우기 전에는 공개되지 않아요."}
-              </li>
-              <li>
-                {isJa
-                  ? "・初めての方はログイン後、そのまま新規登録画面に移動します。"
-                  : "· 처음이라면 로그인 후 바로 회원가입 화면으로 이어져요."}
+                  ? "・カカオトークIDは会話条件を満たすまでお相手に公開されません。"
+                  : "· 카카오톡 ID는 서로 대화 조건을 채우기 전까지 상대에게 절대 공개되지 않아요."}
               </li>
             </ul>
           </div>
 
           {/* Dedicated Japanese Tracks Quick Entry Card */}
-          <div className="mx-auto mt-6 max-w-xl rounded-3xl border border-rose-200/80 bg-white p-4 text-left shadow-2xs">
+          <div className="mx-auto mt-3 max-w-xl rounded-3xl border border-rose-200/80 bg-white p-3.5 text-left shadow-2xs sm:mt-5 sm:p-4">
             {!isJa && (
-              <div className="mb-3 flex justify-end">
+              <div className="mb-2 flex justify-end sm:mb-3">
                 <button
                   type="button"
                   onClick={() => setLocale("ja")}
-                  className="text-[12px] font-bold text-rose-600 underline hover:text-rose-700"
+                  className="text-[11.5px] font-bold text-rose-600 underline hover:text-rose-700 sm:text-[12px]"
                 >
                   🇯🇵 일본어 화면으로 전환하기 →
                 </button>
               </div>
             )}
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => {
                   router.push("/join?track=KLI_JP");
                 }}
-                className="flex items-center gap-2.5 rounded-2xl border border-rose-200 bg-rose-50/50 px-3.5 py-2.5 text-left transition-colors hover:bg-rose-100/60"
+                className="flex items-start gap-2 rounded-2xl border border-rose-200 bg-rose-50/50 p-2.5 text-left transition-colors hover:bg-rose-100/60 sm:items-center sm:gap-2.5 sm:px-3.5 sm:py-2.5"
               >
-                <BookOpen className="h-4 w-4 shrink-0 text-rose-600" />
-                <div>
-                  <p className="text-[12px] font-extrabold text-zinc-900">
+                <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-rose-600 sm:mt-0" />
+                <div className="min-w-0">
+                  <p className="text-[11.5px] font-extrabold leading-tight text-zinc-900 sm:text-[12px]">
                     {isJa
-                      ? "🇯🇵 日本人 語学堂生として登録"
-                      : "🇯🇵 일본인 어학당생으로 가입하기"}
+                      ? "🇯🇵 日本人 語学堂生"
+                      : "🇯🇵 일본인 어학당생 가입"}
                   </p>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="mt-0.5 text-[10.5px] leading-snug text-zinc-500 sm:text-[11px]">
                     {isJa
-                      ? "ソウル・京畿・仁川 62校の語学堂・言語教育院"
-                      : "서울·경기·인천 62개교 어학당·언어교육원"}
+                      ? "首都圏 62校の語学堂"
+                      : "서울·경기·인천 62개 어학당"}
                   </p>
                 </div>
               </button>
@@ -316,19 +310,19 @@ export default function LandingPage() {
                 onClick={() => {
                   router.push("/join?track=INTL_JP");
                 }}
-                className="flex items-center gap-2.5 rounded-2xl border border-indigo-200 bg-indigo-50/50 px-3.5 py-2.5 text-left transition-colors hover:bg-indigo-100/60"
+                className="flex items-start gap-2 rounded-2xl border border-indigo-200 bg-indigo-50/50 p-2.5 text-left transition-colors hover:bg-indigo-100/60 sm:items-center sm:gap-2.5 sm:px-3.5 sm:py-2.5"
               >
-                <Globe2 className="h-4 w-4 shrink-0 text-indigo-600" />
-                <div>
-                  <p className="text-[12px] font-extrabold text-zinc-900">
+                <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 sm:mt-0" />
+                <div className="min-w-0">
+                  <p className="text-[11.5px] font-extrabold leading-tight text-zinc-900 sm:text-[12px]">
                     {isJa
-                      ? "🇯🇵 日本人 大学留学生として登録"
-                      : "🇯🇵 일본인 대학 유학생으로 가입하기"}
+                      ? "🇯🇵 日本人 大学留学生"
+                      : "🇯🇵 일본인 대학 유학생 가입"}
                   </p>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="mt-0.5 text-[10.5px] leading-snug text-zinc-500 sm:text-[11px]">
                     {isJa
-                      ? "韓国の大学の正規学部・交換・大学院留学生"
-                      : "한국 대학교 학부 정규·교환·대학원 유학생"}
+                      ? "正規学部・交換・大学院"
+                      : "학부 정규·교환·대학원"}
                   </p>
                 </div>
               </button>
@@ -336,12 +330,45 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 소개팅 진행 순서 — 실제 서버 매칭 흐름과 같게 유지 */}
-        <section className="mt-12">
-          <h2 className="text-center text-[20px] font-black tracking-tight text-zinc-900 sm:text-[24px]">
+        {/* University Eligibility & Text Pills (광운대 맨 앞 배치) */}
+        <section className="mt-5 rounded-3xl border border-stone-200/90 bg-white p-4 text-center shadow-2xs sm:mt-8 sm:p-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[11px] font-extrabold text-rose-600 sm:text-[12px]">
+            🎓 {isJa ? "首都圏キャンパス全域対応" : "서울 · 경기 · 인천 전 캠퍼스 오픈"}
+          </span>
+          <h3 className="mt-2 text-[15px] font-black leading-snug tracking-tight text-zinc-900 sm:text-[19px]">
+            {isJa
+              ? "ソウル・京畿・仁川エリアの大学・語学堂に通う学生なら誰でも登録できます！"
+              : "서울 · 경기 · 인천 지역 학교에 다니고 있는 학생이라면 누구나 가입 가능해요!"}
+          </h3>
+          <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 sm:text-[13px]">
+            {isJa
+              ? "下記の大学だけでなく、ソウル・京畿・仁川エリアのすべての大学（78キャンパス）および大学付属語学堂（62校）の在学生・休学生・留学生がご利用いただけます。"
+              : "아래 예시 학교뿐만 아니라 서울·경기·인천 지역 전체 대학교(78개 캠퍼스) 및 대학 부설 어학당(62개교)에 다니는 재학생·휴학생·유학생 모두 가입할 수 있습니다."}
+          </p>
+
+          <div className="mt-3 flex flex-wrap justify-center gap-1.5 sm:mt-4 sm:gap-2">
+            {univs.map((u) => (
+              <span
+                key={u}
+                className="rounded-full border border-stone-200/80 bg-[#FAF9F6] px-3 py-1 text-[11.5px] font-semibold text-zinc-600 sm:px-3.5 sm:text-[12px]"
+              >
+                {u}
+              </span>
+            ))}
+            <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11.5px] font-extrabold text-rose-600 sm:px-3.5 sm:text-[12px]">
+              {isJa
+                ? "+ ソウル・京畿・仁川の全大学・語学堂 登録可能"
+                : "+ 서울·경기·인천 전 대학 및 어학당 누구나 가입 가능"}
+            </span>
+          </div>
+        </section>
+
+        {/* 소개팅 진행 순서 — 모바일에서도 한눈에 들어오도록 2x2 그리드 배치 */}
+        <section className="mt-8 sm:mt-10">
+          <h2 className="text-center text-[18px] font-black tracking-tight text-zinc-900 sm:text-[24px]">
             {isJa ? "紹介はこんなふうに進みます" : "소개팅은 이렇게 진행돼요"}
           </h2>
-          <ol className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:gap-3 lg:grid-cols-4">
             {(isJa
               ? [
                   { emoji: "🪪", title: "学生認証とプロフィール", desc: "学校メールまたは学生証で認証し、好みや価値観を書きます。" },
@@ -358,20 +385,20 @@ export default function LandingPage() {
             ).map((step, idx) => (
               <li
                 key={step.title}
-                className="rounded-3xl border border-stone-200/90 bg-white p-5"
+                className="rounded-2xl border border-stone-200/90 bg-white p-3.5 sm:rounded-3xl sm:p-5"
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-[22px]" aria-hidden>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-[18px] sm:text-[22px]" aria-hidden>
                     {step.emoji}
                   </span>
-                  <span className="text-[12px] font-extrabold text-rose-600">
+                  <span className="text-[11px] font-extrabold text-rose-600 sm:text-[12px]">
                     STEP {idx + 1}
                   </span>
                 </div>
-                <h3 className="mt-2 text-[15px] font-extrabold text-zinc-900">
+                <h3 className="mt-1.5 text-[13.5px] font-extrabold text-zinc-900 sm:mt-2 sm:text-[15px]">
                   {step.title}
                 </h3>
-                <p className="mt-1 text-[13px] leading-relaxed text-zinc-500">
+                <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-500 sm:text-[13px]">
                   {step.desc}
                 </p>
               </li>
@@ -379,21 +406,9 @@ export default function LandingPage() {
           </ol>
         </section>
 
-        {/* University Text Pills */}
-        <section className="mt-10 flex flex-wrap justify-center gap-2">
-          {univs.map((u) => (
-            <span
-              key={u}
-              className="rounded-full border border-stone-200/80 bg-white px-3.5 py-1 text-[12px] font-semibold text-zinc-600"
-            >
-              {u}
-            </span>
-          ))}
-        </section>
-
         {/* Interactive Live Preview + Features Grid */}
-        <section className="mt-12 grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-7">
+        <section className="mt-10 grid grid-cols-1 items-start gap-6 sm:mt-12 sm:gap-8 lg:grid-cols-12">
+          <div className="min-w-0 lg:col-span-7">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-[13px] font-extrabold text-zinc-900">
                 {isJa
@@ -407,7 +422,7 @@ export default function LandingPage() {
             <MatchCard partner={DEMO_PARTNERS[0]} />
           </div>
 
-          <div className="space-y-4 lg:col-span-5">
+          <div className="min-w-0 space-y-3 sm:space-y-4 lg:col-span-5">
             {(isJa
               ? [
                   {
@@ -423,7 +438,7 @@ export default function LandingPage() {
                   {
                     icon: ShieldCheck,
                     title: "認証済みの学生だけ ＆ チケット返還",
-                    desc: "韓国の学生は学校メール、日本人学生は運営者が学生証を確認します。相手が応答しない場合、チケットは返還されます。",
+                    desc: "韓国の学生も日本人学生も、学校ウェブメールまたは学生証（図書館モバイル利用証など身分証明なら何でもOK）で認証します。相手が応答しない場合、チケットは返還されます。",
                   },
                 ]
               : [
@@ -440,7 +455,7 @@ export default function LandingPage() {
                   {
                     icon: ShieldCheck,
                     title: "인증된 학생만 & 티켓 환불",
-                    desc: "한국 학생은 학교 메일, 일본인 학생은 운영자가 학생증을 직접 확인해요. 상대가 응답하지 않으면 티켓은 돌려드려요.",
+                    desc: "한국 대학생·어학당생·일본 유학생 모두 학교 웹메일 또는 학생증(도서관 모바일 이용증 등 신분 입증 자료)으로 인증해요. 상대가 응답하지 않으면 티켓은 돌려드려요.",
                   },
                 ]
             ).map((item, idx) => (
@@ -487,18 +502,18 @@ export default function LandingPage() {
         </section>
 
         {/* Official KakaoTalk 1:1 Customer Center Banner */}
-        <section className="mt-10 rounded-3xl border border-amber-200/90 bg-white p-6 shadow-2xs">
+        <section className="mt-10 rounded-3xl border border-amber-200/90 bg-white p-5 shadow-2xs sm:p-6">
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-            <div>
+            <div className="min-w-0 w-full flex-1">
               <span className="inline-flex items-center gap-1 rounded-full bg-[#FEE500] px-2.5 py-0.5 text-[12px] font-extrabold text-zinc-900">
                 💬 OFFICIAL SUPPORT
               </span>
-              <h3 className="mt-2 text-[17px] font-black text-zinc-900">
+              <h3 className="mt-2 text-[16px] font-black text-zinc-900 sm:text-[17px]">
                 {isJa
                   ? "ONDO 36.5° 公式カカオトーク 1:1 顧客センター"
                   : "ONDO 36.5° 캠퍼스 공식 카카오톡 1:1 고객센터"}
               </h3>
-              <p className="mt-1 text-[13px] text-zinc-500">
+              <p className="mt-1 text-[12.5px] leading-relaxed text-zinc-500 sm:text-[13px]">
                 {isJa
                   ? "学生認証・紹介の流れ・チケット返還など、気になる点はいつでも公式オープンチャットでお問い合わせください。"
                   : "학생 인증, 소개팅 진행 방식, 티켓 환불 등 궁금한 점은 언제든 공식 카카오톡 1:1 오픈채팅으로 편하게 문의해 주세요."}

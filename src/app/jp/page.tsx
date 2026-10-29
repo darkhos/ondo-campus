@@ -121,7 +121,7 @@ export default function JapaneseDedicatedPage() {
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-rose-600" />
                   <span>
-                    語学堂の学生証・在学証明書を運営チームが確認（承認後に写真は即削除）
+                    学校公式ウェブメール（6桁コード即時承認）または学生証（図書館モバイル利用証など身分証明なら何でもOK）で認証可能
                   </span>
                 </li>
               </ul>
@@ -177,7 +177,7 @@ export default function JapaneseDedicatedPage() {
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-indigo-600" />
                   <span>
-                    大学の公式ウェブメール（6桁コード即時承認）または学生証・在学証明書で認証可能
+                    大学の公式ウェブメール（6桁コード即時承認）または学生証（図書館モバイル利用証など身分証明なら何でもOK）で認証可能
                   </span>
                 </li>
               </ul>

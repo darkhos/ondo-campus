@@ -173,6 +173,15 @@ const INTL_PROGRAM_OPTIONS = [
   },
 ];
 
+const MAJOR_CATEGORY_OPTIONS = [
+  { ko: "경영·경제학부", ja: "経営・経済学部" },
+  { ko: "컴퓨터·AI·공학계열", ja: "コンピュータ・AI・工学系" },
+  { ko: "미디어·사회과학계열", ja: "メディア・社会科学系" },
+  { ko: "인문·어문학계열", ja: "人文・語文学系" },
+  { ko: "자연과학·의약학계열", ja: "自然科学・医薬学系" },
+  { ko: "디자인·예체능계열", ja: "デザイン・芸術体育系" },
+] as const;
+
 type AiVerifyState = "IDLE" | "ANALYZING" | "VERIFIED" | "REJECTED";
 
 // 운영자 확인용 학생증 사진: 컬러 JPEG, 긴 변 최대 1600px (보관함 용량 제한 5MB)
@@ -369,12 +378,9 @@ function JoinForm({
 
   const isJapaneseTrack =
     campusTrack === "KLI_JP" || campusTrack === "INTL_JP";
-  // 한국 대학생(DEGREE): 학교 웹메일 인증만 허용
-  // 일본인 대학 유학생(INTL_JP): 학교 공식 웹메일 인증(기본) 또는 학생증·재학증명서 인증 중 선택 가능
-  // 일본인 어학당생(KLI_JP): 어학당 학생증·재학증명서 인증
-  const usesStudentIdVerification =
-    campusTrack === "KLI_JP" ||
-    (campusTrack === "INTL_JP" && intlVerifyMethod === "STUDENT_ID");
+  // 한국 대학생(DEGREE), 일본인 어학당생(KLI_JP), 일본인 대학 유학생(INTL_JP) 모두
+  // 학교 공식 웹메일 인증(WEBMAIL) 또는 학생증(도서관 모바일 이용증 등 신분 입증 자료) 인증(STUDENT_ID) 중 선택 가능
+  const usesStudentIdVerification = intlVerifyMethod === "STUDENT_ID";
   const emailGuide = getUnivEmailGuide(school, isJa);
 
   // 학생증 사진은 자동 검사 없이 그대로 받아 두었다가, 가입 완료 시 운영자 확인용으로 업로드
@@ -674,13 +680,9 @@ function JoinForm({
 
     if (!usesStudentIdVerification && emailStage !== "verified") {
       setSubmitError(
-        campusTrack === "INTL_JP"
-          ? isJa
-            ? "在学中の大学の公式ウェブメール認証（6桁コード確認）を先に完了してください。（ウェブメールがない場合は「🪪 学生証・在学証明書認証」に切り替えて登録できます）"
-            : "재학 중인 대학교 공식 웹메일 6자리 인증번호 확인을 먼저 완료해 주세요. (웹메일이 없는 경우 위에서 '🪪 학생증·재학증명서 인증'으로 전환할 수 있어요)"
-          : isJa
-          ? "韓国の大学生は所属大学の公式ウェブメール認証を完了する必要があります。上で大学ウェブメール認証を先に完了してください。"
-          : "한국 대학생은 소속 대학교 웹메일 인증번호 확인을 마쳐야 가입할 수 있어요. 위에서 학교 웹메일 인증을 먼저 완료해 주세요."
+        isJa
+          ? "在学中の学校の公式ウェブメール認証（6桁コード確認）を先に完了してください。（ウェブメールがない場合は上で「🪪 学生証・モバイル身分証認証」に切り替えて登録できます）"
+          : "재학 중인 학교 공식 웹메일 6자리 인증번호 확인을 먼저 완료해 주세요. (웹메일이 없거나 인증이 어려운 경우 위에서 '🪪 학생증·모바일 신분증 인증'으로 전환할 수 있어요)"
       );
       return;
     }
@@ -688,8 +690,8 @@ function JoinForm({
     if (usesStudentIdVerification && (aiStatus !== "VERIFIED" || !studentIdBlob)) {
       setAiStatus("REJECTED");
       const msg = isJa
-        ? "ONDO 36.5°は100%学生認証制です。学生証・在学証明書の写真をアップロードしてください。運営チームが直接確認して承認します。"
-        : "ONDO 36.5°는 100% 학생 인증제예요. 학생증·재학증명서 사진을 먼저 올려 주세요. 운영자가 직접 확인해 승인해 드려요.";
+        ? "ONDO 36.5°は100%学生認証制です。学生証（または図書館モバイル利用証などご自身の身分を証明できるもの）の写真を先にアップロードしてください。運営チームが直接確認して承認します。"
+        : "ONDO 36.5°는 100% 학생 인증제예요. 학생증(또는 도서관 모바일 이용증 등 본인의 신분을 입증할 수 있는 자료) 사진을 먼저 올려 주세요. 운영자가 직접 확인해 승인해 드려요.";
       setAiReason(msg);
       setSubmitError(msg);
       return;
@@ -1042,16 +1044,7 @@ function JoinForm({
                 placeholder={isJa ? "例: 経営学科" : "예: 경영학과"}
               />
               <div className="mt-1.5 flex flex-wrap gap-1.5">
-                {(
-                  [
-                    { ko: "경영·경제학부", ja: "経営・経済学部" },
-                    { ko: "컴퓨터·AI·공학계열", ja: "コンピュータ・AI・工学系" },
-                    { ko: "미디어·사회과학계열", ja: "メディア・社会科学系" },
-                    { ko: "인문·어문학계열", ja: "人文・語文学系" },
-                    { ko: "자연과학·의약학계열", ja: "自然科学・医薬学系" },
-                    { ko: "디자인·예체능계열", ja: "デザイン・芸術体育系" },
-                  ] as const
-                ).map((m) => {
+                {MAJOR_CATEGORY_OPTIONS.map((m) => {
                   const val = isJa ? m.ja : m.ko;
                   const active = department === val;
                   return (
@@ -1232,7 +1225,9 @@ function JoinForm({
               </div>
               <div>
                 <label className={FIELD_LABEL}>
-                  {isJa ? "所属学部・専攻" : "소속 학과·전공"}
+                  {isJa
+                    ? "所属学部・専攻（タップで学部系列を簡単選択または直接入力）"
+                    : "소속 학과·전공 (클릭하여 학부 계열 간편 선택 또는 직접 입력)"}
                 </label>
                 <input
                   className={FIELD_INPUT}
@@ -1240,6 +1235,27 @@ function JoinForm({
                   onChange={(e) => setDepartment(e.target.value)}
                   placeholder={isJa ? "例: メディア学部" : "예: 미디어학과"}
                 />
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {MAJOR_CATEGORY_OPTIONS.map((m) => {
+                    const val = isJa ? m.ja : m.ko;
+                    const active = department === val;
+                    return (
+                      <button
+                        key={m.ko}
+                        type="button"
+                        onClick={() => setDepartment(val)}
+                        className={cn(
+                          "rounded-full border px-2.5 py-1 text-[12px] font-bold transition-colors",
+                          active
+                            ? "border-indigo-600 bg-indigo-600 text-white"
+                            : "border-stone-200 bg-white text-zinc-600 hover:bg-stone-100"
+                        )}
+                      >
+                        {val}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -1280,105 +1296,104 @@ function JoinForm({
           />
         </div>
 
-        {/* Japanese International/Exchange University Students: Choose Webmail (Instant) or Student ID */}
-        {campusTrack === "INTL_JP" && (
-          <div className="space-y-2 rounded-2xl border border-indigo-200 bg-indigo-50/40 p-3.5">
-            <label className="block text-[12px] font-extrabold text-indigo-800">
-              {isJa
-                ? "🇯🇵 日本人大学留学生の学生認証方法を選択"
-                : "🇯🇵 일본인 대학 유학생 인증 방식 선택"}
-            </label>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setIntlVerifyMethod("WEBMAIL");
-                  setSubmitError(null);
-                }}
+        {/* Unified Verification Method Selector for ALL 3 Tracks (Korean Degree, Japanese KLI, Japanese University Student) */}
+        <div className="space-y-2 rounded-2xl border border-rose-200 bg-rose-50/40 p-3.5">
+          <label className="block text-[12px] font-extrabold text-rose-800">
+            {isJa
+              ? "🪪 学生認証方法を選択（ウェブメールまたは学生証のどちらも可能）"
+              : "🪪 학생 인증 방식 선택 (웹메일 또는 학생증 중 편한 방식으로 선택)"}
+          </label>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIntlVerifyMethod("WEBMAIL");
+                setSubmitError(null);
+              }}
+              className={cn(
+                "flex flex-col items-start rounded-xl border p-3 text-left transition-all",
+                intlVerifyMethod === "WEBMAIL"
+                  ? "border-zinc-900 bg-zinc-900 text-white shadow-xs"
+                  : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
+              )}
+            >
+              <span className="text-[13px] font-extrabold">
+                {isJa
+                  ? "📧 学校公式ウェブメール認証"
+                  : "📧 학교 공식 웹메일 인증"}
+              </span>
+              <span
                 className={cn(
-                  "flex flex-col items-start rounded-xl border p-3 text-left transition-all",
+                  "mt-0.5 text-[11px]",
                   intlVerifyMethod === "WEBMAIL"
-                    ? "border-indigo-600 bg-indigo-600 text-white shadow-xs"
-                    : "border-stone-200 bg-white text-zinc-700 hover:border-indigo-300"
+                    ? "text-zinc-300"
+                    : "text-zinc-500"
                 )}
               >
-                <span className="text-[13px] font-extrabold">
-                  {isJa
-                    ? "📧 大学公式ウェブメール認証"
-                    : "📧 대학교 공식 웹메일 인증"}
-                </span>
-                <span
-                  className={cn(
-                    "mt-0.5 text-[11px]",
-                    intlVerifyMethod === "WEBMAIL"
-                      ? "text-indigo-100"
-                      : "text-zinc-500"
-                  )}
-                >
-                  {isJa
-                    ? "6桁コードで待ち時間なし・即時承認（推奨）"
-                    : "6자리 인증번호로 대기 없이 즉시 승인 (권장)"}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIntlVerifyMethod("STUDENT_ID");
-                  setSubmitError(null);
-                }}
+                {isJa
+                  ? "6桁コードで待ち時間なし・即時承認"
+                  : "6자리 인증번호로 대기 없이 즉시 승인"}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIntlVerifyMethod("STUDENT_ID");
+                setSubmitError(null);
+              }}
+              className={cn(
+                "flex flex-col items-start rounded-xl border p-3 text-left transition-all",
+                intlVerifyMethod === "STUDENT_ID"
+                  ? "border-rose-600 bg-rose-600 text-white shadow-xs"
+                  : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
+              )}
+            >
+              <span className="text-[13px] font-extrabold">
+                {isJa
+                  ? "🪪 学生証・モバイル身分証認証"
+                  : "🪪 학생증·모바일 신분증 인증"}
+              </span>
+              <span
                 className={cn(
-                  "flex flex-col items-start rounded-xl border p-3 text-left transition-all",
+                  "mt-0.5 text-[11px]",
                   intlVerifyMethod === "STUDENT_ID"
-                    ? "border-indigo-600 bg-indigo-600 text-white shadow-xs"
-                    : "border-stone-200 bg-white text-zinc-700 hover:border-indigo-300"
+                    ? "text-rose-100"
+                    : "text-zinc-500"
                 )}
               >
-                <span className="text-[13px] font-extrabold">
-                  {isJa
-                    ? "🪪 学生証・在学証明書認証"
-                    : "🪪 학생증·재학증명서 사진 인증"}
-                </span>
-                <span
-                  className={cn(
-                    "mt-0.5 text-[11px]",
-                    intlVerifyMethod === "STUDENT_ID"
-                      ? "text-indigo-100"
-                      : "text-zinc-500"
-                  )}
-                >
-                  {isJa
-                    ? "大学メール未発行の交換留学生向け（運営確認）"
-                    : "웹메일 미발급 교환학생 등 (운영팀 확인)"}
-                </span>
-              </button>
-            </div>
+                {isJa
+                  ? "実物学生証・図書館モバイル利用証など身分証明なら何でもOK"
+                  : "실물 학생증·도서관 모바일 이용증 등 신분 입증 자료 가능"}
+              </span>
+            </button>
           </div>
-        )}
+          <p className="text-[11.5px] font-medium leading-relaxed text-zinc-600">
+            {isJa
+              ? "💡 韓国の大学生・語学堂生・日本人留学生すべて同じ認証方式をご利用いただけます。学生証認証は図書館モバイル利用証など、ご自身の身分を証明できるものなら何でもOKです。"
+              : "💡 한국 대학생·어학당 학생·일본 유학생 모두 웹메일 또는 학생증 중 편한 방식을 선택할 수 있어요. 학생증은 도서관 모바일 이용증 등 자기 신분을 입증할 수 있는 거면 뭐든지 가능합니다."}
+          </p>
+        </div>
 
-        {/* School Webmail Verification: Korean Degree Students (Mandatory) & Japanese University Students (When Webmail Selected) */}
+        {/* School Webmail Verification (When Webmail Selected) */}
         {!usesStudentIdVerification && (
           <section className="rounded-3xl border border-rose-200 bg-white p-4 shadow-2xs">
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-rose-600">
                 <Mail className="h-3.5 w-3.5" />
                 {isJa
-                  ? "大学公式ウェブメール認証"
-                  : campusTrack === "INTL_JP"
-                  ? "대학교 공식 웹메일 인증"
-                  : "학교 웹메일 필수 인증"}
+                  ? "学校公式ウェブメール認証"
+                  : "학교 공식 웹메일 인증"}
               </span>
               <span className="rounded-full bg-zinc-900 px-2.5 py-0.5 text-[12px] font-extrabold text-white">
-                {campusTrack === "INTL_JP"
-                  ? isJa
-                    ? "🇯🇵 留学生 即時承認"
-                    : "🇯🇵 유학생 즉시 승인"
-                  : isJa
-                  ? "韓国大学生 全員必須"
-                  : "한국 대학생 전원 필수"}
+                {isJa ? "6桁コード即時承認" : "6자리 코드 즉시 승인"}
               </span>
             </div>
             <h3 className="mt-2 text-[15px] font-extrabold text-zinc-900">
-              {campusTrack === "INTL_JP"
+              {campusTrack === "KLI_JP"
+                ? isJa
+                  ? `🇯🇵 ${KLI_INSTITUTE_LABEL_JA[school.trim()] || school.trim() || "在学中の学校"} 公式ウェブメールで認証`
+                  : `🇯🇵 ${school.trim() || "소속 학교"} 공식 웹메일로 인증`
+                : campusTrack === "INTL_JP"
                 ? isJa
                   ? `🇯🇵 ${UNIV_LABEL_JA[school.trim()] || school.trim() || "在学中の大学"} 公式ウェブメールで留学生認証`
                   : `🇯🇵 ${school.trim() || "소속 대학교"} 공식 웹메일로 유학생 인증`
@@ -1387,20 +1402,16 @@ function JoinForm({
                 : `🇰🇷 ${school.trim() || "소속 대학교"} 공식 웹메일로 재학생 인증`}
             </h3>
             <p className="mt-1 text-[12px] leading-relaxed text-zinc-500">
-              {campusTrack === "INTL_JP"
-                ? isJa
-                  ? "在学（または交換留学）中の韓国の大学から発行された公式ウェブメールで6桁の認証番号を受け取ると、運営チームの確認待ちなしで即時に登録が完了します。"
-                  : "재학(또는 교환 파견) 중인 한국 대학교에서 발급한 공식 학교 웹메일로 6자리 인증번호를 받으면 운영팀 확인 대기 없이 즉시 가입이 완료됩니다."
-                : isJa
-                ? "上で選択した大学から発行された公式ウェブメールで6桁の認証番号を受け取ることで登録が完了します。"
-                : "한국 대학생은 위에서 선택한 대학교에서 발급한 공식 학교 웹메일로 6자리 인증번호를 받아야 가입이 완료됩니다."}
+              {isJa
+                ? "在学中の大学から発行された公式ウェブメールで6桁の認証番号を受け取ると、運営チームの確認待ちなしで即時に登録が完了します。（ウェブメールがない場合は上のボタンで「🪪 学生証・モバイル身分証認証」に切り替えられます）"
+                : "재학 중인 학교에서 발급한 공식 웹메일로 6자리 인증번호를 받으면 운영팀 확인 대기 없이 즉시 가입이 완료돼요. (웹메일이 없거나 학생증으로 인증하고 싶다면 위에서 '🪪 학생증·모바일 신분증 인증'을 선택해 주세요)"}
             </p>
             {school.trim() && emailGuide.domainBadge && (
               <div className="mt-2 inline-flex flex-wrap items-center gap-1.5 rounded-xl border border-rose-100 bg-rose-50/70 px-3 py-1.5 text-[12px] font-bold text-rose-700">
                 <span>
                   📧{" "}
                   {isJa
-                    ? `${UNIV_LABEL_JA[school.trim()] || school.trim()} 公式ドメイン:`
+                    ? `${UNIV_LABEL_JA[school.trim()] || KLI_INSTITUTE_LABEL_JA[school.trim()] || school.trim()} 公式ドメイン:`
                     : `${school.trim()} 공식 도메인:`}
                 </span>
                 <span className="font-black underline">{emailGuide.domainBadge}</span>
@@ -1496,38 +1507,38 @@ function JoinForm({
           </section>
         )}
 
-        {/* Student ID photo → operator review */}
+        {/* Student ID / Mobile Library Card photo → operator review */}
         {usesStudentIdVerification && (
         <section className="rounded-3xl border border-rose-200 bg-white p-4 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-rose-600">
               <Sparkles className="h-3.5 w-3.5" />
               {isJa
-                ? "学生証 運営チーム確認"
-                : "학생증 운영팀 직접 확인"}
+                ? "学生証・モバイル身分証 確認"
+                : "학생증·모바일 신분증 운영팀 확인"}
             </span>
             <span className="rounded-full bg-zinc-900 px-2.5 py-0.5 text-[12px] font-extrabold text-white">
-              {isJa ? "全員必須認証" : "전원 필수 인증"}
+              {isJa ? "身分証明なら何でもOK" : "신분 입증 자료 모두 가능"}
             </span>
           </div>
 
           <h3 className="mt-2 text-[15px] font-extrabold text-zinc-900">
             {campusTrack === "KLI_JP"
               ? isJa
-                ? "🇯🇵 語学堂の学生証・在学証明書で認証"
-                : "🇯🇵 일본인 어학당 학생증 / 재학증명서로 인증"
+                ? "🇯🇵 語学堂の学生証・モバイル身分証で認証"
+                : "🇯🇵 일본인 어학당 학생증 · 모바일 신분증으로 인증"
               : campusTrack === "INTL_JP"
               ? isJa
-                ? "🇯🇵 外国人留学生の学生証・在学証明書で認証"
-                : "🇯🇵 일본인 대학교 유학생 학생증 / 재학증명서로 인증"
+                ? "🇯🇵 日本人大学留学生の学生証・モバイル身分証で認証"
+                : "🇯🇵 일본인 대학교 유학생 학생증 · 모바일 신분증으로 인증"
               : isJa
-              ? "🇰🇷 韓国大学生 実物学生証・モバイル学生証・在学証明書で認証"
-              : "🇰🇷 한국 대학생 실물 학생증 / 모바일 학생증 / 재학증명서로 인증"}
+              ? "🇰🇷 韓国大学生の学生証・モバイル身分証で認証"
+              : "🇰🇷 한국 대학생 학생증 · 모바일 신분증으로 인증"}
           </h3>
-          <p className="mt-1 text-[12px] leading-relaxed text-zinc-500">
+          <p className="mt-1 text-[12px] leading-relaxed text-zinc-600">
             {isJa
-              ? "学校名と今学期の期間が見えるように学生証を撮ってアップロードしてください。登録完了後、運営者が直接確認して承認します。写真は運営者のみ閲覧でき、承認・却下の直後に削除されます。"
-              : "학교 이름과 이번 학기 기간이 보이게 학생증을 찍어 올려 주세요. 가입 완료 후 운영자가 직접 확인해 승인해 드려요. 사진은 운영자만 볼 수 있고 승인·반려 즉시 삭제돼요."}
+              ? "実物の学生証、モバイル学生証、図書館モバイル利用証など、ご自身の学校・身分を証明できるものなら何でもOKです！学校名とご自身の身分が見えるように撮影またはスクショしてアップロードしてください。写真は運営者のみ閲覧でき、承認・却下の直後に削除されます。"
+              : "실물 학생증, 모바일 학생증, 도서관 모바일 이용증 등 자기 신분을 입증할 수 있는 거면 뭐든지 가능해요! 학교 이름과 본인 신분이 보이도록 찍거나 캡처해 올려 주세요. 사진은 운영자만 볼 수 있고 승인·반려 즉시 삭제돼요."}
           </p>
 
           <input
@@ -1552,8 +1563,8 @@ function JoinForm({
               <Upload className="h-4 w-4" />
               <span>
                 {isJa
-                  ? "学生証・モバイル学生証・在学証明書の写真をアップロードして認証"
-                  : "실물 학생증 · 모바일 학생증 · 재학증명서 사진 올리기"}
+                  ? "学生証・図書館モバイル利用証など身分証明の写真をアップロード"
+                  : "학생증 · 도서관 모바일 이용증 등 신분 입증 사진 올리기"}
               </span>
             </button>
           </div>

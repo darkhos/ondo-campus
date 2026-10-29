@@ -370,12 +370,19 @@ export function getUnivEmailGuide(
   placeholder: string;
   domainBadge: string | null;
 } {
-  const matched = CAPITAL_UNIV_OPTIONS.find((u) => u.value === univValue.trim());
+  const trimmed = univValue.trim();
+  const matched =
+    CAPITAL_UNIV_OPTIONS.find((u) => u.value === trimmed) ||
+    (trimmed
+      ? CAPITAL_UNIV_OPTIONS.find((u) =>
+          trimmed.startsWith(u.value.split(" ")[0])
+        )
+      : undefined);
   if (!matched) {
     return {
       placeholder: isJa
-        ? "上で在籍大学を選ぶと、大学ごとのウェブメール例が表示されます"
-        : "위에서 소속 대학교를 선택하면 학교별 웹메일 예시가 표시됩니다",
+        ? "上で在籍大学・語学堂を選ぶと、学校ごとのウェブメール例が表示されます"
+        : "위에서 소속 대학교·어학당을 선택하면 학교별 웹메일 예시가 표시됩니다",
       domainBadge: null,
     };
   }
@@ -509,6 +516,12 @@ export function departmentLabelJa(dept: string): string {
     .replace(" (학부)", "（学部）")
     .replace(" (교환·방문)", "（交換・訪問）")
     .replace(" (대학원)", "（大学院）")
+    .replace("경영·경제학부", "経営・経済学部")
+    .replace("컴퓨터·AI·공학계열", "コンピュータ・AI・工学系")
+    .replace("미디어·사회과학계열", "メディア・社会科学系")
+    .replace("인문·어문학계열", "人文・語文学系")
+    .replace("자연과학·의약학계열", "自然科学・医薬学系")
+    .replace("디자인·예체능계열", "デザイン・芸術体育系")
     .replace(
       /(\d)급 \(\d級 · (초급|중급|고급)\)/,
       (_, n: string, stage: string) => `${n}級（${LEVEL_STAGE_JA[stage]}）`
@@ -526,4 +539,125 @@ export function locationLabelJa(label: string): string {
         (SIGUNGU_LABEL_JA[part] ? stripNote(SIGUNGU_LABEL_JA[part]) : part)
     )
     .join(" ");
+}
+
+const JA_CHAR_REGEX = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/;
+const KO_CHAR_REGEX = /[\uac00-\ud7a3\u3131-\u318e]/;
+
+export function hasJapaneseText(text?: string | null): boolean {
+  return !!text && JA_CHAR_REGEX.test(text);
+}
+
+export function hasKoreanText(text?: string | null): boolean {
+  return !!text && KO_CHAR_REGEX.test(text);
+}
+
+/**
+ * 현재 화면 언어(ko/ja)와 다른 언어로 작성된 문장인지 판별
+ * - 한국어 화면(ko)인데 일본어(히라가나·가타카나·한자)가 포함된 경우 true
+ * - 일본어 화면(ja)인데 한글이 포함된 경우 true
+ */
+export function needsTranslation(
+  text: string | null | undefined,
+  viewerLocale: AppLocale
+): boolean {
+  if (!text || !text.trim()) return false;
+  return viewerLocale === "ko" ? hasJapaneseText(text) : hasKoreanText(text);
+}
+
+const TRANSLATE_CACHE_KEY = "ondo_translate_cache_v1";
+const memoryTranslateCache = new Map<string, string>();
+
+function readCachedTranslation(cacheKey: string): string | null {
+  const mem = memoryTranslateCache.get(cacheKey);
+  if (mem) return mem;
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(TRANSLATE_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Record<string, string>;
+    if (parsed[cacheKey]) {
+      memoryTranslateCache.set(cacheKey, parsed[cacheKey]);
+      return parsed[cacheKey];
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function writeCachedTranslation(cacheKey: string, value: string) {
+  memoryTranslateCache.set(cacheKey, value);
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.sessionStorage.getItem(TRANSLATE_CACHE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as Record<string, string>) : {};
+    parsed[cacheKey] = value;
+    window.sessionStorage.setItem(TRANSLATE_CACHE_KEY, JSON.stringify(parsed));
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * 한↔일 실시간 번역 (소개글 · 가치관 한 줄 노트 · 블라인드 채팅 메시지용)
+ */
+export async function translateKoJa(
+  text: string,
+  targetLang: AppLocale
+): Promise<string> {
+  const trimmed = text.trim();
+  if (!trimmed) return "";
+
+  const cacheKey = `${targetLang}:${trimmed}`;
+  const cached = readCachedTranslation(cacheKey);
+  if (cached) return cached;
+
+  const sourceLang = targetLang === "ko" ? "ja" : "ko";
+
+  // 1차: Google Translate GTX 엔드포인트
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(
+      trimmed
+    )}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data?.[0])) {
+        const translated = data[0]
+          .map((seg: unknown) => (Array.isArray(seg) && typeof seg[0] === "string" ? seg[0] : ""))
+          .join("")
+          .trim();
+        if (translated) {
+          writeCachedTranslation(cacheKey, translated);
+          return translated;
+        }
+      }
+    }
+  } catch {
+    // fallback below
+  }
+
+  // 2차 폴백: MyMemory 번역 API
+  try {
+    const fallbackUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
+      trimmed
+    )}&langpair=${sourceLang}|${targetLang}`;
+    const res = await fetch(fallbackUrl);
+    if (res.ok) {
+      const data = await res.json();
+      const translated =
+        typeof data?.responseData?.translatedText === "string"
+          ? data.responseData.translatedText.trim()
+          : "";
+      if (translated) {
+        writeCachedTranslation(cacheKey, translated);
+        return translated;
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return trimmed;
 }
