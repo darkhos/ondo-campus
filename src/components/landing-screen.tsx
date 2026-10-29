@@ -256,7 +256,9 @@ export default function LandingPage() {
                 variant="kakao"
                 onClick={handleKakaoLogin}
               >
-                {isJa ? "カカオでログイン" : "카카오로 로그인하기"}
+                {isJa
+                  ? "💬 カカオで3秒で始める"
+                  : "💬 카카오로 3초 만에 시작하기"}
               </Button>
             </div>
             {/* 카카오 로그인 안내 — 모바일에서는 한눈에 들어오도록 핵심 요약 + 상세 펼치기 */}

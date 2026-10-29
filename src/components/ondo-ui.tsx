@@ -92,7 +92,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       destructive:
         "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800",
       kakao:
-        "bg-[#FEE500] text-zinc-900 hover:bg-[#FADA0A] active:bg-[#F2CF00] shadow-2xs",
+        "ondo-shimmer-btn bg-[#FEE500] text-zinc-900 font-extrabold hover:bg-[#FADA0A] hover:scale-[1.01] active:bg-[#F2CF00] active:scale-[0.99] shadow-xs",
     };
     const sizes = {
       sm: "h-9 px-3.5 text-[13px]",
