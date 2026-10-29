@@ -603,19 +603,16 @@ export function MatchCard({
           </div>
 
           {/* 실제 매칭이 반영하는 조건만 표시 */}
-          <div className="self-start shrink-0 rounded-2xl bg-white/90 px-3 py-1.5 text-left shadow-2xs backdrop-blur-xs sm:px-3.5 sm:py-2 sm:text-right">
-            <div className="flex items-center gap-1 text-[12px] font-extrabold text-rose-600 sm:justify-end sm:text-[13px]">
+          <div className="self-start shrink-0 rounded-full bg-white/90 px-3 py-1 text-left shadow-2xs backdrop-blur-xs sm:text-right">
+            <div className="flex items-center gap-1 text-[11.5px] font-extrabold text-rose-600 sm:justify-end sm:text-[12px]">
               <Flame className="h-3.5 w-3.5 shrink-0" fill="currentColor" />
               <span>{isJa ? "希望条件クリア" : "선호 조건 충족"}</span>
             </div>
-            <p className="text-[10.5px] font-semibold text-zinc-500 sm:text-[11px]">
-              {isJa ? "学校・年齢・喫煙・宗教の条件を反映" : "학교·나이·흡연·종교 조건 반영"}
-            </p>
           </div>
         </div>
       </div>
 
-      <div className="space-y-4 p-4 sm:space-y-5 sm:p-6">
+      <div className="space-y-3.5 p-4 sm:space-y-4 sm:p-5">
         {canTranslateCard && (
           <div className="flex justify-end">
             <button
@@ -635,8 +632,8 @@ export function MatchCard({
                     ? "原文のみ表示"
                     : "원문만 보기"
                   : isJa
-                  ? "🇰🇷→🇯🇵 日本語に翻訳して見る・Google翻訳"
-                  : "🇯🇵→🇰🇷 한국어로 번역 보기 · 구글 번역"}
+                  ? "🇰🇷→🇯🇵 日本語に翻訳"
+                  : "🇯🇵→🇰🇷 한국어 번역 보기"}
               </span>
             </button>
           </div>
@@ -644,16 +641,14 @@ export function MatchCard({
 
         {/* Value & First-Impression One-Line Note */}
         {displayVoiceIntro && (
-          <div className="rounded-2xl border border-rose-100/90 bg-rose-50/40 p-4">
+          <div className="rounded-2xl border border-rose-100/90 bg-rose-50/40 p-3.5">
             <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-rose-600">
+              <span className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-rose-600">
                 <Sparkles className="h-3.5 w-3.5" />
-                {isJa
-                  ? "第一印象 ＆ 恋愛価値観 一行ノート"
-                  : "첫인상 & 연애 가치관 한 줄 노트"}
+                {isJa ? "一行紹介" : "한 줄 소개"}
               </span>
             </div>
-            <p className="mt-2 text-[13px] font-medium leading-relaxed text-zinc-800">
+            <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-zinc-800">
               &ldquo;{displayVoiceIntro}&rdquo;
             </p>
             {showTranslated && translatedIntro && (
@@ -670,10 +665,10 @@ export function MatchCard({
         {/* Story / Bio */}
         {displayBio && (
           <div>
-            <p className="text-[12px] font-bold tracking-wider text-zinc-400 uppercase">
-              Story Note
+            <p className="text-[11.5px] font-bold text-zinc-400">
+              {isJa ? "自己紹介" : "자기소개"}
             </p>
-            <p className="mt-1.5 text-[14px] leading-relaxed text-zinc-700">
+            <p className="mt-1 text-[13.5px] leading-relaxed text-zinc-700">
               {displayBio}
             </p>
             {showTranslated && translatedBio && (
@@ -817,12 +812,7 @@ export function MatchCard({
               </div>
             </div>
 
-            <p className="mt-2.5 text-[11px] font-semibold text-zinc-500">
-              {isJa
-                ? "👇 下のボタンを押して、会話が進むとカカオIDのぼかしが解除される様子を体験してみてください！"
-                : "👇 아래 단계 버튼을 눌러 대화가 쌓이면서 카카오톡 ID 블러가 풀리는 과정을 직접 체험해 보세요!"}
-            </p>
-            <div className="mt-2 grid grid-cols-3 gap-1.5">
+            <div className="mt-2.5 grid grid-cols-3 gap-1.5">
               <button
                 type="button"
                 onClick={() => pickDemoStep(0)}
@@ -1288,11 +1278,11 @@ const TAB_ITEMS: {
   labelJa: string;
   Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
 }[] = [
-  { id: "lounge", label: "라운지", labelJa: "ラウンジ", Icon: Compass },
-  { id: "archive", label: "대화 기록", labelJa: "トーク履歴", Icon: MessageSquare },
-  { id: "filter", label: "주파수 조건", labelJa: "希望条件", Icon: Sliders },
-  { id: "note", label: "가치관 노트", labelJa: "価値観ノート", Icon: Sparkles },
-  { id: "settings", label: "내 계정", labelJa: "アカウント", Icon: User },
+  { id: "lounge", label: "홈", labelJa: "ホーム", Icon: Compass },
+  { id: "archive", label: "대화방", labelJa: "トーク", Icon: MessageSquare },
+  { id: "filter", label: "이상형", labelJa: "希望条件", Icon: Sliders },
+  { id: "note", label: "내 프로필", labelJa: "プロフィール", Icon: Sparkles },
+  { id: "settings", label: "내 정보", labelJa: "マイページ", Icon: User },
 ];
 
 export function PillNav({
@@ -1370,23 +1360,23 @@ export function MatchingToggleCard({
     <div className="flex items-center justify-between gap-4 rounded-2xl border border-stone-200/80 bg-white px-5 py-4">
       <div className="min-w-0">
         <p className="text-[14px] font-bold text-zinc-900">
-          {isJa ? "毎晩21時 マッチング稼働中" : "밤 9시 주파수 매칭 활성화"}
+          {isJa ? "毎晩21時の紹介を受け取る" : "매일 밤 9시 매칭 받기"}
         </p>
         <p className="mt-0.5 text-[12px] text-zinc-500">
           {isOn
             ? isJa
-              ? "希望条件に合う他大学の学生を毎晩21時に紹介します"
-              : "선호 조건이 맞는 다른 학교 학생을 매일 밤 9시에 소개해요"
+              ? "条件に合うお相手を毎晩21時に紹介します"
+              : "조건이 맞는 상대를 밤 9시에 소개해요"
             : isJa
-            ? "現在ラウンジ休憩モードです"
-            : "현재 라운지 휴식 모드입니다"}
+            ? "現在マッチングお休み中です"
+            : "현재 휴식 모드입니다"}
         </p>
       </div>
       <button
         type="button"
         role="switch"
         aria-checked={isOn}
-        aria-label={isJa ? "マッチングを受け取る" : "주파수 매칭 활성화"}
+        aria-label={isJa ? "マッチングを受け取る" : "매칭 받기"}
         disabled={isDisabled}
         onClick={onToggle}
         className={cn(
@@ -1441,7 +1431,7 @@ export function ProfileCompletionCard({
     >
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-bold text-zinc-900">
-          {isJa ? "価値観ノート完成度 " : "가치관 노트 완성도 "}
+          {isJa ? "プロフィール完成度 " : "내 프로필 완성도 "}
           <span className={cn("tabular-nums", complete ? "text-emerald-600" : "text-rose-600")}>
             {value}%
           </span>
@@ -1565,28 +1555,21 @@ export function VoiceRecorderCard({
           </span>
           <div>
             <h3 className="text-[15px] font-extrabold text-zinc-900">
-              {isJa
-                ? "第一印象 ＆ 恋愛価値観 一行ノート"
-                : "첫인상 & 연애 가치관 한 줄 노트"}
+              {isJa ? "一行紹介" : "한 줄 소개"}
             </h3>
             <p className="text-[12px] text-zinc-500">
               {isJa
-                ? "負担になる顔写真や音声録音の代わりに、自分を表現する一行を書いてみましょう"
-                : "부담스러운 사진·음성 녹음 없이, 나를 표현하는 한 줄 문장을 적어주세요"}
+                ? "お相手に最初に表示される挨拶の一行です"
+                : "상대방 프로필 카드 맨 위에 보이는 인사말이에요"}
             </p>
           </div>
         </div>
-        <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-rose-600">
-          {isJa ? "簡単テキスト" : "간편 텍스트"}
-        </span>
       </div>
 
       {/* 1-Click Preset Templates */}
       <div className="mt-3.5 space-y-1.5">
         <p className="text-[12px] font-bold text-zinc-400">
-          {isJa
-            ? "1秒おすすめフレーズ選択（クリックで自動入力）"
-            : "1초 추천 문구 선택 (클릭 시 자동 입력)"}
+          {isJa ? "おすすめ例文（タップで自動入力）" : "추천 문구 (누르면 자동 입력)"}
         </p>
         <div className="flex flex-col gap-1.5">
           {presets.map((preset, idx) => (
@@ -1597,9 +1580,7 @@ export function VoiceRecorderCard({
                 setScriptText(preset);
                 onSaveText?.(preset);
                 setStatusMsg(
-                  isJa
-                    ? "選択した価値観一行ノートが適用されました！"
-                    : "선택한 가치관 한 줄 노트가 즉시 적용되었습니다!"
+                  isJa ? "適用されました！" : "적용되었어요!"
                 );
               }}
               className={cn(
@@ -1618,9 +1599,7 @@ export function VoiceRecorderCard({
       {/* Custom Input */}
       <div className="mt-3.5">
         <label className="text-[12px] font-bold text-zinc-400">
-          {isJa
-            ? "自分だけの一行ノートを直接編集する"
-            : "직접 나만의 한 줄 노트 수정하기"}
+          {isJa ? "直接入力" : "직접 수정"}
         </label>
         <div className="mt-1 flex gap-2">
           <input
@@ -1637,11 +1616,7 @@ export function VoiceRecorderCard({
             className="bg-zinc-900 hover:bg-zinc-800"
             onClick={() => {
               onSaveText?.(scriptText);
-              setStatusMsg(
-                isJa
-                  ? "価値観一行ノートを保存しました！"
-                  : "내 가치관 한 줄 노트가 저장되었습니다!"
-              );
+              setStatusMsg(isJa ? "保存しました！" : "저장되었어요!");
             }}
           >
             {isJa ? "保存" : "저장"}

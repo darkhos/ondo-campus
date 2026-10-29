@@ -4,10 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  BookOpen,
   Flame,
-  Globe2,
-  Zap,
 } from "lucide-react";
 import {
   KAKAO_OPENCHAT_URL,
@@ -30,7 +27,7 @@ import { UniversityCircularCarousel } from "@/components/univ-circular-carousel"
 
 export default function LandingPage() {
   const router = useRouter();
-  const [locale, setLocale] = useAppLocale();
+  const [locale] = useAppLocale();
   const isJa = locale === "ja";
 
   const [quickLoading, setQuickLoading] = useState(false);
@@ -111,29 +108,17 @@ export default function LandingPage() {
               ONDO <span className="text-rose-600">36.5°</span>
             </span>
           </div>
-          <div className="flex shrink-0 items-center gap-1 whitespace-nowrap sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap sm:gap-2">
             <LanguageToggle />
-            <a
-              href={KAKAO_OPENCHAT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={isJa ? "1:1相談" : "카톡문의"}
-              className="inline-flex items-center gap-1 rounded-full bg-[#FEE500] px-2 py-1 text-[11px] font-extrabold text-zinc-900 shadow-2xs transition-transform hover:brightness-95 sm:px-3 sm:py-2 sm:text-[12px]"
-            >
-              <span>💬</span>
-              <span className="hidden sm:inline">
-                {isJa ? "1:1相談" : "카톡문의"}
-              </span>
-            </a>
             <Link
               href={ROUTES.LOGIN}
-              className="inline-block rounded-full border border-stone-200 bg-white px-2 py-1 text-[11px] font-bold text-zinc-800 transition-colors hover:bg-stone-50 sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className="inline-block rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11.5px] font-bold text-zinc-800 transition-colors hover:bg-stone-50 sm:px-3.5 sm:py-2 sm:text-[13px]"
             >
               {isJa ? "ログイン" : "로그인"}
             </Link>
             <Link
               href={ROUTES.JOIN}
-              className="rounded-full bg-zinc-900 px-2.5 py-1 text-[11px] font-bold text-white transition-colors hover:bg-zinc-800 sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className="rounded-full bg-zinc-900 px-3 py-1 text-[11.5px] font-bold text-white transition-colors hover:bg-zinc-800 sm:px-3.5 sm:py-2 sm:text-[13px]"
             >
               {isJa ? "新規登録" : "회원가입"}
             </Link>
@@ -141,18 +126,18 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 pt-5 pb-28 sm:px-5 sm:py-10">
+      <main className="mx-auto max-w-3xl px-4 pt-6 pb-28 sm:px-5 sm:py-10">
         {/* Hero */}
-        <section className="mx-auto max-w-2xl text-center">
-          <div className="ondo-rise inline-flex max-w-full items-center gap-1.5 rounded-2xl border border-stone-200 bg-white px-3 py-1 text-[11px] font-bold leading-snug text-zinc-700 shadow-2xs sm:px-3.5 sm:py-1.5 sm:text-[12px]" style={{ "--ondo-rise-delay": "0ms" } as React.CSSProperties}>
+        <section className="mx-auto max-w-xl text-center">
+          <div className="ondo-rise inline-flex max-w-full items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1 text-[11.5px] font-bold text-zinc-700 shadow-2xs sm:text-[12px]" style={{ "--ondo-rise-delay": "0ms" } as React.CSSProperties}>
             <span>
               {isJa
-                ? "🇰🇷 韓国の大学生 ＆ 🇯🇵 日本人の語学堂生・留学生 1:1 ブラインド紹介"
-                : "🇰🇷 한국 대학생 & 🇯🇵 일본인 어학당생·유학생 1:1 블라인드 소개팅"}
+                ? "🇰🇷 韓国の大学生 ＆ 🇯🇵 日本人留学生・語学堂生"
+                : "🇰🇷 한국 대학생 & 🇯🇵 일본인 유학생·어학당생"}
             </span>
           </div>
 
-          <h1 className="ondo-rise mt-3 text-[26px] font-black leading-[1.25] tracking-tight text-zinc-900 sm:mt-5 sm:text-[40px]" style={{ "--ondo-rise-delay": "90ms" } as React.CSSProperties}>
+          <h1 className="ondo-rise mt-3.5 text-[27px] font-black leading-[1.25] tracking-tight text-zinc-900 sm:mt-5 sm:text-[40px]" style={{ "--ondo-rise-delay": "90ms" } as React.CSSProperties}>
             {isJa ? (
               <>
                 友達の紹介みたいに、
@@ -167,147 +152,60 @@ export default function LandingPage() {
               </>
             )}
           </h1>
-          <p className="ondo-rise mt-2.5 text-[13.5px] leading-relaxed text-zinc-500 sm:mt-4 sm:text-[15px]" style={{ "--ondo-rise-delay": "180ms" } as React.CSSProperties}>
-            {isJa ? (
-              <>
-                ONDOが希望条件に合う他大学の学生を紹介します。
-                <br className="hidden sm:inline" />{" "}
-                お互いOKしたらまず会話から。話が弾んだらカカオトークを交換して会いましょう。
-              </>
-            ) : (
-              <>
-                ONDO가 선호 조건이 맞는 다른 학교 학생을 소개해 드려요.
-                <br className="hidden sm:inline" />{" "}
-                서로 수락하면 대화부터, 말이 통하면 카톡을 주고받고 만나 보세요.
-              </>
-            )}
+          <p className="ondo-rise mt-2.5 text-[14px] text-zinc-500 sm:mt-3.5 sm:text-[15px]" style={{ "--ondo-rise-delay": "180ms" } as React.CSSProperties}>
+            {isJa
+              ? "毎晩21時、希望条件に合う他大学の学生を1対1でご紹介します。"
+              : "매일 밤 9시, 조건이 맞는 다른 학교 학생을 1:1로 소개해 드려요."}
           </p>
 
-          {/* Unified Hero CTA Card */}
+          {/* Clean Hero CTA */}
           <div
             ref={heroCtaRef}
-            className="ondo-rise mx-auto mt-4 max-w-xl rounded-3xl border border-stone-200/90 bg-white p-4 text-left shadow-2xs sm:mt-6 sm:p-5"
+            className="ondo-rise mx-auto mt-5 max-w-md sm:mt-6"
             style={{ "--ondo-rise-delay": "270ms" } as React.CSSProperties}
           >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-1 text-[11.5px] font-extrabold text-zinc-800 sm:text-[12px]">
-                <Zap className="h-3.5 w-3.5 shrink-0 text-rose-600" />
-                {isJa
-                  ? "既存会員はすぐに入場・未登録の場合は新規登録へ自動移動"
-                  : "기존 회원은 바로 입장 · 미가입 시 회원가입으로 자동 연결"}
-              </span>
-              {!isJa && (
-                <button
-                  type="button"
-                  onClick={() => setLocale("ja")}
-                  className="text-[11px] font-bold text-rose-600 underline hover:text-rose-700 sm:text-[11.5px]"
-                >
-                  🇯🇵 일본어 화면 전환 →
-                </button>
-              )}
-            </div>
-
-            <div className="mt-2.5">
-              <Button
-                size="lg"
-                fullWidth
-                loading={quickLoading}
-                variant="kakao"
-                onClick={handleKakaoLogin}
-              >
-                {isJa
-                  ? "💬 カカオで3秒で始める"
-                  : "💬 카카오로 3초 만에 시작하기"}
-              </Button>
-            </div>
-
-            <p className="mt-2 text-center text-[11.5px] leading-relaxed text-zinc-500 sm:text-[12px]">
+            <Button
+              size="lg"
+              fullWidth
+              loading={quickLoading}
+              variant="kakao"
+              onClick={handleKakaoLogin}
+            >
               {isJa
-                ? "・カカオで本人確認のみ行い、会話条件を満たすまでカカオIDはお相手に公開されません。"
-                : "· 카카오로 본인 확인만 진행하며, 서로 대화 조건을 채우기 전까지 카톡 ID는 공개되지 않아요."}
+                ? "💬 カカオで3秒で始める"
+                : "💬 카카오로 3초 만에 시작하기"}
+            </Button>
+
+            <p className="mt-2.5 text-center text-[12px] text-zinc-500">
+              {isJa
+                ? "🔒 お互い5往復会話するまでカカオIDは公開されません"
+                : "🔒 서로 5마디 이상 대화하기 전까지 카톡 ID는 공개되지 않아요"}
             </p>
-
-            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-stone-100 pt-3">
-              <button
-                type="button"
-                onClick={() => {
-                  router.push("/join?track=KLI_JP");
-                }}
-                className="flex items-start gap-2 rounded-2xl border border-rose-200 bg-rose-50/50 p-2.5 text-left transition-colors hover:bg-rose-100/60 sm:items-center sm:gap-2.5 sm:px-3.5 sm:py-2.5"
-              >
-                <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-rose-600 sm:mt-0" />
-                <div className="min-w-0">
-                  <p className="text-[11.5px] font-extrabold leading-tight text-zinc-900 sm:text-[12px]">
-                    {isJa
-                      ? "🇯🇵 日本人 語学堂生"
-                      : "🇯🇵 일본인 어학당생 가입"}
-                  </p>
-                  <p className="mt-0.5 text-[10.5px] leading-snug text-zinc-500 sm:text-[11px]">
-                    {isJa
-                      ? "首都圏 62校の語学堂"
-                      : "서울·경기·인천 62개 어학당"}
-                  </p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  router.push("/join?track=INTL_JP");
-                }}
-                className="flex items-start gap-2 rounded-2xl border border-indigo-200 bg-indigo-50/50 p-2.5 text-left transition-colors hover:bg-indigo-100/60 sm:items-center sm:gap-2.5 sm:px-3.5 sm:py-2.5"
-              >
-                <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 sm:mt-0" />
-                <div className="min-w-0">
-                  <p className="text-[11.5px] font-extrabold leading-tight text-zinc-900 sm:text-[12px]">
-                    {isJa
-                      ? "🇯🇵 日本人 大学留学生"
-                      : "🇯🇵 일본인 대학 유학생 가입"}
-                  </p>
-                  <p className="mt-0.5 text-[10.5px] leading-snug text-zinc-500 sm:text-[11px]">
-                    {isJa
-                      ? "正規学部・交換・大学院"
-                      : "학부 정규·교환·대학원"}
-                  </p>
-                </div>
-              </button>
-            </div>
           </div>
         </section>
 
         {/* University Eligibility & 3D Circular Carousel */}
-        <section className="mt-5 overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-4 text-center shadow-2xs sm:mt-8 sm:p-6">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[11px] font-extrabold text-rose-600 sm:text-[12px]">
-            🎓 {isJa ? "首都圏キャンパス全域対応" : "서울 · 경기 · 인천 전 캠퍼스 오픈"}
-          </span>
-          <h3 className="mt-2 text-[15px] font-black leading-snug tracking-tight text-zinc-900 sm:text-[19px]">
+        <section className="mt-7 overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-4 text-center shadow-2xs sm:mt-9 sm:p-6">
+          <h3 className="text-[15px] font-black tracking-tight text-zinc-900 sm:text-[18px]">
             {isJa
-              ? "ソウル・京畿・仁川エリアの大学・語学堂に通う学生なら誰でも登録できます！"
-              : "서울 · 경기 · 인천 지역 학교에 다니고 있는 학생이라면 누구나 가입 가능해요!"}
+              ? "🎓 ソウル・京畿・仁川の全大学＆語学堂が参加中"
+              : "🎓 서울 · 경기 · 인천 전 대학 & 어학당 참여 중"}
           </h3>
-          <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 sm:text-[13px]">
+          <p className="mt-1 text-[12px] text-zinc-500 sm:text-[13px]">
             {isJa
-              ? "下記の大学だけでなく、ソウル・京畿・仁川エリアのすべての大学（78キャンパス）および大学付属語学堂（62校）の在学生・休学生・留学生がご利用いただけます。"
-              : "아래 예시 학교뿐만 아니라 서울·경기·인천 지역 전체 대학교(78개 캠퍼스) 및 대학 부설 어학당(62개교)에 다니는 재학생·휴학생·유학생 모두 가입할 수 있습니다."}
+              ? "在学生・休学生・語学堂生・留学生なら誰でも登録できます"
+              : "재학생 · 휴학생 · 어학당생 · 유학생 누구나 가입할 수 있어요"}
           </p>
 
           <div className="-mx-2 mt-3 sm:mx-0 sm:mt-4">
             <UniversityCircularCarousel isJa={isJa} />
           </div>
-
-          <div className="mt-3 flex justify-center sm:mt-3.5">
-            <span className="rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1 text-[11.5px] font-extrabold text-rose-600 sm:px-4 sm:text-[12px]">
-              {isJa
-                ? "+ ソウル・京畿・仁川の全大学・語学堂 登録可能"
-                : "+ 서울·경기·인천 전 대학 및 어학당 누구나 가입 가능"}
-            </span>
-          </div>
         </section>
 
-        {/* 소개팅 진행 순서 — 모바일에서도 한눈에 들어오도록 2x2 그리드 배치 */}
+        {/* 소개팅 진행 순서 — 짧고 직관적인 4단계 */}
         <section className="mt-8 sm:mt-10">
-          <h2 className="text-center text-[18px] font-black tracking-tight text-zinc-900 sm:text-[24px]">
-            {isJa ? "紹介はこんなふうに進みます" : "소개팅은 이렇게 진행돼요"}
+          <h2 className="text-center text-[18px] font-black tracking-tight text-zinc-900 sm:text-[22px]">
+            {isJa ? "紹介の流れ" : "소개팅 진행 순서"}
           </h2>
           <ol
             ref={stepsRef}
@@ -315,16 +213,16 @@ export default function LandingPage() {
           >
             {(isJa
               ? [
-                  { emoji: "🪪", title: "学生認証とプロフィール", desc: "学校メールまたは学生証で認証し、好みや価値観を書きます。" },
-                  { emoji: "💌", title: "紹介が届きます", desc: "希望条件に合う他大学の学生のプロフィールが届きます。24時間以内にOKかパスを選びます。" },
-                  { emoji: "💬", title: "お互いOKなら会話", desc: "連絡先は隠したまま、アプリ内でまず話してみます。" },
-                  { emoji: "☕", title: "カカオ交換して会う", desc: "会話が弾んだらカカオトークIDが公開されます。あとは二人で会う日を決めるだけ。" },
+                  { emoji: "🪪", title: "学生認証＆プロフィール", desc: "学校メールまたは学生証で認証" },
+                  { emoji: "💌", title: "毎晩21時に紹介到着", desc: "条件の合うお相手を1:1で紹介" },
+                  { emoji: "💬", title: "アプリ内でまず会話", desc: "お互いOKならブラインド会話" },
+                  { emoji: "☕", title: "カカオ交換＆出会い", desc: "5往復話したらカカオID公開" },
                 ]
               : [
-                  { emoji: "🪪", title: "학생 인증 & 프로필", desc: "학교 메일이나 학생증으로 인증하고, 나의 취향과 연애 가치관을 적어요." },
-                  { emoji: "💌", title: "소개팅 상대 도착", desc: "선호 조건이 맞는 다른 학교 학생의 프로필이 도착해요. 24시간 안에 수락 또는 패스를 골라요." },
-                  { emoji: "💬", title: "둘 다 수락하면 대화", desc: "연락처는 가린 채로 앱 안에서 먼저 이야기를 나눠 봐요." },
-                  { emoji: "☕", title: "카톡 교환 후 만남", desc: "대화가 무르익으면 카카오톡 ID가 공개돼요. 이제 만날 날만 정하면 돼요." },
+                  { emoji: "🪪", title: "학생 인증 & 프로필", desc: "웹메일·학생증 인증 후 프로필 작성" },
+                  { emoji: "💌", title: "매일 밤 9시 도착", desc: "조건 맞는 상대를 1:1로 소개" },
+                  { emoji: "💬", title: "앱 안에서 먼저 대화", desc: "둘 다 수락하면 블라인드 대화" },
+                  { emoji: "☕", title: "카톡 교환 후 만남", desc: "5마디 이상 통하면 카톡 ID 공개" },
                 ]
             ).map((step, idx) => {
               const isActive = activeStep === idx;

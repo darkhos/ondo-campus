@@ -14,14 +14,12 @@ import {
 } from "lucide-react";
 import {
   calculateProfileCompletion,
-  KAKAO_OPENCHAT_URL,
   DEMO_PARTNERS,
   MatchHistoryItem,
   PartnerProfile,
   ROUTES,
   UserProfile,
 } from "@/lib/ondo-constants";
-import { UniversityCircularCarousel } from "@/components/univ-circular-carousel";
 import {
   Button,
   CampusBalanceLoungeCard,
@@ -219,26 +217,15 @@ export function HomeMatchTab({
                   36.5°
                 </span>
               </div>
-              <p className="hidden text-[11px] font-medium text-zinc-400 sm:block">
-                CAMPUS VALUE & VIBE LOUNGE
-              </p>
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1 whitespace-nowrap sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap sm:gap-2">
             <LanguageToggle />
-
-            <button
-              type="button"
-              onClick={() => onNavigateTab("note")}
-              className="hidden h-8 items-center gap-1 rounded-full bg-rose-50 px-2.5 text-[12px] font-bold text-rose-600 transition-colors hover:bg-rose-100 sm:inline-flex"
-            >
-              <span>{isJa ? "✍️ 価値観ノート" : "✍️ 내 가치관 노트"}</span>
-            </button>
 
             <Link
               href={ROUTES.POINTS}
-              className="inline-flex h-7 items-center gap-1 rounded-full border border-stone-200 bg-white px-2 text-[11px] font-bold text-zinc-800 shadow-2xs transition-colors hover:bg-stone-50 sm:h-8 sm:gap-1.5 sm:px-3 sm:text-[12px]"
+              className="inline-flex h-7 items-center gap-1 rounded-full border border-stone-200 bg-white px-2.5 text-[11px] font-bold text-zinc-800 shadow-2xs transition-colors hover:bg-stone-50 sm:h-8 sm:gap-1.5 sm:px-3 sm:text-[12px]"
             >
               <Coffee className="h-3 w-3 text-rose-600 sm:h-3.5 sm:w-3.5" />
               <span>
@@ -249,7 +236,7 @@ export function HomeMatchTab({
             <button
               type="button"
               onClick={handleLogout}
-              className="inline-flex h-7 items-center rounded-full border border-stone-200 bg-white px-2 text-[11px] font-bold text-zinc-500 transition-colors hover:bg-stone-100 hover:text-zinc-900 sm:h-9 sm:px-2.5 sm:text-[12px]"
+              className="inline-flex h-7 items-center rounded-full border border-stone-200 bg-white px-2 text-[11px] font-bold text-zinc-500 transition-colors hover:bg-stone-100 hover:text-zinc-900 sm:h-8 sm:px-2.5 sm:text-[12px]"
             >
               {isJa ? "ログアウト" : "로그아웃"}
             </button>
@@ -268,332 +255,175 @@ export function HomeMatchTab({
         </div>
       </header>
 
-      {/* Studio Mode Switcher (실제 매칭이 진행 중이면 체험용 탭은 숨김) */}
-      <div className={cn("border-b border-stone-200/60 bg-white/60", hasActiveServerMatch && "hidden")}>
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 px-5 py-3">
-          <div className="flex flex-wrap gap-1.5">
-            {(
-              [
-                {
-                  id: "recommendation",
-                  labelKo: "💌 오늘의 매칭 라운지",
-                  labelJa: "💌 今日のマッチングラウンジ",
-                },
-                {
-                  id: "blind_chat",
-                  labelKo: "💬 블라인드 대화방 미리보기",
-                  labelJa: "💬 ブラインドトーク体験",
-                },
-              ] as const
-            ).map((tab) => {
-              const active = matchState === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setMatchState(tab.id)}
-                  className={cn(
-                    "rounded-full px-3.5 py-1.5 text-[12px] font-bold transition-all",
-                    active
-                      ? "bg-zinc-900 text-white shadow-2xs"
-                      : "bg-[#F3F1ED] text-zinc-600 hover:bg-stone-200"
-                  )}
-                >
-                  {isJa ? tab.labelJa : tab.labelKo}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="hidden items-center gap-1.5 text-[12px] font-medium text-zinc-400 sm:flex">
-            <span>
-              {isJa ? "今夜21時のマッチングまで" : "다음 밤 9시 주파수까지"}
-            </span>
-            <span className="font-mono font-bold text-rose-600">
-              {countdown}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Responsive 2-Column Dashboard Content */}
-      <div className="mx-auto w-full max-w-4xl flex-1 px-5 py-6 pb-24">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          {/* Left / Primary Column (7 cols on Desktop) */}
-          <div className="space-y-4 lg:col-span-7">
-            {hasActiveServerMatch && (
-              <RealMatchPanel
-                matches={serverMatches}
-                isMale={user.gender === "MALE"}
-                ticketCount={ticketCount}
-                onChanged={onServerChanged ?? noop}
-              />
-            )}
-            {completionPct < 100 && (
-              <ProfileCompletionCard
-                percent={completionPct}
-                onOpen={() => onNavigateTab("note")}
-              />
-            )}
-
-            {!hasActiveServerMatch && matchState === "recommendation" && (
-              <div className="animate-fade-in space-y-4">
-                {hasRealMatch ? (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-[19px] font-extrabold tracking-tight text-zinc-900">
-                          {isJa
-                            ? "今日届いた価値観ノート"
-                            : "오늘 도착한 주파수 노트"}
-                        </h2>
-                        <p className="text-[12px] text-zinc-500">
-                          {isJa
-                            ? "恋愛価値観の一行ノートと3大ライフスタイル指標を先に確認しましょう"
-                            : "연애 가치관 한 줄 노트와 3대 라이프 지표를 먼저 확인해보세요"}
-                        </p>
-                      </div>
-
-                      <div className="flex gap-1">
-                        {realPartners.map((p, idx) => (
-                          <button
-                            key={p.uid}
-                            type="button"
-                            onClick={() => setCandidateIdx(idx)}
-                            className={cn(
-                              "rounded-full px-3 py-1 text-[12px] font-bold transition-all",
-                              candidateIdx === idx
-                                ? "bg-rose-600 text-white"
-                                : "bg-white text-zinc-600 ring-1 ring-stone-200"
-                            )}
-                          >
-                            #{idx + 1}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <MatchCard partner={currentPartner} />
-
-                    <div className="grid grid-cols-2 gap-3 pt-1">
-                      <Button
-                        variant="secondary"
-                        size="lg"
-                        fullWidth
-                        onClick={() => setConfirmModal("PASS")}
-                      >
-                        {isJa ? "次の候補を見る" : "다음 주파수 넘기기"}
-                      </Button>
-                      <Button
-                        size="lg"
-                        fullWidth
-                        className="bg-rose-600 hover:bg-rose-700"
-                        onClick={() => setConfirmModal("ACCEPT")}
-                      >
-                        {isJa
-                          ? "ブラインド・コーヒーチャットを開く"
-                          : "블라인드 커피챗 열기"}
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="rounded-3xl border border-stone-200 bg-white p-7 text-center shadow-2xs">
-                    <div className="relative mx-auto flex h-16 w-16 items-center justify-center">
-                      <span className="ondo-radar-ring-1 pointer-events-none absolute inset-0 rounded-full bg-rose-500/25" />
-                      <span className="ondo-radar-ring-2 pointer-events-none absolute inset-0 rounded-full bg-rose-500/20" />
-                      <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-rose-600 text-white shadow-md">
-                        <Clock className="h-7 w-7" />
-                      </div>
-                    </div>
-                    <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[12px] font-extrabold text-rose-600">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      {isJa
-                        ? "今夜 21:00 定刻マッチング待機中"
-                        : "오늘 밤 9:00 정각 주파수 매칭 대기 중"}
-                    </span>
-                    <h2 className="mt-3 text-[20px] font-black tracking-tight text-zinc-900">
-                      {isJa
-                        ? "今夜21時のマッチングまで "
-                        : "다음 밤 9시 매칭까지 "}
-                      <span className="font-mono text-rose-600">
-                        {countdown}
-                      </span>
-                    </h2>
-                    <p className="mt-2 text-[13px] leading-relaxed text-zinc-500">
-                      {isJa ? (
-                        <>
-                          ダミーやサクラは一切なし。<strong>100%学生証認証済みの韓国の大学生・🇯🇵日本人語学堂生・🇯🇵日本人大学留学生</strong>とのみマッチングされます。
-                          <br />
-                          お待ちの間に自己紹介や関心事を埋めておくと、お相手があなたのことをよりよく知ることができます。
-                        </>
-                      ) : (
-                        <>
-                          가짜 샘플 프로필 없이 <strong>100% 실제 인증된 타 대학 학우, 🇯🇵 일본인 어학당생, 🇯🇵 일본인 대학 유학생</strong>과만 매칭됩니다.
-                          <br />
-                          기다리는 동안 자기소개와 관심사를 채워 두면 상대가 나를 더 잘 알 수 있어요.
-                        </>
-                      )}
-                    </p>
-
-                    {/* 라운지 대기 카드 내 3D Circular Carousel 참여 대학 */}
-                    <div className="mt-4">
-                      <UniversityCircularCarousel isJa={isJa} compact />
-                    </div>
-                    <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                      <Button
-                        size="md"
-                        fullWidth
-                        className="bg-rose-600 hover:bg-rose-700"
-                        onClick={() => onNavigateTab("note")}
-                      >
-                        {isJa
-                          ? "✍️ 私の第一印象・価値観ノートを書く"
-                          : "✍️ 내 첫인상·가치관 노트 작성하기"}
-                      </Button>
-                      <Button
-                        size="md"
-                        variant="secondary"
-                        fullWidth
-                        onClick={() => router.push(ROUTES.INVITE)}
-                      >
-                        {isJa
-                          ? "🎁 友達招待でチケット+1枚もらう"
-                          : "🎁 학우 초대하고 티켓 +1장 받기"}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {!hasActiveServerMatch && matchState === "blind_chat" && (
-              <div className="animate-fade-in space-y-4">
-                {!hasRealMatch && (
-                  <div className="rounded-2xl border border-amber-200 bg-amber-50/90 px-4 py-3 text-[12px] font-medium text-amber-800">
-                    {isJa
-                      ? "💡 現在は21:00本マッチング前の「ブラインド・ルーム体験プレビュー」モードです。実際のマッチング成立時、お相手との専用トークルームがここに開きます。"
-                      : "💡 현재는 밤 9시 실제 매칭 전 '블라인드 룸 체험 미리보기' 화면입니다. 실제 매칭이 성사되면 이곳에 상대방과의 전용 대화방이 열립니다."}
-                  </div>
-                )}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-[19px] font-extrabold tracking-tight text-zinc-900">
-                      {isJa
-                        ? "24時間ブラインド・コーヒーチャット"
-                        : "24시간 블라인드 커피챗"}
-                    </h2>
-                    <p className="text-[12px] text-zinc-500">
-                      {isJa
-                        ? "5往復以上の会話が続くと安心連絡先（カカオトークID）が公開されます"
-                        : "5마디 이상 대화가 이어지면 안심 연락처(카카오톡 ID)가 열립니다"}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setEscrowState((s) =>
-                        s === "LOCKED" ? "CONFIRMED" : "LOCKED"
-                      )
-                    }
-                    className="rounded-full bg-white px-3 py-1 text-[12px] font-semibold text-zinc-600 ring-1 ring-stone-200"
-                  >
-                    {escrowState === "LOCKED"
-                      ? isJa
-                        ? "トークルームを見る"
-                        : "대화방 바로 보기"
-                      : isJa
-                      ? "チケット返還保証を見る"
-                      : "티켓 100% 환급 안내 보기"}
-                  </button>
-                </div>
-
-                {escrowState === "LOCKED" ? (
-                  <ContactUnlockCard
-                    pointCost={2900}
-                    userPoints={user.points}
-                    onUnlock={handleUnlockEscrow}
-                  />
-                ) : (
-                  <InAppBlindChatCard
-                    partner={currentPartner}
-                    escrowStatus={
-                      escrowState === "REFUNDED" ? "REFUNDED" : "CONFIRMED"
-                    }
-                    preview={!hasRealMatch}
-                  />
-                )}
-              </div>
-            )}
-
-            {!hasActiveServerMatch && matchState === "waiting" && (
-              <div className="animate-fade-in space-y-4">
-                <CampusBalanceLoungeCard
-                  onRewardPoints={() => {
-                    // 크레딧은 서버에 저장되지 않으므로 화면에서만 늘리지 않음
-                    showToast(
-                      isJa
-                        ? "投票へのご参加ありがとうございます！"
-                        : "온도차 투표에 참여해 주셔서 고마워요!"
-                    );
-                  }}
-                />
-              </div>
-            )}
-
-            {!hasActiveServerMatch && matchState === "cancelled_after_success" && (
-              <div className="animate-fade-in rounded-3xl border border-stone-200 bg-white p-7 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-600">
-                  <ShieldCheck className="h-6 w-6" />
-                </div>
-                <h2 className="mt-4 text-[18px] font-extrabold text-zinc-900">
-                  {isJa
-                    ? "100% エスクロー・コーヒーチケット保護システム"
-                    : "100% 에스크로 커피티켓 보호 시스템"}
-                </h2>
-                <p className="mt-2 text-[13px] leading-relaxed text-zinc-500">
-                  {isJa
-                    ? "ONDOはマッチング直後に連絡先（カカオトークID）を露出したり、一方的にチケットを消滅させたりしません。相手がトークルームで最初の返信を送った時のみチケットが使用され、24時間未返信の場合は100%自動返還されます。"
-                    : "ONDO는 매칭 직후 연락처(카카오톡 ID)를 바로 노출하거나 일방적으로 티켓을 소멸시키지 않습니다. 상대방이 인앱 대화방에서 첫 답장을 보낼 때만 티켓이 사용되며, 24시간 미응답 시 100% 자동 반환됩니다."}
-                </p>
-                <Button
-                  size="md"
-                  className="mt-5"
-                  onClick={() => setMatchState("blind_chat")}
-                >
-                  {isJa
-                    ? "ブラインド・コーヒーチャットを体験する"
-                    : "블라인드 커피챗 체험하기"}
-                </Button>
-              </div>
-            )}
-
-            {!hasActiveServerMatch && matchState === "paused" && (
-              <div className="animate-fade-in rounded-3xl border border-stone-200 bg-white p-8 text-center">
-                <Pause className="mx-auto h-8 w-8 text-zinc-400" />
-                <h2 className="mt-3 text-[17px] font-bold text-zinc-900">
-                  {isJa
-                    ? "ラウンジお休みモード中です"
-                    : "라운지 휴식 모드입니다"}
-                </h2>
-                <Button
-                  size="md"
-                  className="mt-4"
-                  onClick={handleToggleMatching}
-                >
-                  {isJa ? "マッチングを再開する" : "주파수 다시 켜기"}
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Right / Secondary Column (5 cols on Desktop — Live Balance Poll & Studio Status) */}
-          <div className="space-y-4 lg:col-span-5">
-            <MatchingToggleCard
-              matchingStatus={user.matchingStatus}
-              onToggle={handleToggleMatching}
+      {/* Main Focused Single-Column Content */}
+      <div className="mx-auto w-full max-w-xl flex-1 px-4 py-6 pb-24 sm:px-5">
+        <div className="space-y-4">
+          {hasActiveServerMatch && (
+            <RealMatchPanel
+              matches={serverMatches}
+              isMale={user.gender === "MALE"}
+              ticketCount={ticketCount}
+              onChanged={onServerChanged ?? noop}
             />
+          )}
+          {completionPct < 100 && (
+            <ProfileCompletionCard
+              percent={completionPct}
+              onOpen={() => onNavigateTab("note")}
+            />
+          )}
 
-            {matchState !== "waiting" && (
+          {!hasActiveServerMatch && matchState === "recommendation" && (
+            <div className="animate-fade-in space-y-4">
+              {hasRealMatch ? (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-[19px] font-extrabold tracking-tight text-zinc-900">
+                        {isJa
+                          ? "今日届いたプロフィール"
+                          : "오늘 도착한 소개팅 상대"}
+                      </h2>
+                      <p className="text-[12px] text-zinc-500">
+                        {isJa
+                          ? "お互いOKすると24時間トークルームが開きます"
+                          : "서로 수락하면 24시간 대화방이 열려요"}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-1">
+                      {realPartners.map((p, idx) => (
+                        <button
+                          key={p.uid}
+                          type="button"
+                          onClick={() => setCandidateIdx(idx)}
+                          className={cn(
+                            "rounded-full px-3 py-1 text-[12px] font-bold transition-all",
+                            candidateIdx === idx
+                              ? "bg-rose-600 text-white"
+                              : "bg-white text-zinc-600 ring-1 ring-stone-200"
+                          )}
+                        >
+                          #{idx + 1}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <MatchCard partner={currentPartner} />
+
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <Button
+                      variant="secondary"
+                      size="lg"
+                      fullWidth
+                      onClick={() => setConfirmModal("PASS")}
+                    >
+                      {isJa ? "パス" : "패스"}
+                    </Button>
+                    <Button
+                      size="lg"
+                      fullWidth
+                      className="bg-rose-600 hover:bg-rose-700"
+                      onClick={() => setConfirmModal("ACCEPT")}
+                    >
+                      {isJa ? "会話してみる" : "대화 수락하기"}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-3xl border border-stone-200 bg-white p-7 text-center shadow-2xs">
+                  <div className="relative mx-auto flex h-16 w-16 items-center justify-center">
+                    <span className="ondo-radar-ring-1 pointer-events-none absolute inset-0 rounded-full bg-rose-500/25" />
+                    <span className="ondo-radar-ring-2 pointer-events-none absolute inset-0 rounded-full bg-rose-500/20" />
+                    <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-rose-600 text-white shadow-md">
+                      <Clock className="h-7 w-7" />
+                    </div>
+                  </div>
+                  <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[12px] font-extrabold text-rose-600">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {isJa
+                      ? "毎晩 21:00 1:1 紹介"
+                      : "매일 밤 9:00 1:1 소개"}
+                  </span>
+                  <h2 className="mt-3 text-[21px] font-black tracking-tight text-zinc-900">
+                    {isJa
+                      ? "今夜21時の紹介まで "
+                      : "오늘 밤 9시 소개까지 "}
+                    <span className="font-mono text-rose-600">
+                      {countdown}
+                    </span>
+                  </h2>
+                  <p className="mt-1.5 text-[13px] text-zinc-500">
+                    {isJa
+                      ? "学生認証を済ませたお相手と毎晩21時にマッチングされます。"
+                      : "학생 인증을 마친 상대와 매일 밤 9시에 매칭돼요."}
+                  </p>
+
+                  <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                    <Button
+                      size="md"
+                      fullWidth
+                      className="bg-rose-600 hover:bg-rose-700"
+                      onClick={() => onNavigateTab("note")}
+                    >
+                      {isJa
+                        ? "✍️ プロフィールを編集する"
+                        : "✍️ 내 프로필 채우기"}
+                    </Button>
+                    <Button
+                      size="md"
+                      variant="secondary"
+                      fullWidth
+                      onClick={() => router.push(ROUTES.INVITE)}
+                    >
+                      {isJa
+                        ? "🎁 友達招待でチケット+1枚"
+                        : "🎁 친구 초대하고 티켓 받기"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!hasActiveServerMatch && matchState === "blind_chat" && (
+            <div className="animate-fade-in space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-[19px] font-extrabold tracking-tight text-zinc-900">
+                    {isJa
+                      ? "24時間ブラインドトーク"
+                      : "24시간 블라인드 대화방"}
+                  </h2>
+                  <p className="text-[12px] text-zinc-500">
+                    {isJa
+                      ? "5往復以上会話するとカカオトークIDが公開されます"
+                      : "5마디 이상 대화하면 카카오톡 ID가 공개돼요"}
+                  </p>
+                </div>
+              </div>
+
+              {escrowState === "LOCKED" ? (
+                <ContactUnlockCard
+                  pointCost={2900}
+                  userPoints={user.points}
+                  onUnlock={handleUnlockEscrow}
+                />
+              ) : (
+                <InAppBlindChatCard
+                  partner={currentPartner}
+                  escrowStatus={
+                    escrowState === "REFUNDED" ? "REFUNDED" : "CONFIRMED"
+                  }
+                  preview={!hasRealMatch}
+                />
+              )}
+            </div>
+          )}
+
+          {!hasActiveServerMatch && matchState === "waiting" && (
+            <div className="animate-fade-in space-y-4">
               <CampusBalanceLoungeCard
                 onRewardPoints={() => {
                   showToast(
@@ -603,37 +433,47 @@ export function HomeMatchTab({
                   );
                 }}
               />
-            )}
-
-            {/* Official KakaoTalk 1:1 Support Quick Card inside Lounge */}
-            <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-2xs">
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <span className="rounded-full bg-[#FEE500] px-2 py-0.5 text-[11px] font-extrabold text-zinc-900">
-                    OFFICIAL SUPPORT
-                  </span>
-                  <p className="mt-1 text-[13px] font-extrabold text-zinc-900">
-                    {isJa
-                      ? "ONDO 36.5° 公式カカオ1:1顧客センター"
-                      : "ONDO 36.5° 공식 카카오톡 1:1 고객센터"}
-                  </p>
-                  <p className="text-[12px] text-zinc-500">
-                    {isJa
-                      ? "マッチング・認証・チケット返還のお問い合わせ"
-                      : "매칭·학생증 인증·티켓 환불 실시간 상담"}
-                  </p>
-                </div>
-                <a
-                  href={KAKAO_OPENCHAT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="shrink-0 rounded-2xl bg-[#FEE500] px-3.5 py-2.5 text-[12px] font-extrabold text-zinc-900 shadow-2xs hover:brightness-95"
-                >
-                  {isJa ? "💬 カカオ相談" : "💬 카톡 문의"}
-                </a>
-              </div>
             </div>
-          </div>
+          )}
+
+          {!hasActiveServerMatch && matchState === "cancelled_after_success" && (
+            <div className="animate-fade-in rounded-3xl border border-stone-200 bg-white p-7 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <h2 className="mt-4 text-[18px] font-extrabold text-zinc-900">
+                {isJa
+                  ? "チケット100%返還保証"
+                  : "티켓 100% 자동 환급 보장"}
+              </h2>
+              <p className="mt-2 text-[13px] leading-relaxed text-zinc-500">
+                {isJa
+                  ? "24時間以内に返信がない場合、チケットは100%自動返還されます。"
+                  : "24시간 내 상대방의 첫 답장이 없으면 티켓은 100% 자동 환급됩니다."}
+              </p>
+            </div>
+          )}
+
+          {!hasActiveServerMatch && matchState === "paused" && (
+            <div className="animate-fade-in rounded-3xl border border-stone-200 bg-white p-8 text-center">
+              <Pause className="mx-auto h-8 w-8 text-zinc-400" />
+              <h2 className="mt-3 text-[17px] font-bold text-zinc-900">
+                {isJa ? "マッチングお休み中です" : "매칭 휴식 모드입니다"}
+              </h2>
+              <Button
+                size="md"
+                className="mt-4"
+                onClick={handleToggleMatching}
+              >
+                {isJa ? "マッチングを再開する" : "매칭 다시 켜기"}
+              </Button>
+            </div>
+          )}
+
+          <MatchingToggleCard
+            matchingStatus={user.matchingStatus}
+            onToggle={handleToggleMatching}
+          />
         </div>
       </div>
 

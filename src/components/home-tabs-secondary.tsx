@@ -74,6 +74,9 @@ import {
   cn,
 } from "@/components/ondo-ui";
 
+// 취미·관심사는 최대 5개까지 고를 수 있음
+const HOBBY_MAX = 5;
+
 function SectionHeader({
   title,
   onEdit,
@@ -219,7 +222,7 @@ export function IdealTypeTab({
   return (
     <div className="flex min-h-full flex-col bg-[#FAF9F6]">
       <PageHeader
-        title={isJa ? "希望条件" : "주파수 조건"}
+        title={isJa ? "希望条件" : "이상형 조건"}
         back={false}
       />
       <div className="animate-fade-in flex-1 space-y-5 px-5 py-5">
@@ -656,7 +659,7 @@ export function ProfileTab({
   return (
     <div className="flex min-h-full flex-col bg-[#FAF9F6]">
       <PageHeader
-        title={isJa ? "価値観ノート" : "가치관 노트"}
+        title={isJa ? "プロフィール" : "내 프로필"}
         back={false}
         right={
           <button
@@ -664,7 +667,7 @@ export function ProfileTab({
             onClick={() => setEditOpen(true)}
             className="rounded-lg bg-gray-900 px-3 py-1.5 text-[12px] font-semibold text-white"
           >
-            {isJa ? "ノート編集" : "노트 편집"}
+            {isJa ? "編集" : "프로필 수정"}
           </button>
         }
       />
@@ -726,11 +729,7 @@ export function ProfileTab({
         {/* Zero-Burden One-Line Value & Vibe Note Studio */}
         <section>
           <SectionHeader
-            title={
-              isJa
-                ? "第一印象＆恋愛価値観の一行ノート"
-                : "첫인상 & 연애 가치관 한 줄 노트"
-            }
+            title={isJa ? "一行紹介" : "한 줄 소개"}
             editLabel={editLabel}
             onEdit={() => setEditOpen(true)}
           />
@@ -911,20 +910,33 @@ function PartnerVisibleProfileEditor({
   const [bio, setBio] = useState(user.bio ?? "");
   const [formError, setFormError] = useState<string | null>(null);
 
+  // 고를 수 있는 개수를 넘기면 말없이 빼지 않고, 칸을 흔들며 안내함
+  const [limitHint, setLimitHint] = useState<{ group: "vibe" | "hobby"; n: number } | null>(null);
+  const showLimitHint = (group: "vibe" | "hobby") => {
+    setLimitHint((prev) => ({ group, n: (prev?.n ?? 0) + 1 }));
+    window.setTimeout(() => {
+      setLimitHint((cur) => (cur && cur.group === group ? null : cur));
+    }, 2400);
+  };
+
   const toggleVibe = (kw: string) => {
-    setSelectedVibes((prev) => {
-      if (prev.includes(kw)) return prev.filter((x) => x !== kw);
-      if (prev.length >= VIBE_KEYWORD_MAX) return [...prev.slice(1), kw];
-      return [...prev, kw];
-    });
+    if (selectedVibes.includes(kw)) {
+      setSelectedVibes(selectedVibes.filter((x) => x !== kw));
+    } else if (selectedVibes.length >= VIBE_KEYWORD_MAX) {
+      showLimitHint("vibe");
+    } else {
+      setSelectedVibes([...selectedVibes, kw]);
+    }
   };
 
   const toggleHobby = (hb: string) => {
-    setSelectedHobbies((prev) => {
-      if (prev.includes(hb)) return prev.filter((x) => x !== hb);
-      if (prev.length >= 5) return [...prev.slice(1), hb];
-      return [...prev, hb];
-    });
+    if (selectedHobbies.includes(hb)) {
+      setSelectedHobbies(selectedHobbies.filter((x) => x !== hb));
+    } else if (selectedHobbies.length >= HOBBY_MAX) {
+      showLimitHint("hobby");
+    } else {
+      setSelectedHobbies([...selectedHobbies, hb]);
+    }
   };
 
   const handleSave = () => {
@@ -1231,12 +1243,20 @@ function PartnerVisibleProfileEditor({
           </h3>
 
           <div>
-            <label className={FIELD_LABEL}>
-              {isJa
-                ? `私の雰囲気＆スタイルキーワード（最大${VIBE_KEYWORD_MAX}つ選択）`
-                : `${VIBE_KEYWORD_LABEL} (최대 ${VIBE_KEYWORD_MAX}개 선택)`}
+            <label className={cn(FIELD_LABEL, "flex items-center justify-between")}>
+              <span>
+                {isJa
+                  ? `私の雰囲気＆スタイルキーワード（最大${VIBE_KEYWORD_MAX}つ選択）`
+                  : `${VIBE_KEYWORD_LABEL} (최대 ${VIBE_KEYWORD_MAX}개 선택)`}
+              </span>
+              <span className="tabular-nums text-rose-600">
+                {selectedVibes.length}/{VIBE_KEYWORD_MAX}
+              </span>
             </label>
-            <div className="flex flex-wrap gap-1.5">
+            <div
+              key={limitHint?.group === "vibe" ? `shake-${limitHint.n}` : "vibe"}
+              className={cn("flex flex-wrap gap-1.5", limitHint?.group === "vibe" && "ondo-shake")}
+            >
               {VIBE_STYLE_KEYWORDS.map((kw) => {
                 const active = selectedVibes.includes(kw);
                 return (
@@ -1256,15 +1276,30 @@ function PartnerVisibleProfileEditor({
                 );
               })}
             </div>
+            {limitHint?.group === "vibe" && (
+              <p role="status" className="animate-fade-in-up mt-1.5 text-[12px] font-semibold text-rose-600">
+                {isJa
+                  ? `最大${VIBE_KEYWORD_MAX}つまで選べます。先に1つ外してください。`
+                  : `최대 ${VIBE_KEYWORD_MAX}개까지 고를 수 있어요. 하나를 먼저 빼 주세요.`}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className={FIELD_LABEL}>
-              {isJa
-                ? "趣味・関心事（最大5つ選択）"
-                : "취미 · 관심사 (최대 5개 선택)"}
+            <label className={cn(FIELD_LABEL, "flex items-center justify-between")}>
+              <span>
+                {isJa
+                  ? `趣味・関心事（最大${HOBBY_MAX}つ選択）`
+                  : `취미 · 관심사 (최대 ${HOBBY_MAX}개 선택)`}
+              </span>
+              <span className="tabular-nums text-rose-600">
+                {selectedHobbies.length}/{HOBBY_MAX}
+              </span>
             </label>
-            <div className="flex flex-wrap gap-1.5">
+            <div
+              key={limitHint?.group === "hobby" ? `shake-${limitHint.n}` : "hobby"}
+              className={cn("flex flex-wrap gap-1.5", limitHint?.group === "hobby" && "ondo-shake")}
+            >
               {HOBBIES.map((hb) => {
                 const active = selectedHobbies.includes(hb);
                 return (
@@ -1284,6 +1319,13 @@ function PartnerVisibleProfileEditor({
                 );
               })}
             </div>
+            {limitHint?.group === "hobby" && (
+              <p role="status" className="animate-fade-in-up mt-1.5 text-[12px] font-semibold text-rose-600">
+                {isJa
+                  ? `最大${HOBBY_MAX}つまで選べます。先に1つ外してください。`
+                  : `최대 ${HOBBY_MAX}개까지 고를 수 있어요. 하나를 먼저 빼 주세요.`}
+              </p>
+            )}
           </div>
         </section>
 
@@ -1435,7 +1477,7 @@ export function HistoryTab({
   return (
     <div className="flex min-h-full flex-col bg-[#FAF9F6]">
       <PageHeader
-        title={isJa ? "トーク履歴" : "대화 기록"}
+        title={isJa ? "トーク" : "대화방"}
         back={false}
       />
 
@@ -1670,7 +1712,7 @@ export function MyPageTab({
 
   return (
     <div className="flex min-h-full flex-col bg-[#FAF9F6]">
-      <PageHeader title={isJa ? "アカウント" : "내 계정"} back={false} />
+      <PageHeader title={isJa ? "マイページ" : "내 정보"} back={false} />
       <div className="animate-fade-in flex-1 space-y-6 px-5 py-5">
         {/* Account & Pre-verified Contact (KakaoTalk ID Only) */}
         <section>
