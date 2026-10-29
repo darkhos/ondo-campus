@@ -21,6 +21,7 @@ import {
   ROUTES,
   UserProfile,
 } from "@/lib/ondo-constants";
+import { UniversityCircularCarousel } from "@/components/univ-circular-carousel";
 import {
   Button,
   CampusBalanceLoungeCard,
@@ -444,98 +445,9 @@ export function HomeMatchTab({
                       )}
                     </p>
 
-                    {/* 라운지 대기 카드 내 흐르는 참여 대학 배지 */}
-                    <div className="ondo-marquee-wrap mt-4 space-y-1.5 overflow-hidden py-1">
-                      <div className="ondo-marquee-track-left">
-                        {(isJa
-                          ? [
-                              "建国大",
-                              "慶熙大",
-                              "高麗大",
-                              "光云大",
-                              "西江大",
-                              "ソウル大",
-                              "成均館大",
-                              "建国大",
-                              "慶熙大",
-                              "高麗大",
-                              "光云大",
-                              "西江大",
-                              "ソウル大",
-                              "成均館大",
-                            ]
-                          : [
-                              "건국대",
-                              "경희대",
-                              "고려대",
-                              "광운대",
-                              "서강대",
-                              "서울대",
-                              "성균관대",
-                              "건국대",
-                              "경희대",
-                              "고려대",
-                              "광운대",
-                              "서강대",
-                              "서울대",
-                              "성균관대",
-                            ]
-                        ).map((u, idx) => (
-                          <span
-                            key={`lounge-r1-${idx}`}
-                            className="mx-1 shrink-0 rounded-full border border-stone-200/90 bg-[#FAF9F6] px-3 py-1 text-[11px] font-bold text-zinc-600"
-                          >
-                            🎓 {u}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="ondo-marquee-track-right">
-                        {(isJa
-                          ? [
-                              "延世大",
-                              "梨花女子大",
-                              "中央大",
-                              "韓国外大",
-                              "漢陽大",
-                              "弘益大",
-                              "🇯🇵 日本語学堂・留学生",
-                              "延世大",
-                              "梨花女子大",
-                              "中央大",
-                              "韓国外大",
-                              "漢陽大",
-                              "弘益大",
-                              "🇯🇵 日本語学堂・留学生",
-                            ]
-                          : [
-                              "연세대",
-                              "이화여대",
-                              "중앙대",
-                              "한국외대",
-                              "한양대",
-                              "홍익대",
-                              "🇯🇵 일본어학당·유학생",
-                              "연세대",
-                              "이화여대",
-                              "중앙대",
-                              "한국외대",
-                              "한양대",
-                              "홍익대",
-                              "🇯🇵 일본어학당·유학생",
-                            ]
-                        ).map((u, idx) => (
-                          <span
-                            key={`lounge-r2-${idx}`}
-                            className={
-                              u.startsWith("🇯🇵")
-                                ? "mx-1 shrink-0 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] font-extrabold text-rose-600"
-                                : "mx-1 shrink-0 rounded-full border border-stone-200/90 bg-[#FAF9F6] px-3 py-1 text-[11px] font-bold text-zinc-600"
-                            }
-                          >
-                            {u.startsWith("🇯🇵") ? u : `🌸 ${u}`}
-                          </span>
-                        ))}
-                      </div>
+                    {/* 라운지 대기 카드 내 3D Circular Carousel 참여 대학 */}
+                    <div className="mt-4">
+                      <UniversityCircularCarousel isJa={isJa} compact />
                     </div>
                     <div className="mt-5 flex flex-col gap-2 sm:flex-row">
                       <Button

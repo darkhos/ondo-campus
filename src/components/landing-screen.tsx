@@ -29,6 +29,7 @@ import {
 } from "@/lib/supabase";
 import { Button, LanguageToggle, MatchCard } from "@/components/ondo-ui";
 import { Reveal, useInViewOnce } from "@/components/reveal";
+import { UniversityCircularCarousel } from "@/components/univ-circular-carousel";
 
 // 가나다순 정렬
 const PARTICIPATING_UNIVS_KO = [
@@ -376,37 +377,8 @@ export default function LandingPage() {
               : "아래 예시 학교뿐만 아니라 서울·경기·인천 지역 전체 대학교(78개 캠퍼스) 및 대학 부설 어학당(62개교)에 다니는 재학생·휴학생·유학생 모두 가입할 수 있습니다."}
           </p>
 
-          <div className="ondo-marquee-wrap mt-3.5 space-y-2 overflow-hidden py-1 sm:mt-4 sm:space-y-2.5">
-            {/* Row 1: Flows Left */}
-            <div className="ondo-marquee-track-left">
-              {[...univRow1, ...univRow1].map((u, idx) => (
-                <span
-                  key={`r1-${idx}-${u}`}
-                  className="mx-1 shrink-0 rounded-full border border-stone-200/90 bg-[#FAF9F6] px-3.5 py-1.5 text-[11.5px] font-bold text-zinc-700 transition-colors hover:border-rose-400 hover:bg-rose-50/60 hover:text-rose-600 sm:mx-1.5 sm:px-4 sm:text-[12px]"
-                >
-                  🎓 {u}
-                </span>
-              ))}
-            </div>
-
-            {/* Row 2: Flows Right */}
-            <div className="ondo-marquee-track-right">
-              {[...univRow2, ...univRow2].map((u, idx) => {
-                const isJpTag = u.startsWith("🇯🇵");
-                return (
-                  <span
-                    key={`r2-${idx}-${u}`}
-                    className={
-                      isJpTag
-                        ? "mx-1 shrink-0 rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-[11.5px] font-extrabold text-rose-600 sm:mx-1.5 sm:px-4 sm:text-[12px]"
-                        : "mx-1 shrink-0 rounded-full border border-stone-200/90 bg-[#FAF9F6] px-3.5 py-1.5 text-[11.5px] font-bold text-zinc-700 transition-colors hover:border-rose-400 hover:bg-rose-50/60 hover:text-rose-600 sm:mx-1.5 sm:px-4 sm:text-[12px]"
-                    }
-                  >
-                    {isJpTag ? u : `🌸 ${u}`}
-                  </span>
-                );
-              })}
-            </div>
+          <div className="mt-3 sm:mt-4">
+            <UniversityCircularCarousel isJa={isJa} />
           </div>
 
           <div className="mt-3 flex justify-center sm:mt-3.5">
