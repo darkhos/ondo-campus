@@ -373,20 +373,6 @@ export default function AdminDashboardPage() {
     );
   };
 
-  const handleCreateTestMatch = async () => {
-    const { data: created, error } = await supabase.rpc(
-      "ondo_admin_create_test_match"
-    );
-    if (error || !created) {
-      showToast("테스트 매칭 생성에 실패했습니다. 운영자 계정으로 먼저 프로필이 등록되어 있는지 확인해 주세요.");
-      return;
-    }
-    await fetchFromSupabase();
-    showToast(
-      "🧪 내 계정으로 테스트 매칭(하루카 · 일본어 소개글)을 보냈습니다! 상단 [학생 메인 라운지(/) →]에서 확인해 보세요."
-    );
-  };
-
   const femaleCount = members.filter((m) => m.gender === "FEMALE").length;
   const maleCount = members.filter((m) => m.gender === "MALE").length;
   const pendingVerifyCount = members.filter((m) => !m.emailVerified).length;
@@ -897,24 +883,6 @@ export default function AdminDashboardPage() {
                   <Link2 className="h-4 w-4" />
                   선택한 두 회원 즉시 매칭 연결하기
                 </Button>
-
-                <div className="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4">
-                  <p className="text-[12px] font-extrabold text-indigo-900">
-                    🧪 혼자서도 즉시 매칭·번역·5턴 채팅 검증하기
-                  </p>
-                  <p className="mt-1 text-[12px] leading-relaxed text-indigo-700">
-                    현재 가입자가 1명뿐이어도 내 계정과 일본인 테스트 파트너(하루카)를 즉시 매칭해 소개글 번역·수락·블라인드 채팅 자동 답장·5턴 연락처 공개까지 한 번에 테스트할 수 있습니다.
-                  </p>
-                  <Button
-                    fullWidth
-                    size="md"
-                    variant="secondary"
-                    className="mt-3 border-indigo-300 bg-white text-indigo-700 hover:bg-indigo-50"
-                    onClick={handleCreateTestMatch}
-                  >
-                    🧪 내 계정에 테스트 매칭 즉시 보내기
-                  </Button>
-                </div>
               </div>
             </div>
 

@@ -1389,12 +1389,6 @@ begin
   if v_other = 'ACCEPT' then
     update public.ondo_matches set ticket_status = 'CHATTING', chat_opened_at = now()
     where id = p_match_id;
-    -- 테스트 파트너(u-test-partner-jp)와의 매칭인 경우 첫 인사 메시지 자동 발송
-    if (v_m.female_id = 'u-test-partner-jp' or v_m.male_id = 'u-test-partner-jp')
-       and not exists (select 1 from public.ondo_match_messages where match_id = p_match_id) then
-      insert into public.ondo_match_messages (match_id, sender_id, body)
-      values (p_match_id, 'u-test-partner-jp', 'こんにちは！マッチングありがとうございます☺️ 韓国のカフェ巡りが大好きです。よろしくお願いします！');
-    end if;
     return 'CHATTING';
   end if;
   return 'PENDING';
@@ -1412,7 +1406,6 @@ declare
   v_m public.ondo_matches;
   v_body text := trim(coalesce(p_body, ''));
   v_id bigint;
-  v_bot_count integer;
 begin
   if v_me is null then
     raise exception 'Login required';
@@ -1436,152 +1429,11 @@ begin
   values (p_match_id, v_me, v_body)
   returning id into v_id;
 
-  -- 테스트 파트너(u-test-partner-jp)와의 대화인 경우 자동 답장 생성 (5턴 연락처 공개까지 즉시 테스트 가능)
-  if (v_m.female_id = 'u-test-partner-jp' or v_m.male_id = 'u-test-partner-jp') and v_me <> 'u-test-partner-jp' then
-    select count(*) into v_bot_count
-    from public.ondo_match_messages
-    where match_id = p_match_id and sender_id = 'u-test-partner-jp';
-
-    if v_bot_count = 0 then
-      insert into public.ondo_match_messages (match_id, sender_id, body)
-      values (p_match_id, 'u-test-partner-jp', 'こんにちは！メッセージありがとうございます☺️ 普段はどのあたりで遊ぶことが多いですか？');
-    elsif v_bot_count = 1 then
-      insert into public.ondo_match_messages (match_id, sender_id, body)
-      values (p_match_id, 'u-test-partner-jp', 'いいですね！私もソンスやヨンナム洞のカフェが大好きです☕️ 音楽はどんなジャンルを聴きますか？');
-    elsif v_bot_count = 2 then
-      insert into public.ondo_match_messages (match_id, sender_id, body)
-      values (p_match_id, 'u-test-partner-jp', 'すごく話が合いそうですね！今度ぜひ一緒に美味しいコーヒーを飲みに行きましょう✨');
-    end if;
-  end if;
-
   -- 대화 조건(각자 2번·합계 5번)을 채우면 연락처 공개 상태로 전환
   if v_m.ticket_status = 'CHATTING' and public.ondo_match_contact_open(p_match_id) then
     update public.ondo_matches set ticket_status = 'CONFIRMED' where id = p_match_id;
   end if;
   return v_id;
-end;
-$$;
-
--- 운영자 전용 1클릭 테스트 매칭 생성기:
--- 운영자 본인 계정과 일본어 소개글을 가진 테스트 파트너(u-test-partner-jp)를 연결해
--- 수락 · 한↔일 번역 · 블라인드 5턴 채팅 · 안심 연락처 공개까지 혼자서도 즉시 검증 가능
-create or replace function public.ondo_admin_create_test_match()
-returns public.ondo_matches
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_me public.ondo_members;
-  v_partner_gender text;
-  v_match_id text := 'test-match-' || to_char(now(), 'YYYYMMDDHH24MISS');
-  v_female_id text;
-  v_female_name text;
-  v_male_id text;
-  v_male_name text;
-  v_result public.ondo_matches;
-begin
-  if not public.ondo_is_admin() then
-    raise exception 'Admin only';
-  end if;
-
-  select * into v_me from public.ondo_members where auth_user_id = auth.uid() limit 1;
-  if v_me.id is null then
-    raise exception 'Member not found';
-  end if;
-
-  -- 남학생 수락 시 티켓 1장이 필요하므로 테스트 시 티켓이 0장이면 최소 2장으로 보충
-  if coalesce(v_me.tickets, 0) < 1 then
-    update public.ondo_members set tickets = 2, updated_at = now() where id = v_me.id;
-  end if;
-
-  v_partner_gender := case when v_me.gender in ('M', 'MALE') then 'F' else 'M' end;
-
-  insert into public.ondo_members (
-    id, auth_user_id, nickname, univ, major, gender, age, mbti, temp,
-    verified, verify_method, student_id_status, voice_recorded, voice_duration,
-    tickets, joined_at, contact, bio, profile_extra, updated_at
-  ) values (
-    'u-test-partner-jp',
-    null,
-    '하루카 (테스트 파트너)',
-    '이화여자대학교 언어교육원',
-    '🇯🇵 일본인 어학당생 · 3급 (3級 · 중급)',
-    v_partner_gender,
-    21,
-    'ENFP',
-    38.8,
-    true,
-    'ADMIN_REVIEW',
-    'verified',
-    true,
-    '00:12',
-    2,
-    '방금 전',
-    'haruka_ondo_test',
-    'こんにちは！ソウルで韓国語を勉強しているハルカです。週末にカフェ巡りや散歩を一緒に楽しめる優しい方と仲良くなりたいです☺️',
-    jsonb_build_object(
-      'height', 163,
-      'locationLabel', '서울특별시 서대문구',
-      'hobbies', jsonb_build_array('카페 투어', '인디 음악', '산책', '전시 관람'),
-      'build', 'LEAN',
-      'impression', '강아지상',
-      'smokingStatus', 'NON_SMOKER',
-      'religion', '무교',
-      'vibeKeywords', jsonb_build_array('웃음이 많은', '다정한 말투'),
-      'voiceIntroText', 'はじめまして！韓国語でたくさんお話ししたいです。よろしくお願いします！'
-    ),
-    now()
-  )
-  on conflict (id) do update set
-    gender = excluded.gender,
-    verified = true,
-    student_id_status = 'verified',
-    bio = excluded.bio,
-    profile_extra = excluded.profile_extra,
-    updated_at = now();
-
-  -- 기존 테스트 매칭 정리 후 새 테스트 매칭 생성
-  delete from public.ondo_match_messages
-  where match_id in (
-    select id from public.ondo_matches
-    where id like 'test-match-%' or female_id = 'u-test-partner-jp' or male_id = 'u-test-partner-jp'
-  );
-  delete from public.ondo_matches
-  where id like 'test-match-%' or female_id = 'u-test-partner-jp' or male_id = 'u-test-partner-jp';
-
-  if v_me.gender in ('M', 'MALE') then
-    v_female_id := 'u-test-partner-jp';
-    v_female_name := '하루카 (테스트 파트너)';
-    v_male_id := v_me.id;
-    v_male_name := v_me.nickname;
-  else
-    v_female_id := v_me.id;
-    v_female_name := v_me.nickname;
-    v_male_id := 'u-test-partner-jp';
-    v_male_name := '하루카 (테스트 파트너)';
-  end if;
-
-  insert into public.ondo_matches (
-    id, female_id, female_name, male_id, male_name,
-    score, ticket_status, female_response, male_response,
-    created_at, created_at_ts
-  ) values (
-    v_match_id,
-    v_female_id,
-    v_female_name,
-    v_male_id,
-    v_male_name,
-    96,
-    'PENDING',
-    case when v_female_id = 'u-test-partner-jp' then 'ACCEPT' else 'PENDING' end,
-    case when v_male_id = 'u-test-partner-jp' then 'ACCEPT' else 'PENDING' end,
-    '방금 (테스트 매칭)',
-    now()
-  )
-  returning * into v_result;
-
-  return v_result;
 end;
 $$;
 
@@ -1824,7 +1676,6 @@ grant execute on function public.ondo_admin_kakao_notify_status() to authenticat
 grant execute on function public.ondo_admin_kakao_notify_test() to authenticated;
 grant execute on function public.ondo_admin_update_support_ticket(bigint, text) to authenticated;
 grant execute on function public.ondo_admin_review_student(text, boolean) to authenticated;
-grant execute on function public.ondo_admin_create_test_match() to authenticated;
 
 -- 문의 접수는 비회원(anon)도 가능 — 넣기만 되고 꺼내 보기는 불가
 grant execute on function public.ondo_submit_support_ticket(text, text, text, text) to anon, authenticated;
