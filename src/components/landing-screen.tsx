@@ -24,6 +24,7 @@ import {
 import { Button, LanguageToggle, MatchCard } from "@/components/ondo-ui";
 import { Reveal, useInViewOnce } from "@/components/reveal";
 import { UniversityCircularCarousel } from "@/components/univ-circular-carousel";
+import { CoupleInteractiveHero } from "@/components/couple-interactive-hero";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -157,6 +158,9 @@ export default function LandingPage() {
               ? "毎晩21時、希望条件に合う他大学の学生を1対1でご紹介します。"
               : "매일 밤 9시, 조건이 맞는 다른 학교 학생을 1:1로 소개해 드려요."}
           </p>
+
+          {/* Interactive Male & Female Couple Hero Visual */}
+          <CoupleInteractiveHero isJa={isJa} />
 
           {/* Clean Hero CTA */}
           <div
