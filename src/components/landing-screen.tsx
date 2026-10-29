@@ -90,6 +90,14 @@ export default function LandingPage() {
   const isJa = locale === "ja";
 
   const [quickLoading, setQuickLoading] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % 4);
+    }, 2200);
+    return () => window.clearInterval(id);
+  }, []);
 
   const handleKakaoLogin = async () => {
     setQuickLoading(true);
@@ -414,27 +422,49 @@ export default function LandingPage() {
                   { emoji: "💬", title: "둘 다 수락하면 대화", desc: "연락처는 가린 채로 앱 안에서 먼저 이야기를 나눠 봐요." },
                   { emoji: "☕", title: "카톡 교환 후 만남", desc: "대화가 무르익으면 카카오톡 ID가 공개돼요. 이제 만날 날만 정하면 돼요." },
                 ]
-            ).map((step, idx) => (
-              <li
-                key={step.title}
-                className="rounded-2xl border border-stone-200/90 bg-white p-3.5 sm:rounded-3xl sm:p-5"
-              >
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-[18px] sm:text-[22px]" aria-hidden>
-                    {step.emoji}
-                  </span>
-                  <span className="text-[11px] font-extrabold text-rose-600 sm:text-[12px]">
-                    STEP {idx + 1}
-                  </span>
-                </div>
-                <h3 className="mt-1.5 text-[13.5px] font-extrabold text-zinc-900 sm:mt-2 sm:text-[15px]">
-                  {step.title}
-                </h3>
-                <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-500 sm:text-[13px]">
-                  {step.desc}
-                </p>
-              </li>
-            ))}
+            ).map((step, idx) => {
+              const isActive = activeStep === idx;
+              return (
+                <li
+                  key={step.title}
+                  onClick={() => setActiveStep(idx)}
+                  onMouseEnter={() => setActiveStep(idx)}
+                  className={
+                    isActive
+                      ? "cursor-pointer rounded-2xl border-2 border-rose-500 bg-rose-50/40 p-3.5 shadow-[0_10px_24px_rgba(225,29,72,0.12)] transition-all duration-300 -translate-y-1 sm:rounded-3xl sm:p-5"
+                      : "cursor-pointer rounded-2xl border border-stone-200/90 bg-white p-3.5 transition-all duration-300 hover:border-rose-200 sm:rounded-3xl sm:p-5"
+                  }
+                >
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <span
+                      className={
+                        isActive
+                          ? "ondo-step-emoji-bounce text-[18px] sm:text-[22px]"
+                          : "text-[18px] sm:text-[22px]"
+                      }
+                      aria-hidden
+                    >
+                      {step.emoji}
+                    </span>
+                    <span
+                      className={
+                        isActive
+                          ? "rounded-full bg-rose-600 px-2 py-0.5 text-[10.5px] font-extrabold text-white transition-colors sm:text-[11px]"
+                          : "text-[11px] font-extrabold text-rose-600 transition-colors sm:text-[12px]"
+                      }
+                    >
+                      STEP {idx + 1}
+                    </span>
+                  </div>
+                  <h3 className="mt-1.5 text-[13.5px] font-extrabold text-zinc-900 sm:mt-2 sm:text-[15px]">
+                    {step.title}
+                  </h3>
+                  <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-500 sm:text-[13px]">
+                    {step.desc}
+                  </p>
+                </li>
+              );
+            })}
           </ol>
         </section>
 

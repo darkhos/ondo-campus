@@ -135,6 +135,40 @@
   pointer-events: none;
 }
 
+@keyframes ondo-radar-wave {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(2.15);
+    opacity: 0;
+  }
+}
+
+@keyframes ondo-step-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.12);
+  }
+}
+
+.ondo-radar-ring-1 {
+  animation: ondo-radar-wave 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.ondo-radar-ring-2 {
+  animation: ondo-radar-wave 2.4s cubic-bezier(0.16, 1, 0.3, 1) 1.2s infinite;
+}
+
+.ondo-step-emoji-bounce {
+  display: inline-block;
+  animation: ondo-step-bounce 1.1s ease-in-out infinite;
+}
+
 .animate-fade-in {
   animation: ondo-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

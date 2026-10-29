@@ -407,8 +407,12 @@ export function HomeMatchTab({
                   </>
                 ) : (
                   <div className="rounded-3xl border border-stone-200 bg-white p-7 text-center shadow-2xs">
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-600">
-                      <Clock className="h-7 w-7" />
+                    <div className="relative mx-auto flex h-16 w-16 items-center justify-center">
+                      <span className="ondo-radar-ring-1 pointer-events-none absolute inset-0 rounded-full bg-rose-500/25" />
+                      <span className="ondo-radar-ring-2 pointer-events-none absolute inset-0 rounded-full bg-rose-500/20" />
+                      <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-rose-600 text-white shadow-md">
+                        <Clock className="h-7 w-7" />
+                      </div>
                     </div>
                     <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[12px] font-extrabold text-rose-600">
                       <Sparkles className="h-3.5 w-3.5" />
