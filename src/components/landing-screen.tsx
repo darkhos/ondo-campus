@@ -361,8 +361,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* University Eligibility & Flowing Marquee Pills */}
-        <Reveal as="section" className="mt-5 overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-4 text-center shadow-2xs sm:mt-8 sm:p-6">
+        {/* University Eligibility & 3D Circular Carousel */}
+        <section className="mt-5 overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-4 text-center shadow-2xs sm:mt-8 sm:p-6">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[11px] font-extrabold text-rose-600 sm:text-[12px]">
             🎓 {isJa ? "首都圏キャンパス全域対応" : "서울 · 경기 · 인천 전 캠퍼스 오픈"}
           </span>
@@ -388,7 +388,7 @@ export default function LandingPage() {
                 : "+ 서울·경기·인천 전 대학 및 어학당 누구나 가입 가능"}
             </span>
           </div>
-        </Reveal>
+        </section>
 
         {/* 소개팅 진행 순서 — 모바일에서도 한눈에 들어오도록 2x2 그리드 배치 */}
         <section className="mt-8 sm:mt-10">
