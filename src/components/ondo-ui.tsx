@@ -398,16 +398,14 @@ export function MatchCard({
             </p>
           </div>
 
-          {/* Temperature & Sync Score Badge */}
+          {/* 실제 매칭이 반영하는 조건만 표시 */}
           <div className="rounded-2xl bg-white/90 px-3.5 py-2 text-right shadow-2xs backdrop-blur-xs">
             <div className="flex items-center justify-end gap-1 text-[13px] font-extrabold text-rose-600">
               <Flame className="h-3.5 w-3.5" fill="currentColor" />
-              <span>{partner.mannerTemp ?? 38.5}°C</span>
+              <span>{isJa ? "希望条件クリア" : "선호 조건 충족"}</span>
             </div>
             <p className="text-[11px] font-semibold text-zinc-500">
-              {isJa
-                ? `価値観 ${partner.valueMatchScore ?? 92}% 一致`
-                : `가치관 ${partner.valueMatchScore ?? 92}% 일치`}
+              {isJa ? "学校・年齢・喫煙・宗教の条件を反映" : "학교·나이·흡연·종교 조건 반영"}
             </p>
           </div>
         </div>
@@ -423,11 +421,6 @@ export function MatchCard({
                 {isJa
                   ? "第一印象 ＆ 恋愛価値観 一行ノート"
                   : "첫인상 & 연애 가치관 한 줄 노트"}
-              </span>
-              <span className="text-[12px] font-semibold text-zinc-400">
-                {isJa
-                  ? `会話温度 ${partner.mannerTemp ?? 38.5}°C`
-                  : `대화 온도 ${partner.mannerTemp ?? 38.5}°C`}
               </span>
             </div>
             <p className="mt-2 text-[13px] font-medium leading-relaxed text-zinc-800">
@@ -448,36 +441,29 @@ export function MatchCard({
           </div>
         )}
 
-        {/* 3-Axis Value & Lifestyle Bars */}
-        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-[#F3F1ED]/70 p-3.5">
-          <div>
-            <span className="text-[11px] font-semibold text-zinc-400">
-              {isJa ? "連絡テンポ" : "연락 템포"}
-            </span>
-            <p className="mt-0.5 text-[12px] font-bold text-zinc-800">
-              {isJa ? "日常シェア型" : "일상 공유형"}
-            </p>
+        {/* 본인이 입력한 성향 정보만 표시 (없으면 숨김) */}
+        {(partner.mbti || smokingLabel) && (
+          <div className="grid grid-cols-2 gap-2 rounded-2xl bg-[#F3F1ED]/70 p-3.5">
+            {partner.mbti && (
+              <div>
+                <span className="text-[11px] font-semibold text-zinc-400">MBTI</span>
+                <p className="mt-0.5 text-[12px] font-bold text-zinc-800">
+                  {partner.mbti}
+                </p>
+              </div>
+            )}
+            {smokingLabel && (
+              <div>
+                <span className="text-[11px] font-semibold text-zinc-400">
+                  {isJa ? "喫煙" : "흡연"}
+                </span>
+                <p className="mt-0.5 text-[12px] font-bold text-zinc-800">
+                  {smokingLabel}
+                </p>
+              </div>
+            )}
           </div>
-          <div className="border-x border-stone-200/80 px-2.5">
-            <span className="text-[11px] font-semibold text-zinc-400">
-              {isJa ? "返信信頼度" : "답장 신뢰도"}
-            </span>
-            <p className="mt-0.5 text-[12px] font-bold text-emerald-700">
-              {isJa
-                ? `${partner.responseRate ?? 98}% 返信`
-                : `${partner.responseRate ?? 98}% 응답`}
-            </p>
-          </div>
-          <div className="pl-1">
-            <span className="text-[11px] font-semibold text-zinc-400">
-              {isJa ? "性格・ライフ" : "성향·라이프"}
-            </span>
-            <p className="mt-0.5 text-[12px] font-bold text-zinc-800">
-              {partner.mbti ?? "ENFJ"} ·{" "}
-              {smokingLabel ?? (isJa ? "非喫煙" : "비흡연")}
-            </p>
-          </div>
-        </div>
+        )}
 
         {/* Mood Keywords & Interests */}
         <div className="flex flex-wrap gap-1.5">
@@ -858,19 +844,18 @@ export function CampusBalanceLoungeCard({
           </h3>
         </div>
         <span className="rounded-full bg-rose-50 px-3 py-1 text-[12px] font-bold text-rose-600">
-          {isJa ? "参加でボーナス獲得" : "참여 시 보너스 적립"}
+          {isJa ? "気軽に参加" : "가볍게 참여"}
         </span>
       </div>
       <p className="mt-1 text-[13px] text-zinc-500">
         {isJa
-          ? "投票した恋愛価値観データは、今夜21時の波長マッチングに反映されます。"
-          : "투표한 가치관 데이터는 오늘 밤 9시 나와 결이 맞는 상대를 찾는 데 반영됩니다."}
+          ? "気軽に楽しむ恋愛バランスゲームです。選んだ答えはマッチングには使われず、保存もされません。"
+          : "재미로 해 보는 연애 밸런스 게임이에요. 고른 답은 매칭에 쓰이지 않고 저장되지도 않아요."}
       </p>
 
       <div className="mt-5 space-y-3.5">
         {CAMPUS_BALANCE_QUESTIONS.map((q) => {
           const myChoice = votes[q.id];
-          const pctB = 100 - q.percentA;
           const jaItem = BALANCE_JA[q.id];
           const category = isJa && jaItem ? jaItem.category : q.category;
           const question = isJa && jaItem ? jaItem.question : q.question;
@@ -887,13 +872,7 @@ export function CampusBalanceLoungeCard({
                 </span>
                 {myChoice && (
                   <span className="text-[12px] font-bold text-rose-600">
-                    {myChoice === q.partnerChoice
-                      ? isJa
-                        ? "🔥 今日のマッチング相手と考えが一致しています！"
-                        : "🔥 오늘의 주파수 상대와 생각이 일치해요!"
-                      : isJa
-                      ? "💡 お相手と興味深い温度差があります"
-                      : "💡 상대방과 흥미로운 온도차가 있어요"}
+                    {isJa ? "✓ 回答済み" : "✓ 선택 완료"}
                   </span>
                 )}
               </div>
@@ -904,7 +883,6 @@ export function CampusBalanceLoungeCard({
               <div className="mt-3 grid grid-cols-2 gap-2">
                 {(["A", "B"] as const).map((opt) => {
                   const label = opt === "A" ? optionA : optionB;
-                  const pct = opt === "A" ? q.percentA : pctB;
                   const selected = myChoice === opt;
                   return (
                     <button
@@ -919,16 +897,6 @@ export function CampusBalanceLoungeCard({
                       )}
                     >
                       <span className="block leading-snug">{label}</span>
-                      {myChoice && (
-                        <span
-                          className={cn(
-                            "mt-1.5 block text-[12px] font-bold tabular-nums",
-                            selected ? "text-rose-300" : "text-zinc-400"
-                          )}
-                        >
-                          {isJa ? `参加者 ${pct}% 選択` : `참여자 ${pct}% 선택`}
-                        </span>
-                      )}
                     </button>
                   );
                 })}
@@ -1026,8 +994,8 @@ export function MatchingToggleCard({
         <p className="mt-0.5 text-[12px] text-zinc-500">
           {isOn
             ? isJa
-              ? "価値観と会話の波長が合うキャンパスの相手を繋ぎます"
-              : "연애 가치관과 대화 결이 맞는 캠퍼스 상대를 연결합니다"
+              ? "希望条件に合う他大学の学生を毎晩21時に紹介します"
+              : "선호 조건이 맞는 다른 학교 학생을 매일 밤 9시에 소개해요"
             : isJa
             ? "現在ラウンジ休憩モードです"
             : "현재 라운지 휴식 모드입니다"}

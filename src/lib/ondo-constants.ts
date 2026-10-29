@@ -379,15 +379,6 @@ export const FIELD_LABEL = "mb-1.5 block text-[13px] font-medium text-zinc-600";
 export const FIELD_TEXTAREA =
   "w-full resize-none rounded-xl border border-stone-200 bg-white px-3.5 py-3 text-[15px] leading-relaxed text-zinc-900 placeholder:text-zinc-400 transition-colors focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-rose-500/10";
 
-export const MATCH_REASON_MAP: Record<string, { emoji: string; label: string }> =
-  {
-    AGE_FIT: { emoji: "☕", label: "선호 연령대 부합" },
-    NEARBY: { emoji: "🗺️", label: "캠퍼스·생활권 인접" },
-    COMMON_INTEREST: { emoji: "🎶", label: "공통 취미·관심사 보유" },
-    HEIGHT_FIT: { emoji: "📐", label: "희망 키 구간 부합" },
-    VALUE_MATCH: { emoji: "🔥", label: "연애 가치관 36.5° 일치" },
-  };
-
 export const CAMPUS_POST_TEMPLATES = [
   {
     key: "BLIND_COFFEE_CHAT",
@@ -400,15 +391,15 @@ export const CAMPUS_POST_TEMPLATES = [
     key: "GLOBAL_CAMPUS",
     label: "한·일 캠퍼스 교류",
     labelJa: "日韓キャンパス交流",
-    bodyJa: `韓国の大学生はもちろん、延世大・梨花女子大・高麗大などの語学堂生や正規留学中の日本人学生とも、価値観ノートでつながれる「ONDO 36.5°」ラウンジです 🇰🇷🇯🇵\n韓国語・日本語の表示切り替えに対応していて、同じ学校の人とはマッチングしない設定も最初からオンになっています！\nhttps://darkhos.github.io/ondo-campus/`,
-    body: `한국 대학생 학우들뿐만 아니라 연세대·이대·고려대 등 어학당 및 정규 유학 중인 일본인 학생들과도 가치관 노트로 연결되는 '온도(ONDO 36.5°)' 라운지예요 🇰🇷🇯🇵\n한국어·일본어 실시간 전환도 지원하고 같은 학교 학우 차단도 기본 제공됩니다!\nhttps://darkhos.github.io/ondo-campus/`,
+    bodyJa: `韓国の大学生はもちろん、延世大・梨花女子大・高麗大などの語学堂生や正規留学中の日本人学生とも、学生認証を済ませた人同士でつながれる「ONDO 36.5°」ラウンジです 🇰🇷🇯🇵\n韓国語・日本語の表示切り替えに対応していて、同じ学校の人とはマッチングしない設定も最初からオンになっています！\nhttps://darkhos.github.io/ondo-campus/`,
+    body: `한국 대학생 학우들뿐만 아니라 연세대·이대·고려대 등 어학당 및 정규 유학 중인 일본인 학생들과도 학생 인증을 마친 사람끼리 연결되는 '온도(ONDO 36.5°)' 라운지예요 🇰🇷🇯🇵\n한국어·일본어 실시간 전환도 지원하고 같은 학교 학우 차단도 기본 제공됩니다!\nhttps://darkhos.github.io/ondo-campus/`,
   },
   {
     key: "BALANCE_LOUNGE",
     label: "가치관 주파수",
     labelJa: "価値観マッチ",
-    bodyJa: `【ONDO 36.5°】キャンパス価値観 ＆ 24hブラインド・コーヒーチャット\n- 第一印象の一行ノートと恋愛バランス投票をもとに、毎晩21時に相手をご紹介\n- 会話が5往復続いたあとにだけ、お互いのカカオトークIDを公開\n- 24時間返信がなければ、コーヒーチケットは100%自動返還\nhttps://darkhos.github.io/ondo-campus/`,
-    body: `[온도 ONDO 36.5°] 캠퍼스 가치관 & 24h 블라인드 커피챗 라운지\n- 첫인상 한 줄 노트와 연애 밸런스 투표로 21:00 정각 주파수 연결\n- 대화 5턴 달성 후에만 상호 안심 연락처(카카오톡 ID) 공개\n- 24시간 미응답 시 100% 자동 환급 에스크로 커피티켓 보증\nhttps://darkhos.github.io/ondo-campus/`,
+    bodyJa: `【ONDO 36.5°】キャンパス価値観 ＆ 24hブラインド・コーヒーチャット\n- 毎晩21時、希望条件に合う他大学の学生をご紹介\n- 会話が5往復続いたあとにだけ、お互いのカカオトークIDを公開\n- 24時間返信がなければ、コーヒーチケットは100%自動返還\nhttps://darkhos.github.io/ondo-campus/`,
+    body: `[온도 ONDO 36.5°] 캠퍼스 가치관 & 24h 블라인드 커피챗 라운지\n- 매일 밤 9시, 선호 조건이 맞는 다른 학교 학생 소개\n- 대화 5턴 달성 후에만 상호 안심 연락처(카카오톡 ID) 공개\n- 24시간 미응답 시 100% 자동 환급 에스크로 커피티켓 보증\nhttps://darkhos.github.io/ondo-campus/`,
   },
 ] as const;
 
@@ -428,14 +419,10 @@ export interface PartnerProfile {
   hobbies: string[];
   bio?: string;
   vibeKeywords?: string[];
-  reasons?: string[];
   kakaoId?: string;
   voiceIntroText?: string;
   voiceDurationSec?: number;
   voiceAudioDataUrl?: string | null;
-  mannerTemp?: number;
-  responseRate?: number;
-  valueMatchScore?: number;
   silhouetteTheme?: "blue" | "indigo" | "emerald" | "rose";
   relaxedConditionNote?: string | null;
 }
@@ -491,8 +478,6 @@ export interface BalanceQuestion {
   question: string;
   optionA: string;
   optionB: string;
-  percentA: number;
-  partnerChoice: "A" | "B";
 }
 
 export const CAMPUS_BALANCE_QUESTIONS: BalanceQuestion[] = [
@@ -502,8 +487,6 @@ export const CAMPUS_BALANCE_QUESTIONS: BalanceQuestion[] = [
     question: "더 선호하는 평소 연락 스타일은?",
     optionA: "일상 공유하며 틈틈이 카톡",
     optionB: "할 일 끝내고 밤에 전화 통화",
-    percentA: 64,
-    partnerChoice: "A",
   },
   {
     id: "bal-2",
@@ -511,8 +494,6 @@ export const CAMPUS_BALANCE_QUESTIONS: BalanceQuestion[] = [
     question: "연인이 이성 동기와 단둘이 학식 먹기",
     optionA: "학식은 밥만 먹는 거니 괜찮다",
     optionB: "굳이 단둘이 먹는 건 신경 쓰인다",
-    percentA: 52,
-    partnerChoice: "B",
   },
   {
     id: "bal-3",
@@ -520,8 +501,6 @@ export const CAMPUS_BALANCE_QUESTIONS: BalanceQuestion[] = [
     question: "중간·기말고사 기간 데이트 방식은?",
     optionA: "도서관·카페에서 옆자리에 앉아 같이 공부",
     optionB: "시험 끝나는 날까지 각자 집중 후 제대로 놀기",
-    percentA: 71,
-    partnerChoice: "A",
   },
 ];
 
@@ -642,13 +621,9 @@ export const DEMO_PARTNERS: PartnerProfile[] = [
     hobbies: ["헬스·필라테스", "카페 투어", "맛집 투어", "여행", "영화·드라마"],
     bio: "평일에는 학교 근처에서 운동하고 주말에는 맛있는 디저트 카페나 전시회 찾아다니는 걸 좋아합니다. 같이 걸으며 소소한 일상 이야기 나누실 분 만나고 싶어요!",
     vibeKeywords: ["깔끔한 댄디", "웃는 인상이 다정한"],
-    reasons: ["VALUE_MATCH", "AGE_FIT", "NEARBY", "COMMON_INTEREST"],
     voiceIntroText:
       "안녕하세요! 고려대 컴퓨터학과 재학 중이고, 주말엔 조용한 카페나 전시 보러 다니는 걸 좋아합니다. 반갑습니다!",
     voiceDurationSec: 8,
-    mannerTemp: 39.2,
-    responseRate: 99,
-    valueMatchScore: 94,
     silhouetteTheme: "blue",
     relaxedConditionNote: null,
   },
@@ -668,13 +643,9 @@ export const DEMO_PARTNERS: PartnerProfile[] = [
     hobbies: ["책·글쓰기", "음악 감상", "전시·공연", "카페 투어", "사진"],
     bio: "조용한 독립서점과 LP 바를 좋아하는 경제학도입니다. 리액션이 좋다는 이야기를 자주 듣고, 예의 바르고 다정한 연애를 추구해요.",
     vibeKeywords: ["차분한 중저음", "지적인 안경 핏"],
-    reasons: ["VALUE_MATCH", "AGE_FIT", "NEARBY"],
     voiceIntroText:
       "안녕하세요, LP 음악과 산책을 좋아하는 서울대 경제학부 학생입니다. 대화 템포가 편안한 분이면 좋겠어요.",
     voiceDurationSec: 7,
-    mannerTemp: 38.4,
-    responseRate: 96,
-    valueMatchScore: 91,
     silhouetteTheme: "indigo",
     relaxedConditionNote: null,
   },
@@ -694,13 +665,9 @@ export const DEMO_PARTNERS: PartnerProfile[] = [
     hobbies: ["드라이브", "맛집 투어", "헬스·필라테스", "영화·드라마"],
     bio: "성수동 맛집 지도를 직접 만들고 있을 정도로 맛있는 음식 먹는 걸 좋아합니다. 유머 코드 잘 맞고 함께 성장할 수 있는 분이면 좋겠어요!",
     vibeKeywords: ["미니멀 캐주얼", "운동으로 다져진"],
-    reasons: ["AGE_FIT", "HEIGHT_FIT"],
     voiceIntroText:
       "반갑습니다! 성수동 맛집 투어와 드라이브를 좋아하는 한양대 학생입니다.",
     voiceDurationSec: 6,
-    mannerTemp: 37.9,
-    responseRate: 94,
-    valueMatchScore: 88,
     silhouetteTheme: "emerald",
     relaxedConditionNote: "거리 조건 1단계 완화 (서대문구 → 성동구 20분)",
   },
@@ -720,13 +687,9 @@ export const DEMO_PARTNERS: PartnerProfile[] = [
     hobbies: ["카페 투어", "맛집 투어", "사진", "산책·러닝", "음악 감상"],
     bio: "도쿄에서 온 연세대 어학당 학생입니다! 한국 카페랑 산책하는 걸 정말 좋아해서 한국 대학생 친구와 따뜻하게 대화 나누고 싶어요.",
     vibeKeywords: ["밝게 잘 웃는", "다정한 한국어 발음"],
-    reasons: ["VALUE_MATCH", "AGE_FIT", "NEARBY", "COMMON_INTEREST"],
     voiceIntroText:
       "안녕하세요! 연세대 한국어학당에 다니고 있어요. 신촌·연남동 예쁜 카페 같이 가요!",
     voiceDurationSec: 7,
-    mannerTemp: 39.5,
-    responseRate: 99,
-    valueMatchScore: 96,
     silhouetteTheme: "rose",
     relaxedConditionNote: "🌏 어학당 학생증 확인 완료",
   },

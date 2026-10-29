@@ -224,7 +224,7 @@ export function IdealTypeTab({
         back={false}
       />
       <div className="animate-fade-in flex-1 space-y-5 px-5 py-5">
-        {/* 조건 유연하게 받기 (선호 저장) */}
+        {/* 조건 유연하게 받기 (서버 매칭에서 나이 ±2세 · 흡연 조건 완화) */}
         <div className="rounded-2xl border border-rose-200/80 bg-white p-4">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
@@ -236,8 +236,8 @@ export function IdealTypeTab({
               </div>
               <p className="mt-0.5 text-[12px] leading-relaxed text-gray-500">
                 {isJa
-                  ? "オンにすると、条件にぴったり合う相手がいない日は条件を少し広げても大丈夫、という希望として保存されます。"
-                  : "켜 두면 딱 맞는 상대가 없는 날에는 조건을 조금 넓혀도 괜찮다는 희망 사항으로 저장돼요."}
+                  ? "オンにすると、条件にぴったり合う相手がいないとき、希望年齢を前後2歳まで広げ、喫煙の条件も柔軟に考慮します。"
+                  : "켜 두면 딱 맞는 상대가 없을 때 선호 나이를 앞뒤 2살까지 넓히고, 흡연 조건도 유연하게 봐요."}
               </p>
             </div>
             <button

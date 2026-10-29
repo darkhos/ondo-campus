@@ -142,7 +142,10 @@ export function HomeMatchTab({
   })();
 
   const completionPct = calculateProfileCompletion(user);
-  const realPartners: PartnerProfile[] = history.map((h) => h.partner);
+  const activeHistory = history.filter(
+    (h) => h.resultStatus === "PENDING" || h.resultStatus === "SUCCESS"
+  );
+  const realPartners: PartnerProfile[] = activeHistory.map((h) => h.partner);
   const hasRealMatch = realPartners.length > 0;
   const currentPartner: PartnerProfile =
     realPartners[candidateIdx] ?? realPartners[0] ?? DEMO_PARTNERS[0];
@@ -411,7 +414,7 @@ export function HomeMatchTab({
                       <Sparkles className="h-3.5 w-3.5" />
                       {isJa
                         ? "今夜 21:00 定刻マッチング待機中"
-                        : "오늘 밤 10:00 정각 주파수 매칭 대기 중"}
+                        : "오늘 밤 9:00 정각 주파수 매칭 대기 중"}
                     </span>
                     <h2 className="mt-3 text-[20px] font-black tracking-tight text-zinc-900">
                       {isJa
@@ -426,13 +429,13 @@ export function HomeMatchTab({
                         <>
                           ダミーやサクラは一切なし。<strong>100%学生証認証済みの韓国の大学生・🇯🇵日本人語学堂生・🇯🇵日本人大学留学生</strong>とのみマッチングされます。
                           <br />
-                          お待ちの間に下のバランス投票と価値観ノートを完成させておくと、マッチング成立率が大幅にアップします！
+                          お待ちの間に自己紹介や関心事を埋めておくと、お相手があなたのことをよりよく知ることができます。
                         </>
                       ) : (
                         <>
                           가짜 샘플 프로필 없이 <strong>100% 실제 인증된 타 대학 학우, 🇯🇵 일본인 어학당생, 🇯🇵 일본인 대학 유학생</strong>과만 매칭됩니다.
                           <br />
-                          기다리시는 동안 아래 밸런스 투표와 첫인상 한 줄 노트를 완성해 두시면 매칭 성사율이 크게 높아집니다!
+                          기다리는 동안 자기소개와 관심사를 채워 두면 상대가 나를 더 잘 알 수 있어요.
                         </>
                       )}
                     </p>

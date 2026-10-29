@@ -204,13 +204,13 @@ export default function LandingPage() {
           <p className="mt-4 text-[15px] leading-relaxed text-zinc-500">
             {isJa ? (
               <>
-                ONDOが価値観の合う相手を紹介します。
+                ONDOが希望条件に合う他大学の学生を紹介します。
                 <br />
                 お互いOKしたらまず会話から。話が弾んだらカカオトークを交換して会いましょう。
               </>
             ) : (
               <>
-                ONDO가 가치관이 맞는 상대를 소개해 드려요.
+                ONDO가 선호 조건이 맞는 다른 학교 학생을 소개해 드려요.
                 <br />
                 서로 수락하면 대화부터, 말이 통하면 카톡을 주고받고 만나 보세요.
               </>
@@ -329,13 +329,13 @@ export default function LandingPage() {
             {(isJa
               ? [
                   { emoji: "🪪", title: "学生認証とプロフィール", desc: "学校メールまたは学生証で認証し、好みや価値観を書きます。" },
-                  { emoji: "💌", title: "紹介が届きます", desc: "価値観の合う相手のプロフィールが届きます。24時間以内にOKかパスを選びます。" },
+                  { emoji: "💌", title: "紹介が届きます", desc: "希望条件に合う他大学の学生のプロフィールが届きます。24時間以内にOKかパスを選びます。" },
                   { emoji: "💬", title: "お互いOKなら会話", desc: "連絡先は隠したまま、アプリ内でまず話してみます。" },
                   { emoji: "☕", title: "カカオ交換して会う", desc: "会話が弾んだらカカオトークIDが公開されます。あとは二人で会う日を決めるだけ。" },
                 ]
               : [
                   { emoji: "🪪", title: "학생 인증 & 프로필", desc: "학교 메일이나 학생증으로 인증하고, 나의 취향과 연애 가치관을 적어요." },
-                  { emoji: "💌", title: "소개팅 상대 도착", desc: "결이 맞는 상대의 프로필이 도착해요. 24시간 안에 수락 또는 패스를 골라요." },
+                  { emoji: "💌", title: "소개팅 상대 도착", desc: "선호 조건이 맞는 다른 학교 학생의 프로필이 도착해요. 24시간 안에 수락 또는 패스를 골라요." },
                   { emoji: "💬", title: "둘 다 수락하면 대화", desc: "연락처는 가린 채로 앱 안에서 먼저 이야기를 나눠 봐요." },
                   { emoji: "☕", title: "카톡 교환 후 만남", desc: "대화가 무르익으면 카카오톡 ID가 공개돼요. 이제 만날 날만 정하면 돼요." },
                 ]
@@ -385,7 +385,7 @@ export default function LandingPage() {
                   : "이런 소개팅 프로필이 도착해요 (예시)"}
               </span>
               <span className="text-[12px] font-bold text-rose-600">
-                VALUE MATCH 94%
+                {isJa ? "サンプル" : "SAMPLE"}
               </span>
             </div>
             <MatchCard partner={DEMO_PARTNERS[0]} />

@@ -2,13 +2,24 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Coffee, Copy, Lock, MessageCircle, Send } from "lucide-react";
-import { ROUTES } from "@/lib/ondo-constants";
+import { Coffee, Copy, Lock, MessageCircle, Send, Sparkles } from "lucide-react";
 import {
+  BUILD_TYPES,
+  IMPRESSION_TYPES,
+  RELIGIONS,
+  ROUTES,
+  SMOKING_STATUSES,
+} from "@/lib/ondo-constants";
+import {
+  BUILD_LABEL_JA,
   departmentLabelJa,
+  IMPRESSION_LABEL_JA,
   locationLabelJa,
+  RELIGION_LABEL_JA,
   schoolLabelJa,
+  SMOKING_LABEL_JA,
   useAppLocale,
+  VIBE_STYLE_LABEL_JA,
 } from "@/lib/i18n";
 import {
   DbMatchMessage,
@@ -21,6 +32,19 @@ import { Button, cn } from "@/components/ondo-ui";
 
 const ACTIVE_STATUSES = ["PENDING", "CHATTING", "CONFIRMED"];
 const POLL_MS = 4000;
+
+const buildLabelMap = Object.fromEntries(
+  BUILD_TYPES.map((b) => [b.value, b.label])
+);
+const impressionLabelMap = Object.fromEntries(
+  IMPRESSION_TYPES.map((i) => [i.value, i.label])
+);
+const smokingLabelMap = Object.fromEntries(
+  SMOKING_STATUSES.map((s) => [s.value, s.label])
+);
+const religionLabelMap = Object.fromEntries(
+  RELIGIONS.map((r) => [r.value, r.label])
+);
 
 export function isActiveMatch(m: DbMatchPartner) {
   return ACTIVE_STATUSES.includes(m.ticket_status);
@@ -42,6 +66,16 @@ export function RealMatchPanel({
   onChanged: () => void;
 }) {
   const active = matches.filter(isActiveMatch);
+  const hasPending = active.some((m) => m.ticket_status === "PENDING");
+
+  useEffect(() => {
+    if (!hasPending) return;
+    const t = setInterval(() => {
+      onChanged();
+    }, POLL_MS);
+    return () => clearInterval(t);
+  }, [hasPending, onChanged]);
+
   if (active.length === 0) return null;
   return (
     <div className="space-y-4">
@@ -100,12 +134,47 @@ function MatchCardReal({
     onChanged();
   };
 
+  const extra = match.profile_extra ?? undefined;
+  const voiceIntroText = extra?.voiceIntroText?.trim() || "";
+  const vibeKeywords = Array.isArray(extra?.vibeKeywords)
+    ? extra.vibeKeywords
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((s) => (isJa ? VIBE_STYLE_LABEL_JA[s] || s : s))
+    : [];
+  const impressionLabel = extra?.impression
+    ? isJa
+      ? IMPRESSION_LABEL_JA[extra.impression] ||
+        impressionLabelMap[extra.impression]
+      : impressionLabelMap[extra.impression]
+    : null;
+  const buildLabel = extra?.build
+    ? isJa
+      ? BUILD_LABEL_JA[extra.build] || buildLabelMap[extra.build]
+      : buildLabelMap[extra.build]
+    : null;
+  const smokingLabel = extra?.smokingStatus
+    ? isJa
+      ? SMOKING_LABEL_JA[extra.smokingStatus] ||
+        smokingLabelMap[extra.smokingStatus]
+      : smokingLabelMap[extra.smokingStatus]
+    : null;
+  const religionLabel = extra?.religion
+    ? isJa
+      ? RELIGION_LABEL_JA[extra.religion] || religionLabelMap[extra.religion]
+      : religionLabelMap[extra.religion]
+    : null;
+
   const partnerMeta = [
     isJa ? schoolLabelJa(match.univ) : match.univ,
     match.major && isJa ? departmentLabelJa(match.major) : match.major,
     match.age ? `${match.age}${isJa ? "歳" : "세"}` : null,
     match.height ? `${match.height}cm` : null,
     match.mbti,
+    impressionLabel,
+    buildLabel,
+    smokingLabel,
+    religionLabel,
     match.location_label && isJa
       ? locationLabelJa(match.location_label)
       : match.location_label,
@@ -133,10 +202,33 @@ function MatchCardReal({
           {match.nickname}
         </h3>
         <p className="mt-0.5 text-[13px] text-zinc-600">{partnerMeta}</p>
+        {voiceIntroText && (
+          <div className="mt-3 rounded-2xl border border-rose-100 bg-white/90 px-3.5 py-2.5">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600">
+              <Sparkles className="h-3 w-3" />
+              {isJa ? "第一印象・価値観の一行ノート" : "첫인상 · 연애 가치관 한 줄 노트"}
+            </span>
+            <p className="mt-1 text-[13px] font-semibold leading-relaxed text-zinc-800">
+              &ldquo;{voiceIntroText}&rdquo;
+            </p>
+          </div>
+        )}
         {match.bio && (
           <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-zinc-700">
             {match.bio}
           </p>
+        )}
+        {vibeKeywords.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {vibeKeywords.map((kw) => (
+              <span
+                key={kw}
+                className="rounded-full bg-rose-100/70 px-2.5 py-0.5 text-[11px] font-bold text-rose-700"
+              >
+                #{kw}
+              </span>
+            ))}
+          </div>
         )}
         {match.hobbies && match.hobbies.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">

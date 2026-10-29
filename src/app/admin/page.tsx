@@ -63,8 +63,8 @@ interface EscrowPair {
   femaleName: string;
   maleName: string;
   schoolPair: string;
-  turnsCount: number;
-  escrowStatus: "HELD" | "CONFIRMED" | "REFUNDED";
+  responseSummary: string;
+  escrowStatus: "HELD" | "CHATTING" | "CONFIRMED" | "PASSED" | "REFUNDED";
   createdAt: string;
 }
 
@@ -141,12 +141,20 @@ async function loadAdminData(): Promise<AdminData> {
           id: m.id,
           femaleName: m.female_name,
           maleName: m.male_name,
-          schoolPair: `가치관 일치 ${m.score ?? 92}%`,
-          turnsCount: 3,
+          schoolPair: m.score != null ? `매칭 점수 ${m.score}점` : "점수 없음",
+          responseSummary: `여: ${m.female_response ?? "PENDING"} · 남: ${
+            m.male_response ?? "PENDING"
+          }${m.male_ticket_charged ? " (티켓 1장 예치)" : ""}`,
           escrowStatus:
             m.ticket_status === "CONFIRMED" || m.ticket_status === "settled"
               ? "CONFIRMED"
-              : m.ticket_status === "REFUNDED" || m.ticket_status === "refunded"
+              : m.ticket_status === "CHATTING"
+              ? "CHATTING"
+              : m.ticket_status === "PASSED"
+              ? "PASSED"
+              : m.ticket_status === "REFUNDED" ||
+                m.ticket_status === "refunded" ||
+                m.ticket_status === "EXPIRED"
               ? "REFUNDED"
               : "HELD",
           createdAt: m.created_at,
@@ -297,7 +305,11 @@ export default function AdminDashboardPage() {
       p_male_id: male.uid,
     });
     if (error || !created) {
-      showToast("매칭 생성에 실패했습니다. 운영자 로그인 상태를 확인해 주세요.");
+      showToast(
+        error?.message?.includes("Active match already exists")
+          ? "이미 두 회원 사이에 진행 중인 매칭이 있습니다."
+          : "매칭 생성에 실패했습니다. 운영자 로그인 상태를 확인해 주세요."
+      );
       return;
     }
     await fetchFromSupabase();
@@ -845,7 +857,7 @@ export default function AdminDashboardPage() {
                 밤 9시 가치관 배치 매칭 실행기
               </h3>
               <p className="mt-1 text-[13px] text-zinc-500">
-                매일 밤 9시(KST) 이후 매시간 실행되는 자동 매칭(다른 학교 · 서로의 선호 나이 · 진행 중인 매칭 없음 · 예전에 만난 적 없는 상대 중 나이가 가까운 순)을 지금 바로 실행합니다.
+                매일 밤 9시(KST) 이후 매시간 실행되는 자동 매칭을 지금 바로 실행합니다. 진행 중인 매칭이 없고 예전에 만난 적 없는 상대 중에서 다른 학교 · 서로의 선호 나이 · 흡연 선호를 맞추고, 종교 선호가 맞고 나이가 가까운 순으로 고릅니다. (조건 유연하게 받기를 켠 회원은 나이 ±2세 · 흡연 조건 완화)
               </p>
 
               <div className="mt-5 rounded-2xl bg-[#FAF9F6] p-4 text-[12px] text-zinc-600">
@@ -900,26 +912,34 @@ export default function AdminDashboardPage() {
                             "rounded-full px-2.5 py-0.5 text-[12px] font-bold",
                             pair.escrowStatus === "CONFIRMED"
                               ? "bg-emerald-50 text-emerald-700"
-                              : pair.escrowStatus === "REFUNDED"
+                              : pair.escrowStatus === "CHATTING"
+                              ? "bg-rose-50 text-rose-600"
+                              : pair.escrowStatus === "REFUNDED" ||
+                                pair.escrowStatus === "PASSED"
                               ? "bg-stone-100 text-zinc-600"
                               : "bg-amber-50 text-amber-700"
                           )}
                         >
                           {pair.escrowStatus === "CONFIRMED"
-                            ? "첫 답장 완료 · 티켓 정산 확정"
+                            ? "대화 조건 충족 · 연락처 공개됨"
+                            : pair.escrowStatus === "CHATTING"
+                            ? "상호 수락 · 블라인드 대화 중"
+                            : pair.escrowStatus === "PASSED"
+                            ? "매칭 패스 종료 (티켓 자동 반환)"
                             : pair.escrowStatus === "REFUNDED"
-                            ? "24h 미응답 · 티켓 100% 반환됨"
-                            : "에스크로 보관 중 (답장 대기)"}
+                            ? "24h 미응답 만료 · 티켓 반환됨"
+                            : "수락 대기 중 (에스크로 보관)"}
                         </span>
                       </div>
                       <p className="mt-1 text-[12px] text-zinc-500">
-                        {pair.schoolPair} · 누적 대화 {pair.turnsCount}턴 · 생성:{" "}
+                        {pair.schoolPair} · {pair.responseSummary} · 생성:{" "}
                         {pair.createdAt}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {pair.escrowStatus === "HELD" &&
+                      {(pair.escrowStatus === "HELD" ||
+                        pair.escrowStatus === "CHATTING") &&
                         (["CONFIRMED", "REFUNDED"] as const).map((next) => (
                           <Button
                             key={next}
@@ -929,7 +949,7 @@ export default function AdminDashboardPage() {
                               const ok = window.confirm(
                                 next === "CONFIRMED"
                                   ? `${pair.femaleName} ↔ ${pair.maleName} 매칭을 확정할까요? 확정하면 두 사람에게 서로의 카카오톡 ID가 공개됩니다.`
-                                  : `${pair.femaleName} ↔ ${pair.maleName} 매칭을 미응답 종료로 처리할까요? (티켓은 자동으로 지급되지 않으니, 필요하면 회원 목록에서 직접 지급해 주세요)`
+                                  : `${pair.femaleName} ↔ ${pair.maleName} 매칭을 미응답 종료로 처리할까요? (남성 회원이 차감한 티켓이 있다면 자동으로 +1장 환급됩니다)`
                               );
                               if (!ok) return;
                               const { data: updated, error } = await supabase.rpc(
@@ -940,15 +960,11 @@ export default function AdminDashboardPage() {
                                 showToast("매칭 상태 변경에 실패했습니다.");
                                 return;
                               }
-                              setEscrowPairs((prev) =>
-                                prev.map((p) =>
-                                  p.id === pair.id ? { ...p, escrowStatus: next } : p
-                                )
-                              );
+                              await fetchFromSupabase();
                               showToast(
                                 next === "CONFIRMED"
                                   ? "매칭을 확정했습니다. 두 사람에게 연락처가 공개됩니다."
-                                  : "매칭을 미응답 종료로 처리했습니다."
+                                  : "매칭을 미응답 종료 처리하고 예치된 티켓을 반환했습니다."
                               );
                             }}
                           >

@@ -8,7 +8,9 @@ import {
   ROUTES,
   UserProfile,
   isSampleUid,
+  normalizeBuild,
   normalizeHobbies,
+  normalizeImpression,
   normalizeStoredProfile,
 } from "@/lib/ondo-constants";
 import {
@@ -197,8 +199,16 @@ function HomeContent() {
             department: m.major,
             height: m.height ?? 0,
             mbti: m.mbti,
+            build: normalizeBuild(m.profile_extra?.build),
+            impression: normalizeImpression(m.profile_extra?.impression),
+            smokingStatus: m.profile_extra?.smokingStatus ?? null,
+            religion: m.profile_extra?.religion ?? null,
             locationLabel: m.location_label,
             hobbies: normalizeHobbies(m.hobbies),
+            vibeKeywords: Array.isArray(m.profile_extra?.vibeKeywords)
+              ? m.profile_extra.vibeKeywords
+              : [],
+            voiceIntroText: m.profile_extra?.voiceIntroText ?? undefined,
             bio: m.bio ?? "",
             kakaoId: m.contact ?? undefined,
           },

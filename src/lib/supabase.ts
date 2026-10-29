@@ -554,6 +554,7 @@ export interface DbMatchPartner {
   height: number | null;
   location_label: string | null;
   hobbies: string[] | null;
+  profile_extra?: DbOndoMember["profile_extra"] | null;
   /** 운영자 확정 또는 대화 조건(각자 2번·합계 5번)을 채운 매칭에서만 값이 있음 */
   contact: string | null;
   created_at: string;
