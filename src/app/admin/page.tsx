@@ -54,6 +54,7 @@ interface AdminMember {
   verifyMethod?: string | null;
   schoolEmail?: string | null;
   studentIdImagePath?: string | null;
+  penaltySkipRemaining?: number;
 }
 
 const INITIAL_ADMIN_MEMBERS: AdminMember[] = [];
@@ -71,10 +72,10 @@ interface EscrowPair {
 const TICKET_KIND_LABEL: Record<DbSupportTicket["kind"], string> = {
   INQUIRY: "💬 문의",
   REPORT: "🚨 신고",
-  TOPUP: "☕ 충전 신청",
-  INVITE: "🎁 초대코드",
-  PROMO: "📣 홍보 인증",
-  VERIFY: "🪪 학생증 확인",
+  TOPUP: "☕ 충전",
+  INVITE: "🎁 초대",
+  PROMO: "📣 홍보",
+  VERIFY: "🪪 학생증",
 };
 
 // 충전 신청 사유(서버가 기록한 "pkg-2 · 커피티켓 2장 · 3,900원")에서 지급할 장수 계산
@@ -129,22 +130,23 @@ async function loadAdminData(): Promise<AdminData> {
             tickets: r.tickets,
             mannerTemp: Number(r.temp),
             responseRate: 98,
-            locationLabel: "서울 신촌·성북",
+            locationLabel: r.profile_extra?.locationLabel || "",
             kakaoId: r.contact,
             memoNote: r.bio,
             verifyStatus: r.student_id_status,
             verifyMethod: r.verify_method,
             schoolEmail: r.school_email,
             studentIdImagePath: r.student_id_image_path,
+            penaltySkipRemaining: Math.max(0, Number(r.penalty_skip_remaining ?? 0)),
           })),
       escrowPairs: matchRows.map((m) => ({
           id: m.id,
           femaleName: m.female_name,
           maleName: m.male_name,
-          schoolPair: m.score != null ? `매칭 점수 ${m.score}점` : "점수 없음",
-          responseSummary: `여: ${m.female_response ?? "PENDING"} · 남: ${
-            m.male_response ?? "PENDING"
-          }${m.male_ticket_charged ? " (티켓 1장 예치)" : ""}`,
+          schoolPair: m.score != null ? `${m.score}점` : "수동",
+          responseSummary: `여 ${m.female_response ?? "대기"} · 남 ${
+            m.male_response ?? "대기"
+          }${m.male_ticket_charged ? " · 티켓예치" : ""}`,
           escrowStatus:
             m.ticket_status === "CONFIRMED" || m.ticket_status === "settled"
               ? "CONFIRMED"
@@ -376,21 +378,22 @@ export default function AdminDashboardPage() {
   const femaleCount = members.filter((m) => m.gender === "FEMALE").length;
   const maleCount = members.filter((m) => m.gender === "MALE").length;
   const pendingVerifyCount = members.filter((m) => !m.emailVerified).length;
+  const openTicketCount = tickets.filter((t) => t.status === "OPEN").length;
 
   if (adminState !== "ok") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-900 px-5 text-white">
-        <div className="w-full max-w-sm rounded-3xl border border-zinc-800 bg-zinc-950 p-7 shadow-2xl">
+        <div className="w-full max-w-sm rounded-3xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-600 text-white">
               <Flame className="h-4 w-4" fill="currentColor" />
             </div>
             <div>
               <p className="text-[15px] font-black tracking-tight">
-                ONDO 36.5° ADMIN LOCK
+                ONDO ADMIN
               </p>
-              <p className="text-[12px] text-zinc-400">
-                운영자 전용 보안 접속 (일반 학우 접근 제한)
+              <p className="text-[11.5px] text-zinc-400">
+                운영자 전용 보안 접속
               </p>
             </div>
           </div>
@@ -402,7 +405,7 @@ export default function AdminDashboardPage() {
           {adminState === "login" && (
             <>
               <p className="mt-5 text-[13px] leading-relaxed text-zinc-300">
-                운영자로 등록된 카카오 계정으로 로그인해 주세요.
+                운영자 카카오 계정으로 로그인해 주세요.
               </p>
               <Button
                 fullWidth
@@ -419,12 +422,9 @@ export default function AdminDashboardPage() {
           {adminState === "denied" && (
             <>
               <p className="mt-5 text-[13px] leading-relaxed text-zinc-300">
-                이 카카오 계정은 운영자로 등록되어 있지 않습니다.
+                운영자로 등록되지 않은 계정입니다.
               </p>
-              <p className="mt-2 text-[12px] leading-relaxed text-zinc-500">
-                Supabase SQL Editor에서 아래 SQL을 실행하면 즉시 운영자로 등록됩니다.
-              </p>
-              <p className="mt-2 break-all rounded-xl bg-zinc-900 px-3 py-2 font-mono text-[12px] text-zinc-300">
+              <p className="mt-2 break-all rounded-xl bg-zinc-900 px-3 py-2 font-mono text-[11.5px] text-zinc-300">
                 {`insert into public.ondo_admins (auth_user_id) values ('${authUserId}');`}
               </p>
               <Button
@@ -436,14 +436,14 @@ export default function AdminDashboardPage() {
                     await navigator.clipboard.writeText(
                       `insert into public.ondo_admins (auth_user_id) values ('${authUserId}');`
                     );
-                    showToast("운영자 등록 SQL이 클립보드에 복사되었습니다!");
+                    showToast("운영자 등록 SQL 복사 완료!");
                   } catch {
                     // ignore
                   }
                 }}
               >
                 <Copy className="h-4 w-4" />
-                운영자 등록 SQL 1클릭 복사
+                운영자 등록 SQL 복사
               </Button>
             </>
           )}
@@ -456,76 +456,62 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen bg-[#FAF9F6] text-zinc-900">
       {/* Top Operator Bar */}
       <header className="sticky top-0 z-30 border-b border-stone-200 bg-zinc-900 text-white">
-        <div className="mx-auto flex h-15 max-w-5xl items-center justify-between px-5">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-600 text-white">
-              <Flame className="h-4 w-4" fill="currentColor" />
+        <div className="mx-auto flex h-13 max-w-5xl items-center justify-between gap-2 px-4 sm:h-14 sm:px-5">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white">
+              <Flame className="h-3.5 w-3.5" fill="currentColor" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[16px] font-black tracking-tight">
-                  ONDO 36.5° ADMIN
-                </span>
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold",
-                    dbConnected
-                      ? "bg-emerald-500/20 text-emerald-300"
-                      : "bg-amber-500/20 text-amber-300"
-                  )}
-                >
-                  <Database className="h-3 w-3" />
-                  {dbConnected
-                    ? "Supabase 실시간 DB 연결됨"
-                    : "Supabase 테이블 초기 생성 필요"}
-                </span>
-              </div>
-              <p className="text-[11px] text-zinc-400">
-                DB 엔드포인트: ofnechamnjafsjmuydpl.supabase.co
-              </p>
-            </div>
+            <span className="truncate text-[14px] font-black tracking-tight sm:text-[15px]">
+              ONDO ADMIN
+            </span>
+            <span
+              className={cn(
+                "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-bold",
+                dbConnected
+                  ? "bg-emerald-500/20 text-emerald-300"
+                  : "bg-amber-500/20 text-amber-300"
+              )}
+            >
+              <Database className="h-2.5 w-2.5" />
+              {dbConnected ? "DB 연결됨" : "DB 점검"}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
               onClick={refreshFromSupabase}
-              className="inline-flex h-8 items-center gap-1 rounded-full bg-zinc-800 px-3 text-[12px] font-bold text-zinc-200 hover:bg-zinc-700"
+              className="inline-flex h-8 items-center gap-1 rounded-full bg-zinc-800 px-2.5 text-[11.5px] font-bold text-zinc-200 hover:bg-zinc-700"
             >
               <RefreshCw className={cn("h-3 w-3", syncing && "animate-spin")} />
-              DB 새로고침
+              <span>새로고침</span>
             </button>
             <Link
               href={ROUTES.HOME}
-              className="rounded-full bg-white px-3.5 py-1.5 text-[12px] font-bold text-zinc-900 transition-colors hover:bg-stone-200"
+              className="rounded-full bg-white px-2.5 py-1.5 text-[11.5px] font-bold text-zinc-900 transition-colors hover:bg-stone-200"
             >
-              학생 메인 라운지(/) →
+              메인 →
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl space-y-6 px-5 py-8">
+      <main className="mx-auto max-w-5xl space-y-4 px-3.5 py-4 sm:space-y-6 sm:px-5 sm:py-7">
         {/* If Supabase table isn't created yet, show 1-click SQL setup box */}
         {dbConnected === false && (
-          <section className="rounded-3xl border-2 border-rose-200 bg-rose-50/70 p-6">
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <section className="rounded-2xl border-2 border-rose-200 bg-rose-50/70 p-4 sm:p-5">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div>
-                <span className="rounded-full bg-rose-600 px-2.5 py-0.5 text-[11px] font-bold text-white">
-                  최초 1회 설정 (30초 완료)
-                </span>
-                <h2 className="mt-2 text-[17px] font-black text-zinc-900">
-                  Supabase에 회원·매칭 표(Table)를 생성해 주세요!
+                <h2 className="text-[15px] font-black text-zinc-900">
+                  Supabase DB 연결을 확인해 주세요
                 </h2>
-                <p className="mt-1 text-[13px] text-zinc-600">
-                  우측 버튼을 눌러 SQL을 복사한 뒤, Supabase 좌측 메뉴{" "}
-                  <strong>[SQL Editor] → [New query]</strong>에 붙여넣고{" "}
-                  <strong>[Run]</strong>을 누르면 즉시 실시간 DB가 작동합니다.
+                <p className="mt-0.5 text-[12px] text-zinc-600">
+                  SQL Editor에서 설정 SQL을 실행한 뒤 새로고침을 눌러 주세요.
                 </p>
               </div>
               <div className="flex shrink-0 gap-2">
                 <Button
-                  size="md"
+                  size="sm"
                   className="bg-rose-600 hover:bg-rose-700"
                   onClick={async () => {
                     await navigator.clipboard.writeText(SUPABASE_SETUP_SQL);
@@ -535,22 +521,22 @@ export default function AdminDashboardPage() {
                 >
                   {sqlCopied ? (
                     <>
-                      <Check className="h-4 w-4" />
-                      SQL 복사 완료!
+                      <Check className="h-3.5 w-3.5" />
+                      복사됨
                     </>
                   ) : (
                     <>
-                      <Copy className="h-4 w-4" />
-                      테이블 생성 SQL 복사
+                      <Copy className="h-3.5 w-3.5" />
+                      SQL 복사
                     </>
                   )}
                 </Button>
                 <Button
-                  size="md"
+                  size="sm"
                   variant="secondary"
                   onClick={refreshFromSupabase}
                 >
-                  Run 완료 후 연결 확인
+                  다시 확인
                 </Button>
               </div>
             </div>
@@ -558,78 +544,78 @@ export default function AdminDashboardPage() {
         )}
 
         {/* KPI Summary Cards */}
-        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-3xl border border-stone-200 bg-white p-5">
-            <span className="text-[12px] font-bold text-zinc-400">
-              가입 대학생 및 성비
+        <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+          <div className="rounded-2xl border border-stone-200 bg-white px-3.5 py-3 sm:rounded-3xl sm:p-4">
+            <span className="text-[11px] font-bold text-zinc-400">
+              가입 회원
             </span>
-            <p className="mt-1 text-[24px] font-black text-zinc-900">
+            <p className="mt-0.5 text-[20px] font-black text-zinc-900 sm:text-[22px]">
               {members.length}명
             </p>
-            <p className="mt-1 text-[12px] font-semibold text-rose-600">
-              여 {femaleCount} : 남 {maleCount} (황금 성비)
+            <p className="mt-0.5 text-[11px] font-semibold text-rose-600">
+              여 {femaleCount} · 남 {maleCount}
             </p>
           </div>
 
-          <div className="rounded-3xl border border-stone-200 bg-white p-5">
-            <span className="text-[12px] font-bold text-zinc-400">
-              학생증·재학 인증 대기
+          <div className="rounded-2xl border border-stone-200 bg-white px-3.5 py-3 sm:rounded-3xl sm:p-4">
+            <span className="text-[11px] font-bold text-zinc-400">
+              인증 대기
             </span>
-            <p className="mt-1 text-[24px] font-black text-zinc-900">
-              {pendingVerifyCount}건
+            <p className="mt-0.5 text-[20px] font-black text-zinc-900 sm:text-[22px]">
+              {pendingVerifyCount}명
             </p>
-            <p className="mt-1 text-[12px] font-medium text-zinc-500">
-              승인 완료 {members.length - pendingVerifyCount}명
+            <p className="mt-0.5 text-[11px] font-medium text-zinc-500">
+              승인 {members.length - pendingVerifyCount}명
             </p>
           </div>
 
-          <div className="rounded-3xl border border-stone-200 bg-white p-5">
-            <span className="text-[12px] font-bold text-zinc-400">
-              활성 블라인드 커피챗 룸
+          <div className="rounded-2xl border border-stone-200 bg-white px-3.5 py-3 sm:rounded-3xl sm:p-4">
+            <span className="text-[11px] font-bold text-zinc-400">
+              매칭 내역
             </span>
-            <p className="mt-1 text-[24px] font-black text-zinc-900">
-              {escrowPairs.length}개
+            <p className="mt-0.5 text-[20px] font-black text-zinc-900 sm:text-[22px]">
+              {escrowPairs.length}건
             </p>
-            <p className="mt-1 text-[12px] font-semibold text-emerald-600">
-              에스크로 보호 작동 중
+            <p className="mt-0.5 text-[11px] font-semibold text-emerald-600">
+              에스크로 보호
             </p>
           </div>
 
-          <div className="rounded-3xl border border-stone-200 bg-white p-5">
-            <span className="text-[12px] font-bold text-zinc-400">
-              첫 답장 응답률
+          <div className="rounded-2xl border border-stone-200 bg-white px-3.5 py-3 sm:rounded-3xl sm:p-4">
+            <span className="text-[11px] font-bold text-zinc-400">
+              미처리 문의
             </span>
-            <p className="mt-1 text-[24px] font-black text-zinc-900">97.4%</p>
-            <p className="mt-1 text-[12px] font-medium text-zinc-500">
-              미응답 티켓 자동 반환 보장
+            <p className="mt-0.5 text-[20px] font-black text-zinc-900 sm:text-[22px]">
+              {openTicketCount}건
+            </p>
+            <p className="mt-0.5 text-[11px] font-medium text-zinc-500">
+              누적 {tickets.length}건
             </p>
           </div>
         </section>
 
         {/* Admin Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 border-b border-stone-200 pb-4">
+        <div className="grid grid-cols-2 gap-1.5 border-b border-stone-200 pb-3 sm:flex sm:flex-wrap sm:gap-2">
           {(
             [
               {
                 id: "members",
-                label: "01 회원 & 커피티켓 지급 관리",
+                label: `회원 (${members.length})`,
                 icon: Users,
               },
               {
                 id: "matching",
-                label: "02 수동·자동 매칭 컨트롤러",
+                label: "매칭 실행",
                 icon: Link2,
               },
               {
                 id: "escrow",
-                label: "03 에스크로 정산 & 환불 관리",
+                label: `정산 (${escrowPairs.length})`,
                 icon: ShieldCheck,
               },
               {
                 id: "tickets",
-                label: `04 문의·신고함 (${
-                  tickets.filter((t) => t.status === "OPEN").length
-                })`,
+                label: `문의·인증 (${openTicketCount})`,
                 icon: Inbox,
               },
             ] as const
@@ -641,14 +627,14 @@ export default function AdminDashboardPage() {
                 type="button"
                 onClick={() => setActiveTab(t.id)}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-bold transition-all",
+                  "inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-[12.5px] font-bold transition-all sm:rounded-full sm:px-4 sm:text-[13px]",
                   active
-                    ? "bg-zinc-900 text-white shadow-sm"
+                    ? "bg-zinc-900 text-white shadow-xs"
                     : "bg-white text-zinc-600 ring-1 ring-stone-200 hover:bg-stone-100"
                 )}
               >
-                <t.icon className="h-4 w-4" />
-                <span>{t.label}</span>
+                <t.icon className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{t.label}</span>
               </button>
             );
           })}
@@ -656,102 +642,93 @@ export default function AdminDashboardPage() {
 
         {/* TAB 1: Members & Ticket Granting */}
         {activeTab === "members" && (
-          <section className="space-y-3">
-            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-              <div>
-                <h2 className="text-[18px] font-extrabold text-zinc-900">
-                  가입 대학생 목록 및 커피티켓 수동 충전
-                </h2>
-                <p className="text-[12px] text-zinc-500">
-                  다른 사람이 /join 에서 가입하거나 가치관 노트를 작성하면 이 목록에 실시간으로 추가됩니다.
-                </p>
-              </div>
+          <section className="space-y-2.5">
+            <div className="flex items-center justify-between px-0.5">
+              <h2 className="text-[15px] font-extrabold text-zinc-900 sm:text-[17px]">
+                가입 회원 관리 ({members.length}명)
+              </h2>
+              <span className="text-[11.5px] text-zinc-500">
+                티켓 충전 · 학생증 승인
+              </span>
             </div>
 
-            <div className="overflow-hidden rounded-3xl border border-stone-200 bg-white">
+            <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white sm:rounded-3xl">
               <div className="divide-y divide-stone-100">
-                {members.map((m) => {
-                  const isDemo = INITIAL_ADMIN_MEMBERS.some(
-                    (d) => d.uid === m.uid
-                  );
-                  return (
+                {members.map((m) => (
                   <div
                     key={m.uid}
-                    className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center"
+                    className="flex flex-col justify-between gap-2.5 p-3.5 sm:flex-row sm:items-center sm:gap-4 sm:p-4"
                   >
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <span
                           className={cn(
                             "rounded-full px-2 py-0.5 text-[11px] font-bold",
-                            isDemo
-                              ? "bg-stone-100 text-zinc-500"
-                              : "bg-emerald-600 text-white"
-                          )}
-                        >
-                          {isDemo ? "샘플 예시" : "실제 가입자"}
-                        </span>
-                        <span
-                          className={cn(
-                            "rounded-full px-2.5 py-0.5 text-[11px] font-bold",
                             m.gender === "FEMALE"
                               ? "bg-rose-50 text-rose-600"
                               : "bg-stone-100 text-zinc-700"
                           )}
                         >
-                          {m.gender === "FEMALE" ? "여성" : "남성"} · {m.age}세
+                          {m.gender === "FEMALE" ? "여" : "남"} · {m.age}세
                         </span>
-                        <span className="text-[15px] font-extrabold text-zinc-900">
+                        <span className="text-[14.5px] font-extrabold text-zinc-900">
                           {m.nickname}
                         </span>
                         {m.emailVerified ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10.5px] font-bold text-emerald-700">
                             <CheckCircle2 className="h-3 w-3" />
                             {m.verifyMethod === "SCHOOL_EMAIL"
-                              ? `학교 메일 인증 (${m.schoolEmail ?? "-"})`
+                              ? "메일인증"
                               : m.verifyMethod === "ADMIN_REVIEW"
-                              ? "운영자 확인 인증"
-                              : "인증됨 (이전 방식)"}
+                              ? "학생증승인"
+                              : "인증됨"}
                           </span>
                         ) : (
-                          <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700">
+                          <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10.5px] font-bold text-amber-700">
                             {m.verifyStatus === "pending_review"
-                              ? "학생증 확인 대기"
+                              ? "심사 대기"
                               : m.verifyStatus === "rejected"
-                              ? "학생증 반려됨"
-                              : "학생 인증 전"}
+                              ? "반려됨"
+                              : "미인증"}
+                          </span>
+                        )}
+                        {(m.penaltySkipRemaining ?? 0) > 0 && (
+                          <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10.5px] font-bold text-rose-700">
+                            패널티 {m.penaltySkipRemaining}회
                           </span>
                         )}
                       </div>
-                      <p className="text-[13px] text-zinc-500">
-                        {m.school} {m.department} · {m.locationLabel} · 카톡ID:{" "}
+                      <p className="truncate text-[12px] text-zinc-500">
+                        {m.school} {m.department}
+                        {m.locationLabel ? ` · ${m.locationLabel}` : ""} · 카톡{" "}
                         <span className="font-mono font-semibold text-zinc-700">
                           {m.kakaoId || "미등록"}
                         </span>
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[#FAF9F6] px-3 py-1.5 text-[12px] font-bold text-zinc-800 ring-1 ring-stone-200">
-                        <Coffee className="h-3.5 w-3.5 text-rose-600" />
-                        보유 티켓 {m.tickets}장
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#FAF9F6] px-2.5 py-1 text-[11.5px] font-bold text-zinc-800 ring-1 ring-stone-200">
+                        <Coffee className="h-3 w-3 text-rose-600" />
+                        {m.tickets}장
                       </span>
 
                       <Button
                         size="sm"
                         onClick={() => handleGrantTicket(m.uid, 1)}
-                        className="bg-rose-600 hover:bg-rose-700"
+                        className="h-7 rounded-full bg-rose-600 px-2.5 text-[11.5px] hover:bg-rose-700"
                       >
-                        <Plus className="h-3.5 w-3.5" />
-                        티켓 +1 지급
+                        <Plus className="h-3 w-3" />
+                        +1
                       </Button>
 
                       <Button
                         size="sm"
                         variant="secondary"
                         onClick={() => handleGrantTicket(m.uid, -1)}
+                        className="h-7 rounded-full px-2.5 text-[11.5px]"
                       >
-                        -1 차감
+                        -1
                       </Button>
 
                       {m.studentIdImagePath && (
@@ -759,8 +736,9 @@ export default function AdminDashboardPage() {
                           size="sm"
                           variant="secondary"
                           onClick={() => openStudentIdModal(m)}
+                          className="h-7 rounded-full px-2.5 text-[11.5px]"
                         >
-                          🪪 학생증 보기
+                          🪪 학생증
                         </Button>
                       )}
 
@@ -770,14 +748,16 @@ export default function AdminDashboardPage() {
                             size="sm"
                             variant="secondary"
                             onClick={() => handleReviewStudentId(m.uid, true)}
+                            className="h-7 rounded-full px-2.5 text-[11.5px]"
                           >
-                            ✅ 인증 승인
+                            ✅ 승인
                           </Button>
                           {m.verifyStatus === "pending_review" && (
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => handleReviewStudentId(m.uid, false)}
+                              className="h-7 rounded-full px-2 text-[11.5px]"
                             >
                               반려
                             </Button>
@@ -807,14 +787,13 @@ export default function AdminDashboardPage() {
                           );
                           showToast(`${m.nickname} 회원을 삭제했습니다.`);
                         }}
-                        className="rounded-xl px-2.5 py-1.5 text-[12px] font-bold text-zinc-400 hover:bg-stone-100 hover:text-rose-600"
+                        className="rounded-full px-2 py-1 text-[11.5px] font-bold text-zinc-400 hover:bg-stone-100 hover:text-rose-600"
                       >
                         삭제
                       </button>
                     </div>
                   </div>
-                  );
-                })}
+                ))}
               </div>
             </div>
           </section>
@@ -822,28 +801,25 @@ export default function AdminDashboardPage() {
 
         {/* TAB 2: Manual & Automated Batch Matching Controller */}
         {activeTab === "matching" && (
-          <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <section className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
             {/* Manual Matchmaker */}
-            <div className="rounded-3xl border border-stone-200 bg-white p-6">
-              <span className="text-[12px] font-bold text-rose-600 uppercase">
-                Manual Matchmaker
-              </span>
-              <h3 className="mt-1 text-[18px] font-extrabold text-zinc-900">
-                운영자 수동 커플 매칭 연결
+            <div className="rounded-2xl border border-stone-200 bg-white p-4 sm:rounded-3xl sm:p-5">
+              <h3 className="text-[16px] font-extrabold text-zinc-900">
+                수동 커플 매칭
               </h3>
-              <p className="mt-1 text-[13px] text-zinc-500">
-                초기 런칭 단계에서 운영자가 가치관 노트와 선호 조건을 검토해 최적의 남녀 회원을 직접 연결해 줄 수 있습니다.
+              <p className="mt-0.5 text-[12px] text-zinc-500">
+                여·남 회원을 선택해 즉시 매칭을 생성합니다.
               </p>
 
-              <div className="mt-5 space-y-4">
+              <div className="mt-3.5 space-y-3">
                 <div>
-                  <label className="mb-1.5 block text-[12px] font-bold text-zinc-600">
-                    여성 회원 선택
+                  <label className="mb-1 block text-[11.5px] font-bold text-zinc-600">
+                    여성 회원
                   </label>
                   <select
                     value={selectedFemaleUid}
                     onChange={(e) => setSelectedFemaleUid(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-stone-200 bg-[#FAF9F6] px-3 text-[14px] font-semibold"
+                    className="h-10 w-full rounded-xl border border-stone-200 bg-[#FAF9F6] px-3 text-[13px] font-semibold"
                   >
                     {members
                       .filter((m) => m.gender === "FEMALE")
@@ -856,13 +832,13 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-[12px] font-bold text-zinc-600">
-                    남성 회원 선택
+                  <label className="mb-1 block text-[11.5px] font-bold text-zinc-600">
+                    남성 회원
                   </label>
                   <select
                     value={selectedMaleUid}
                     onChange={(e) => setSelectedMaleUid(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-stone-200 bg-[#FAF9F6] px-3 text-[14px] font-semibold"
+                    className="h-10 w-full rounded-xl border border-stone-200 bg-[#FAF9F6] px-3 text-[13px] font-semibold"
                   >
                     {members
                       .filter((m) => m.gender === "MALE")
@@ -876,46 +852,50 @@ export default function AdminDashboardPage() {
 
                 <Button
                   fullWidth
-                  size="lg"
+                  size="md"
                   className="bg-rose-600 hover:bg-rose-700"
                   onClick={handleCreateManualMatch}
                 >
                   <Link2 className="h-4 w-4" />
-                  선택한 두 회원 즉시 매칭 연결하기
+                  선택 회원 매칭 생성
                 </Button>
               </div>
             </div>
 
             {/* Night 9 PM Batch Matching Trigger */}
-            <div className="rounded-3xl border border-stone-200 bg-white p-6">
-              <span className="text-[12px] font-bold text-zinc-400 uppercase">
-                Automated Cron Engine
-              </span>
-              <h3 className="mt-1 text-[18px] font-extrabold text-zinc-900">
-                밤 9시 가치관 배치 매칭 실행기
-              </h3>
-              <p className="mt-1 text-[13px] text-zinc-500">
-                매일 밤 9시(KST) 이후 매시간 실행되는 자동 매칭을 지금 바로 실행합니다. 진행 중인 매칭이 없고 예전에 만난 적 없는 상대 중에서 다른 학교 · 서로의 선호 나이 · 흡연 선호를 맞추고, 종교 선호가 맞고 나이가 가까운 순으로 고릅니다. (조건 유연하게 받기를 켠 회원은 나이 ±2세 · 흡연 조건 완화)
-              </p>
+            <div className="flex flex-col justify-between rounded-2xl border border-stone-200 bg-white p-4 sm:rounded-3xl sm:p-5">
+              <div>
+                <h3 className="text-[16px] font-extrabold text-zinc-900">
+                  밤 9시 자동 매칭 실행기
+                </h3>
+                <p className="mt-0.5 text-[12px] text-zinc-500">
+                  매일 밤 9시 자동 실행되며, 지금 수동으로 즉시 돌릴 수도 있습니다.
+                </p>
 
-              <div className="mt-5 rounded-2xl bg-[#FAF9F6] p-4 text-[12px] text-zinc-600">
-                <p className="font-bold text-zinc-900">현재 매칭 엔진 규칙:</p>
-                <ul className="mt-1.5 list-inside list-disc space-y-1">
-                  <li>같은 학교 제외 필터 (100% 하드 블록)</li>
-                  <li>캠퍼스 밸런스 투표 3문항 가중치 (40%)</li>
-                  <li>생활권 거리 및 선호 나이/키 부합도 (40%)</li>
-                  <li>스마트 조건 1단계 자동 완화 활성화 (20%)</li>
-                </ul>
+                <div className="mt-3.5 grid grid-cols-2 gap-1.5 text-[11.5px] font-semibold text-zinc-700">
+                  <div className="rounded-xl bg-[#FAF9F6] px-3 py-2">
+                    ✓ 같은 학교 100% 제외
+                  </div>
+                  <div className="rounded-xl bg-[#FAF9F6] px-3 py-2">
+                    ✓ 나이·키·흡연·종교 반영
+                  </div>
+                  <div className="rounded-xl bg-[#FAF9F6] px-3 py-2">
+                    ✓ 24h 미응답 자동 정리
+                  </div>
+                  <div className="rounded-xl bg-[#FAF9F6] px-3 py-2">
+                    ✓ 무응답 3회 스킵 패널티
+                  </div>
+                </div>
               </div>
 
               <Button
                 fullWidth
-                size="lg"
-                className="mt-5"
+                size="md"
+                className="mt-4"
                 onClick={handleRunNightBatchMatching}
               >
                 <Zap className="h-4 w-4 text-amber-400" fill="currentColor" />
-                밤 9시 일괄 매칭 지금 실행
+                자동 매칭 지금 실행
               </Button>
             </div>
           </section>
@@ -923,31 +903,31 @@ export default function AdminDashboardPage() {
 
         {/* TAB 3: Escrow Settlement & Refund Management */}
         {activeTab === "escrow" && (
-          <section className="space-y-3">
-            <div>
-              <h2 className="text-[18px] font-extrabold text-zinc-900">
-                에스크로 커피티켓 정산 및 자동 반환 관리
+          <section className="space-y-2.5">
+            <div className="flex items-center justify-between px-0.5">
+              <h2 className="text-[15px] font-extrabold text-zinc-900 sm:text-[17px]">
+                매칭 내역 및 정산 ({escrowPairs.length}건)
               </h2>
-              <p className="text-[12px] text-zinc-500">
-                블라인드 룸에서 첫 답장이 오가면 [정산 확정] 처리하고, 24시간 미응답 시 [티켓 100% 반환]으로 처리합니다.
-              </p>
+              <span className="text-[11.5px] text-zinc-500">
+                확정 시 연락처 공개 · 종료 시 티켓 환급
+              </span>
             </div>
 
-            <div className="overflow-hidden rounded-3xl border border-stone-200 bg-white">
+            <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white sm:rounded-3xl">
               <div className="divide-y divide-stone-100">
                 {escrowPairs.map((pair) => (
                   <div
                     key={pair.id}
-                    className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center"
+                    className="flex flex-col justify-between gap-2.5 p-3.5 sm:flex-row sm:items-center sm:gap-4 sm:p-4"
                   >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[15px] font-extrabold text-zinc-900">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[14px] font-extrabold text-zinc-900">
                           {pair.femaleName} ❤️ {pair.maleName}
                         </span>
                         <span
                           className={cn(
-                            "rounded-full px-2.5 py-0.5 text-[12px] font-bold",
+                            "rounded-full px-2 py-0.5 text-[11px] font-bold",
                             pair.escrowStatus === "CONFIRMED"
                               ? "bg-emerald-50 text-emerald-700"
                               : pair.escrowStatus === "CHATTING"
@@ -959,23 +939,23 @@ export default function AdminDashboardPage() {
                           )}
                         >
                           {pair.escrowStatus === "CONFIRMED"
-                            ? "대화 조건 충족 · 연락처 공개됨"
+                            ? "연락처 공개"
                             : pair.escrowStatus === "CHATTING"
-                            ? "상호 수락 · 블라인드 대화 중"
+                            ? "블라인드 대화 중"
                             : pair.escrowStatus === "PASSED"
-                            ? "매칭 패스 종료 (티켓 자동 반환)"
+                            ? "패스 종료"
                             : pair.escrowStatus === "REFUNDED"
-                            ? "24h 미응답 만료 · 티켓 반환됨"
-                            : "수락 대기 중 (에스크로 보관)"}
+                            ? "만료·환급"
+                            : "수락 대기"}
                         </span>
                       </div>
-                      <p className="mt-1 text-[12px] text-zinc-500">
-                        {pair.schoolPair} · {pair.responseSummary} · 생성:{" "}
-                        {pair.createdAt}
+                      <p className="mt-0.5 text-[11.5px] text-zinc-500">
+                        {pair.schoolPair} · {pair.responseSummary} ·{" "}
+                        {pair.createdAt.slice(0, 10)}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {(pair.escrowStatus === "HELD" ||
                         pair.escrowStatus === "CHATTING") &&
                         (["CONFIRMED", "REFUNDED"] as const).map((next) => (
@@ -983,6 +963,7 @@ export default function AdminDashboardPage() {
                             key={next}
                             size="sm"
                             variant={next === "CONFIRMED" ? "primary" : "secondary"}
+                            className="h-7 rounded-full px-3 text-[11.5px]"
                             onClick={async () => {
                               const ok = window.confirm(
                                 next === "CONFIRMED"
@@ -1006,7 +987,7 @@ export default function AdminDashboardPage() {
                               );
                             }}
                           >
-                            {next === "CONFIRMED" ? "확정 · 연락처 공개" : "미응답 종료"}
+                            {next === "CONFIRMED" ? "확정" : "종료·환급"}
                           </Button>
                         ))}
                     </div>
@@ -1016,24 +997,25 @@ export default function AdminDashboardPage() {
             </div>
           </section>
         )}
+
         {/* TAB 4: Support Inquiries & Reports */}
         {activeTab === "tickets" && (
-          <section className="space-y-3">
-            <div>
-              <h2 className="text-[18px] font-extrabold text-zinc-900">
-                고객 문의 및 신고 접수함
+          <section className="space-y-2.5">
+            <div className="flex items-center justify-between px-0.5">
+              <h2 className="text-[15px] font-extrabold text-zinc-900 sm:text-[17px]">
+                문의·신고 및 인증 접수함
               </h2>
-              <p className="text-[12px] text-zinc-500">
-                FAQ 문의·회원 신고·티켓 충전 신청·초대코드·홍보 인증이 이곳에 쌓이고, 접수 즉시 운영자 메일(연결하면 카톡)로도 알림이 갑니다. 처리한 건은 [처리 완료]로 표시하세요.
-              </p>
+              <span className="text-[11.5px] text-zinc-500">
+                미처리 {openTicketCount}건
+              </span>
             </div>
 
             <AdminKakaoNotifyCard />
 
-            <div className="overflow-hidden rounded-3xl border border-stone-200 bg-white">
+            <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white sm:rounded-3xl">
               {tickets.length === 0 ? (
-                <p className="p-6 text-center text-[13px] text-zinc-500">
-                  접수된 문의·신고가 없습니다.
+                <p className="p-6 text-center text-[12.5px] text-zinc-500">
+                  접수된 내역이 없습니다.
                 </p>
               ) : (
                 <div className="divide-y divide-stone-100">
@@ -1045,15 +1027,15 @@ export default function AdminDashboardPage() {
                       <div
                         key={t.id}
                         className={cn(
-                          "flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-start",
+                          "flex flex-col justify-between gap-2.5 p-3.5 sm:flex-row sm:items-start sm:gap-4 sm:p-4",
                           t.status === "DONE" && "opacity-55"
                         )}
                       >
                         <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             <span
                               className={cn(
-                                "rounded-full px-2.5 py-0.5 text-[12px] font-bold",
+                                "rounded-full px-2 py-0.5 text-[11px] font-bold",
                                 t.kind === "REPORT"
                                   ? "bg-rose-50 text-rose-700"
                                   : t.kind === "TOPUP"
@@ -1069,144 +1051,154 @@ export default function AdminDashboardPage() {
                             </span>
                             <span
                               className={cn(
-                                "rounded-full px-2.5 py-0.5 text-[12px] font-bold",
+                                "rounded-full px-2 py-0.5 text-[11px] font-bold",
                                 t.status === "OPEN"
                                   ? "bg-amber-50 text-amber-700"
                                   : "bg-stone-100 text-zinc-600"
                               )}
                             >
-                              {t.status === "OPEN" ? "미처리" : "처리 완료"}
+                              {t.status === "OPEN" ? "미처리" : "완료"}
                             </span>
-                            <span className="text-[12px] text-zinc-400">
+                            <span className="text-[11px] text-zinc-400">
                               #{t.id} ·{" "}
-                              {new Date(t.created_at).toLocaleString("ko-KR")}
+                              {new Date(t.created_at).toLocaleString("ko-KR", {
+                                month: "numeric",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                             </span>
                           </div>
                           {t.reason && (
-                            <p className="mt-2 text-[13px] font-bold text-zinc-900">
+                            <p className="mt-1.5 text-[12.5px] font-bold text-zinc-900">
                               {t.reason}
                             </p>
                           )}
-                          <p className="mt-1 whitespace-pre-wrap break-words text-[13px] text-zinc-700">
+                          <p className="mt-0.5 whitespace-pre-wrap break-words text-[12.5px] text-zinc-700">
                             {t.message}
                           </p>
-                          <p className="mt-2 text-[12px] text-zinc-500">
+                          <p className="mt-1 text-[11.5px] text-zinc-500">
                             {member
-                              ? `회원: ${member.nickname} (${member.school})`
+                              ? `${member.nickname} (${member.school})`
                               : t.member_id
-                              ? `회원 ID: ${t.member_id}`
+                              ? `ID: ${t.member_id.slice(0, 8)}`
                               : "비회원"}
                             {t.reply_contact
-                              ? ` · 답변 연락처: ${t.reply_contact}`
+                              ? ` · 연락처: ${t.reply_contact}`
                               : member?.kakaoId
-                              ? ` · 회원 카카오톡: ${member.kakaoId}`
+                              ? ` · 카톡: ${member.kakaoId}`
                               : ""}
                           </p>
                         </div>
-                        <div className="flex shrink-0 flex-col gap-2 sm:items-end">
-                        {t.kind === "VERIFY" && t.status === "OPEN" && t.member_id && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              disabled={!member?.studentIdImagePath}
-                              onClick={() => {
-                                if (member) void openStudentIdModal(member);
-                              }}
-                            >
-                              🪪 학생증 사진 보기
-                            </Button>
-                            {(["approve", "reject"] as const).map((action) => (
+
+                        <div className="flex flex-wrap items-center gap-1.5 sm:shrink-0 sm:justify-end">
+                          {t.kind === "VERIFY" && t.status === "OPEN" && t.member_id && (
+                            <>
                               <Button
-                                key={action}
                                 size="sm"
-                                variant={action === "approve" ? "destructive" : "ghost"}
-                                onClick={() =>
-                                  handleReviewStudentId(
-                                    t.member_id!,
-                                    action === "approve"
-                                  )
-                                }
+                                variant="secondary"
+                                disabled={!member?.studentIdImagePath}
+                                className="h-7 rounded-full px-2.5 text-[11.5px]"
+                                onClick={() => {
+                                  if (member) void openStudentIdModal(member);
+                                }}
                               >
-                                {action === "approve" ? "✅ 학생 인증 승인" : "반려"}
+                                🪪 학생증
                               </Button>
-                            ))}
-                          </>
-                        )}
-                        {t.kind === "TOPUP" &&
-                          t.status === "OPEN" &&
-                          t.member_id &&
-                          topupTickets(t.reason) > 0 && (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={async () => {
-                                const n = topupTickets(t.reason);
-                                if (
-                                  !window.confirm(
-                                    `입금을 확인하셨나요? ${member?.nickname ?? t.member_id}님에게 커피티켓 ${n}장을 지급합니다.`
-                                  )
-                                )
-                                  return;
-                                const { data: granted, error: grantErr } =
-                                  await supabase.rpc("ondo_admin_grant_ticket", {
-                                    p_uid: t.member_id,
-                                    p_delta: n,
-                                  });
-                                if (grantErr || granted == null) {
-                                  showToast("티켓 지급에 실패했습니다.");
-                                  return;
-                                }
-                                await supabase.rpc(
-                                  "ondo_admin_update_support_ticket",
-                                  { p_id: t.id, p_status: "DONE" }
-                                );
-                                setTickets((prev) =>
-                                  prev.map((x) =>
-                                    x.id === t.id ? { ...x, status: "DONE" } : x
-                                  )
-                                );
-                                setMembers((prev) =>
-                                  prev.map((m) =>
-                                    m.uid === t.member_id
-                                      ? { ...m, tickets: Number(granted) }
-                                      : m
-                                  )
-                                );
-                                showToast(
-                                  `커피티켓 ${n}장 지급 완료 (보유 ${granted}장)`
-                                );
-                              }}
-                            >
-                              입금 확인 · 티켓 {topupTickets(t.reason)}장 지급
-                            </Button>
+                              {(["approve", "reject"] as const).map((action) => (
+                                <Button
+                                  key={action}
+                                  size="sm"
+                                  variant={action === "approve" ? "destructive" : "ghost"}
+                                  className="h-7 rounded-full px-2.5 text-[11.5px]"
+                                  onClick={() =>
+                                    handleReviewStudentId(
+                                      t.member_id!,
+                                      action === "approve"
+                                    )
+                                  }
+                                >
+                                  {action === "approve" ? "✅ 승인" : "반려"}
+                                </Button>
+                              ))}
+                            </>
                           )}
-                        <Button
-                          size="sm"
-                          variant={t.status === "OPEN" ? "primary" : "secondary"}
-                          onClick={async () => {
-                            const nextStatus =
-                              t.status === "OPEN" ? "DONE" : "OPEN";
-                            const { data, error } = await supabase.rpc(
-                              "ondo_admin_update_support_ticket",
-                              {
-                                p_id: t.id,
-                                p_status: nextStatus,
+                          {t.kind === "TOPUP" &&
+                            t.status === "OPEN" &&
+                            t.member_id &&
+                            topupTickets(t.reason) > 0 && (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="h-7 rounded-full px-2.5 text-[11.5px]"
+                                onClick={async () => {
+                                  const n = topupTickets(t.reason);
+                                  if (
+                                    !window.confirm(
+                                      `입금을 확인하셨나요? ${member?.nickname ?? t.member_id}님에게 커피티켓 ${n}장을 지급합니다.`
+                                    )
+                                  )
+                                    return;
+                                  const { data: granted, error: grantErr } =
+                                    await supabase.rpc("ondo_admin_grant_ticket", {
+                                      p_uid: t.member_id,
+                                      p_delta: n,
+                                    });
+                                  if (grantErr || granted == null) {
+                                    showToast("티켓 지급에 실패했습니다.");
+                                    return;
+                                  }
+                                  await supabase.rpc(
+                                    "ondo_admin_update_support_ticket",
+                                    { p_id: t.id, p_status: "DONE" }
+                                  );
+                                  setTickets((prev) =>
+                                    prev.map((x) =>
+                                      x.id === t.id ? { ...x, status: "DONE" } : x
+                                    )
+                                  );
+                                  setMembers((prev) =>
+                                    prev.map((m) =>
+                                      m.uid === t.member_id
+                                        ? { ...m, tickets: Number(granted) }
+                                        : m
+                                    )
+                                  );
+                                  showToast(
+                                    `커피티켓 ${n}장 지급 완료 (보유 ${granted}장)`
+                                  );
+                                }}
+                              >
+                                티켓 +{topupTickets(t.reason)}장 지급
+                              </Button>
+                            )}
+                          <Button
+                            size="sm"
+                            variant={t.status === "OPEN" ? "primary" : "secondary"}
+                            className="h-7 rounded-full px-2.5 text-[11.5px]"
+                            onClick={async () => {
+                              const nextStatus =
+                                t.status === "OPEN" ? "DONE" : "OPEN";
+                              const { data, error } = await supabase.rpc(
+                                "ondo_admin_update_support_ticket",
+                                {
+                                  p_id: t.id,
+                                  p_status: nextStatus,
+                                }
+                              );
+                              if (error || data !== true) {
+                                showToast("상태 변경에 실패했습니다.");
+                                return;
                               }
-                            );
-                            if (error || data !== true) {
-                              showToast("상태 변경에 실패했습니다. 운영자 로그인 상태를 확인해 주세요.");
-                              return;
-                            }
-                            setTickets((prev) =>
-                              prev.map((x) =>
-                                x.id === t.id ? { ...x, status: nextStatus } : x
-                              )
-                            );
-                          }}
-                        >
-                          {t.status === "OPEN" ? "처리 완료" : "다시 열기"}
-                        </Button>
+                              setTickets((prev) =>
+                                prev.map((x) =>
+                                  x.id === t.id ? { ...x, status: nextStatus } : x
+                                )
+                              );
+                            }}
+                          >
+                            {t.status === "OPEN" ? "완료 처리" : "다시 열기"}
+                          </Button>
                         </div>
                       </div>
                     );
@@ -1224,50 +1216,50 @@ export default function AdminDashboardPage() {
           onClick={() => setStudentIdModal(null)}
         >
           <div
-            className="w-full max-w-lg overflow-hidden rounded-3xl border border-stone-200 bg-white p-5 shadow-2xl"
+            className="w-full max-w-lg overflow-hidden rounded-3xl border border-stone-200 bg-white p-4 shadow-2xl sm:p-5"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-2">
               <div>
-                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-extrabold text-rose-600">
-                  🪪 학생증 · 모바일 신분증 원본 확인
+                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10.5px] font-extrabold text-rose-600">
+                  🪪 학생증 확인
                 </span>
-                <h3 className="mt-1.5 text-[17px] font-black text-zinc-900">
+                <h3 className="mt-1 text-[16px] font-black text-zinc-900">
                   {studentIdModal.member.nickname} ({studentIdModal.member.age}세)
                 </h3>
-                <p className="text-[12.5px] font-semibold text-zinc-600">
-                  {studentIdModal.member.school} · {studentIdModal.member.department} · 카톡ID:{" "}
+                <p className="text-[12px] font-semibold text-zinc-600">
+                  {studentIdModal.member.school} · {studentIdModal.member.department} · 카톡{" "}
                   <span className="font-mono">{studentIdModal.member.kakaoId || "-"}</span>
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setStudentIdModal(null)}
-                className="rounded-full bg-stone-100 px-3 py-1 text-[12px] font-bold text-zinc-600 hover:bg-stone-200"
+                className="rounded-full bg-stone-100 px-2.5 py-1 text-[11.5px] font-bold text-zinc-600 hover:bg-stone-200"
               >
                 닫기 ✕
               </button>
             </div>
 
-            <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50">
+            <div className="mt-3 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={studentIdModal.signedUrl}
                 alt={`${studentIdModal.member.nickname} 학생증 사진`}
-                className="max-h-[60vh] w-full object-contain"
+                className="max-h-[58vh] w-full object-contain"
               />
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2">
               <a
                 href={studentIdModal.signedUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[12px] font-bold text-zinc-500 underline hover:text-zinc-800"
+                className="text-[11.5px] font-bold text-zinc-500 underline hover:text-zinc-800"
               >
-                ↗ 새 탭에서 원본 크게 열기
+                ↗ 원본 열기
               </a>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <Button
                   size="sm"
                   variant="ghost"
@@ -1275,7 +1267,7 @@ export default function AdminDashboardPage() {
                     handleReviewStudentId(studentIdModal.member.uid, false)
                   }
                 >
-                  반려 (재업로드 요청)
+                  반려
                 </Button>
                 <Button
                   size="sm"
@@ -1284,7 +1276,7 @@ export default function AdminDashboardPage() {
                     handleReviewStudentId(studentIdModal.member.uid, true)
                   }
                 >
-                  ✅ 학생 인증 승인 (사진 즉시 삭제)
+                  ✅ 승인 (사진 삭제)
                 </Button>
               </div>
             </div>

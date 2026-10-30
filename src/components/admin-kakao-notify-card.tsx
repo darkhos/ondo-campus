@@ -16,8 +16,8 @@ export function AdminKakaoNotifyCard() {
   const [message, setMessage] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
     const result = new URLSearchParams(window.location.search).get("kakao");
-    if (result === "connected") return "✅ 카톡 알림이 연결됐어요. [시험 메시지]로 확인해 보세요.";
-    if (result === "failed") return "⚠️ 카톡 연결에 실패했어요. 다시 시도해 주세요.";
+    if (result === "connected") return "✅ 카톡 알림 연결됨";
+    if (result === "failed") return "⚠️ 카톡 연결 실패 — 다시 시도해 주세요.";
     return null;
   });
 
@@ -34,7 +34,7 @@ export function AdminKakaoNotifyCard() {
     );
     if (error || !state) {
       setBusy(false);
-      setMessage("⚠️ 연결을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.");
+      setMessage("⚠️ 연결 시작 실패 — 다시 시도해 주세요.");
       return;
     }
     // 카카오 연결은 외부(Supabase Edge Function) 주소로 이동
@@ -50,49 +50,49 @@ export function AdminKakaoNotifyCard() {
     setBusy(false);
     setMessage(
       error
-        ? "⚠️ 시험 메시지를 보내지 못했어요."
-        : "📨 시험 메시지를 보냈어요. 카톡 '나와의 채팅'을 확인해 주세요."
+        ? "⚠️ 발송 실패"
+        : "📨 '나와의 채팅'으로 테스트 발송됨"
     );
   };
 
   return (
-    <div className="rounded-3xl border border-amber-200 bg-amber-50/60 p-4">
+    <div className="rounded-2xl border border-amber-200 bg-amber-50/60 px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="text-[14px] font-extrabold text-zinc-900">
-            💬 카톡 알림 (나와의 채팅)
-          </p>
-          <p className="text-[12px] text-zinc-600">
+        <div className="flex items-center gap-2">
+          <span className="text-[13px] font-extrabold text-zinc-900">
+            💬 운영자 카톡 알림
+          </span>
+          <span className="rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-bold text-zinc-600 ring-1 ring-amber-200/80">
             {connectedAt === undefined
-              ? "연결 상태 확인 중..."
+              ? "확인 중"
               : connectedAt
-                ? `연결됨 · ${new Date(connectedAt).toLocaleString("ko-KR")}`
-                : "아직 연결 안 됨 — 새 접수가 오면 메일로만 알려 드려요."}
-          </p>
+                ? "연결됨"
+                : "미연결 (메일만 발송)"}
+          </span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             disabled={busy}
             onClick={connect}
-            className="rounded-full bg-[#FEE500] px-3.5 py-2 text-[12px] font-extrabold text-zinc-900 hover:brightness-95 disabled:opacity-50"
+            className="rounded-full bg-[#FEE500] px-3 py-1.5 text-[11.5px] font-extrabold text-zinc-900 hover:brightness-95 disabled:opacity-50"
           >
-            {connectedAt ? "다시 연결" : "카톡 알림 연결하기"}
+            {connectedAt ? "재연결" : "카톡 연결"}
           </button>
           {connectedAt && (
             <button
               type="button"
               disabled={busy}
               onClick={sendTest}
-              className="rounded-full bg-white px-3.5 py-2 text-[12px] font-bold text-zinc-700 ring-1 ring-stone-200 hover:bg-stone-50 disabled:opacity-50"
+              className="rounded-full bg-white px-3 py-1.5 text-[11.5px] font-bold text-zinc-700 ring-1 ring-stone-200 hover:bg-stone-50 disabled:opacity-50"
             >
-              시험 메시지
+              테스트
             </button>
           )}
         </div>
       </div>
       {message && (
-        <p className="mt-2 text-[12px] font-semibold text-zinc-700">{message}</p>
+        <p className="mt-1.5 text-[11.5px] font-semibold text-zinc-700">{message}</p>
       )}
     </div>
   );
