@@ -172,8 +172,8 @@ begin
   end if;
 
   foreach k in array array['preferredAgeMin', 'preferredAgeMax'] loop
-    if coalesce(p ->> k, '') ~ '^\d{1,2}$' and (p ->> k)::integer between 18 and 30 then
-      v := v || jsonb_build_object(k, (p ->> k)::integer);
+    if coalesce(p ->> k, '') ~ '^\d{1,2}$' and (p ->> k)::integer between 18 and 35 then
+      v := v || jsonb_build_object(k, least(28, greatest(18, (p ->> k)::integer)));
     end if;
   end loop;
 
@@ -261,8 +261,8 @@ begin
     v_mbti := null;
   end if;
 
-  if p_age is not null and (p_age < 18 or p_age > 30) then
-    raise exception 'Age must be between 18 and 30';
+  if p_age is not null and (p_age < 18 or p_age > 28) then
+    raise exception 'Age must be between 18 and 28';
   end if;
 
   select * into v_existing from public.ondo_members where auth_user_id = v_auth;
@@ -1939,6 +1939,7 @@ begin
           and not coalesce(f.matching_paused, false)
           and coalesce(f.penalty_skip_remaining, 0) = 0
           and coalesce(f.penalty_last_skipped_date, '') <> v_today_date
+          and coalesce(f.age, 22) between 18 and 28
           and public.ondo_extra_int(f.profile_extra, 'height', 0) between 140 and 210
           and coalesce(trim(f.contact), '') not in ('', 'ondo_univ')
           and not exists (select 1 from public.ondo_matches om
@@ -1954,6 +1955,7 @@ begin
           and not coalesce(m.matching_paused, false)
           and coalesce(m.penalty_skip_remaining, 0) = 0
           and coalesce(m.penalty_last_skipped_date, '') <> v_today_date
+          and coalesce(m.age, 24) between 18 and 28
           and public.ondo_extra_int(m.profile_extra, 'height', 0) between 140 and 210
           and coalesce(trim(m.contact), '') not in ('', 'ondo_univ')
           and not exists (select 1 from public.ondo_matches om
@@ -1966,10 +1968,10 @@ begin
       c as (
         select f.id as f_id, f.nickname as f_name, m.id as m_id, m.nickname as m_name,
                coalesce(f.age, 22) as fa, coalesce(m.age, 24) as ma,
-               public.ondo_extra_int(f.profile_extra, 'preferredAgeMin', 18) as f_min,
-               public.ondo_extra_int(f.profile_extra, 'preferredAgeMax', 30) as f_max,
-               public.ondo_extra_int(m.profile_extra, 'preferredAgeMin', 18) as m_min,
-               public.ondo_extra_int(m.profile_extra, 'preferredAgeMax', 30) as m_max,
+               least(28, greatest(18, public.ondo_extra_int(f.profile_extra, 'preferredAgeMin', 18))) as f_min,
+               least(28, greatest(18, public.ondo_extra_int(f.profile_extra, 'preferredAgeMax', 28))) as f_max,
+               least(28, greatest(18, public.ondo_extra_int(m.profile_extra, 'preferredAgeMin', 18))) as m_min,
+               least(28, greatest(18, public.ondo_extra_int(m.profile_extra, 'preferredAgeMax', 28))) as m_max,
                public.ondo_extra_bool(f.profile_extra, 'smartRelaxFilter', true) as f_relax,
                public.ondo_extra_bool(m.profile_extra, 'smartRelaxFilter', true) as m_relax,
                f.profile_extra as fx, m.profile_extra as mx, f.mbti as f_mbti, m.mbti as m_mbti,
@@ -2143,6 +2145,11 @@ grant execute on function public.ondo_admin_review_student(text, boolean) to aut
 
 -- 문의 접수는 비회원(anon)도 가능 — 넣기만 되고 꺼내 보기는 불가
 grant execute on function public.ondo_submit_support_ticket(text, text, text, text) to anon, authenticated;
+
+-- 기존 회원의 선호 나이 범위가 만 28세를 초과해 저장된 경우 만 18~28세 범위로 자동 보정
+update public.ondo_members
+set profile_extra = public.ondo_clean_profile_extra(profile_extra)
+where profile_extra is not null;
 
 -- ondo_run_autonomous_batch, ondo_notify_support_ticket 는 외부 실행 불가
 -- (자동 매칭/환급은 위 pg_cron 스케줄러만 실행, 메일 알림은 트리거만 실행)

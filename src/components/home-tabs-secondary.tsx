@@ -156,7 +156,7 @@ export function IdealTypeTab({
 }) {
   const [locale] = useAppLocale();
   const isJa = locale === "ja";
-  // 예전에 저장된 범위가 만 18~30세를 벗어나면 그 안으로 맞춰서 보여 줌
+  // 예전에 저장된 범위가 만 18~28세를 벗어나면 그 안으로 맞춰서 보여 줌
   const clampAge = (v: number, fallback: number) =>
     Number.isFinite(v) && v > 0 ? Math.min(AGE_MAX, Math.max(AGE_MIN, v)) : fallback;
   const [minAge, setMinAge] = useState(() => String(clampAge(user.preferredAgeMin, AGE_MIN)));

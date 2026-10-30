@@ -24,7 +24,7 @@ export const FAQ_URL = "/faq";
 export const BETA_UNLIMITED_TICKETS = true;
 
 export const AGE_MIN = 18;
-export const AGE_MAX = 30;
+export const AGE_MAX = 28;
 export const HEIGHT_MIN = 140;
 export const HEIGHT_MAX = 210;
 
@@ -182,6 +182,19 @@ export function normalizeStoredProfile<T extends Record<string, unknown>>(raw: T
   }
   if (p.matchingStatus !== undefined && p.matchingStatus !== "PAUSED") {
     p.matchingStatus = "ACTIVE";
+  }
+  if (typeof p.preferredAgeMin === "number" && Number.isFinite(p.preferredAgeMin)) {
+    p.preferredAgeMin = Math.min(AGE_MAX, Math.max(AGE_MIN, Math.round(p.preferredAgeMin)));
+  }
+  if (typeof p.preferredAgeMax === "number" && Number.isFinite(p.preferredAgeMax)) {
+    p.preferredAgeMax = Math.min(AGE_MAX, Math.max(AGE_MIN, Math.round(p.preferredAgeMax)));
+  }
+  if (
+    typeof p.preferredAgeMin === "number" &&
+    typeof p.preferredAgeMax === "number" &&
+    p.preferredAgeMin > p.preferredAgeMax
+  ) {
+    p.preferredAgeMin = p.preferredAgeMax;
   }
   return p as T;
 }
