@@ -211,7 +211,7 @@ export function consumeAuthNextPath(): string | null {
     const next = window.sessionStorage.getItem(AUTH_NEXT_KEY);
     window.sessionStorage.removeItem(AUTH_NEXT_KEY);
     // 같은 사이트 내부 경로만 허용 (오픈 리다이렉트·백슬래시 우회 완벽 차단)
-    return next && /^\/[a-zA-Z0-9/_-]*(\?[a-zA-Z0-9=&_-]*)?$/.test(next)
+    return next && /^\/(?![/\\])[a-zA-Z0-9/_-]*(\?[a-zA-Z0-9=&_-]*)?$/.test(next)
       ? next
       : null;
   } catch {

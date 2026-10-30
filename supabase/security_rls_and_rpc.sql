@@ -2084,6 +2084,16 @@ revoke all on table public.ondo_members, public.ondo_matches,
   public.ondo_member_kakao_tokens
   from anon, authenticated;
 
+-- Supabase가 만든 자동 보안 켜기 함수(rls_auto_enable)는 사람이 직접 부를 일이 없으므로 실행 권한 회수
+do $$
+begin
+  if exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+             where n.nspname = 'public' and p.proname = 'rls_auto_enable') then
+    execute 'revoke all on function public.rls_auto_enable() from public, anon, authenticated';
+  end if;
+end;
+$$;
+
 -- 모든 ondo_ 함수의 실행 권한을 일단 전부 회수
 do $$
 declare
