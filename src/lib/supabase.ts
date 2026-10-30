@@ -210,8 +210,10 @@ export function consumeAuthNextPath(): string | null {
   try {
     const next = window.sessionStorage.getItem(AUTH_NEXT_KEY);
     window.sessionStorage.removeItem(AUTH_NEXT_KEY);
-    // 같은 사이트 내부 경로만 허용 (오픈 리다이렉트 방지)
-    return next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+    // 같은 사이트 내부 경로만 허용 (오픈 리다이렉트·백슬래시 우회 완벽 차단)
+    return next && /^\/[a-zA-Z0-9/_-]*(\?[a-zA-Z0-9=&_-]*)?$/.test(next)
+      ? next
+      : null;
   } catch {
     return null;
   }
@@ -460,23 +462,6 @@ export async function fetchMyMemberSecure(): Promise<DbOndoMember | null> {
 }
 
 /**
- * [사물함 자물쇠 2] 로그인한 본인 매칭 내역만 조회
- */
-export async function fetchMyMatchesSecure(): Promise<DbOndoMatch[]> {
-  try {
-    const { data: rpcRows, error: rpcErr } = await supabase.rpc(
-      "ondo_get_my_matches"
-    );
-    if (!rpcErr && Array.isArray(rpcRows)) {
-      return rpcRows as DbOndoMatch[];
-    }
-    return [];
-  } catch {
-    return [];
-  }
-}
-
-/**
  * [학생 인증 ①] 한국 대학생: 학교 메일로 6자리 인증번호 발송
  */
 export async function requestSchoolEmailCode(
@@ -544,6 +529,12 @@ export async function submitStudentIdForReview(image: Blob): Promise<boolean> {
   try {
     const authUserId = await getAuthUserId();
     if (!authUserId) return false;
+    const existing = await fetchMyMemberSecure();
+    if (existing?.student_id_image_path) {
+      await supabase.storage
+        .from("student-ids")
+        .remove([existing.student_id_image_path]);
+    }
     const path = `${authUserId}/${Date.now()}.jpg`;
     const { error: uploadErr } = await supabase.storage
       .from("student-ids")

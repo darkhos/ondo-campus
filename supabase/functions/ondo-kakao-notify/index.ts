@@ -164,6 +164,26 @@ async function consumeState(state: string | null): Promise<boolean> {
   return !!data && data.length === 1;
 }
 
+function timingSafeEqualStr(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const ab = enc.encode(a);
+  const bb = enc.encode(b);
+  if (ab.length !== bb.length || ab.length === 0) return false;
+  let diff = 0;
+  for (let i = 0; i < ab.length; i++) {
+    diff |= ab[i] ^ bb[i];
+  }
+  return diff === 0;
+}
+
+function isAllowedMemberLink(url: unknown): url is string {
+  return (
+    typeof url === "string" &&
+    (url.startsWith("https://darkhos.github.io/ondo-campus/") ||
+      url.startsWith("https://ondo365.kr/"))
+  );
+}
+
 Deno.serve(async (req) => {
   const url = new URL(req.url);
 
@@ -171,6 +191,9 @@ Deno.serve(async (req) => {
     // 1단계: 관리자 페이지 → 카카오 동의 화면으로 보내기
     if (url.searchParams.get("start") === "1") {
       const state = url.searchParams.get("state") ?? "";
+      if (!/^[0-9a-f]{48}$/.test(state)) {
+        return redirectToAdmin("failed");
+      }
       const authorize = new URL("https://kauth.kakao.com/oauth/authorize");
       authorize.search = new URLSearchParams({
         client_id: Deno.env.get("KAKAO_REST_API_KEY") ?? "",
@@ -205,8 +228,9 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("method not allowed", { status: 405 });
   }
-  const hookSecret = Deno.env.get("MAIL_HOOK_SECRET");
-  if (!hookSecret || req.headers.get("x-ondo-mail-secret") !== hookSecret) {
+  const hookSecret = Deno.env.get("MAIL_HOOK_SECRET") ?? "";
+  const provided = req.headers.get("x-ondo-mail-secret") ?? "";
+  if (!timingSafeEqualStr(provided, hookSecret)) {
     return new Response("forbidden", { status: 403 });
   }
 
@@ -225,11 +249,11 @@ Deno.serve(async (req) => {
       await sendMemoWithToken(
         mToken,
         text,
-        typeof link_url === "string" && link_url
+        isAllowedMemberLink(link_url)
           ? link_url
           : "https://darkhos.github.io/ondo-campus/",
         typeof button_title === "string" && button_title
-          ? button_title
+          ? button_title.slice(0, 30)
           : "온도 라운지 열기",
       );
     } else {

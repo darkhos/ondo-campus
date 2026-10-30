@@ -144,7 +144,7 @@ join public.ondo_members m on m.auth_user_id = i.user_id
 order by i.user_id, i.created_at
 on conflict (id_hash) do nothing;
 
--- 프로필 부가 정보 정리: 매칭 계산에 쓰는 값이 이상하면 지워서 밤 9시 매칭 전체가 멈추지 않게 함
+-- 프로필 부가 정보 정리: 허용된 키만 남기고 타입·길이를 엄격히 검증해 이상한 값이나 악성 페이로드 유입을 차단
 create or replace function public.ondo_clean_profile_extra(p jsonb)
 returns jsonb
 language plpgsql
@@ -152,31 +152,79 @@ immutable
 set search_path = public
 as $$
 declare
-  v jsonb := p;
+  v jsonb := '{}'::jsonb;
   k text;
+  arr_val jsonb;
 begin
-  if v is null or jsonb_typeof(v) <> 'object' then
+  if p is null or jsonb_typeof(p) <> 'object' then
     return '{}'::jsonb;
   end if;
-  if length(v::text) > 20000 then
+  if length(p::text) > 10000 then
     raise exception 'Profile too large';
   end if;
+
+  if coalesce(p ->> 'selfRegisteredV2', '') = 'true' then
+    v := v || jsonb_build_object('selfRegisteredV2', true);
+  end if;
+
+  if coalesce(p ->> 'height', '') ~ '^\d{2,3}$' and (p ->> 'height')::integer between 120 and 230 then
+    v := v || jsonb_build_object('height', (p ->> 'height')::integer);
+  end if;
+
   foreach k in array array['preferredAgeMin', 'preferredAgeMax'] loop
-    if v ? k and not (coalesce(v ->> k, '') ~ '^\d{1,2}$' and (v ->> k)::integer between 18 and 30) then
-      v := v - k;
+    if coalesce(p ->> k, '') ~ '^\d{1,2}$' and (p ->> k)::integer between 18 and 30 then
+      v := v || jsonb_build_object(k, (p ->> k)::integer);
     end if;
   end loop;
-  if v ? 'height' and not (coalesce(v ->> 'height', '') ~ '^\d{2,3}$' and (v ->> 'height')::integer between 120 and 230) then
-    v := v - 'height';
-  end if;
-  if v ? 'preferredHeight' and jsonb_typeof(v -> 'preferredHeight') not in ('string', 'null') then
-    v := v - 'preferredHeight';
-  end if;
+
   foreach k in array array['avoidSameSchool', 'smartRelaxFilter', 'includeJapaneseGlobal'] loop
-    if v ? k and jsonb_typeof(v -> k) <> 'null' and coalesce(v ->> k, '') not in ('true', 'false') then
-      v := v - k;
+    if coalesce(p ->> k, '') in ('true', 'false') then
+      v := v || jsonb_build_object(k, (p ->> k)::boolean);
     end if;
   end loop;
+
+  foreach k in array array['build', 'impression', 'smokingStatus', 'religion', 'preferredSmoking', 'preferredReligion'] loop
+    if jsonb_typeof(p -> k) = 'string' and length(p ->> k) <= 40 then
+      v := v || jsonb_build_object(k, left(trim(p ->> k), 40));
+    end if;
+  end loop;
+
+  if jsonb_typeof(p -> 'preferredHeight') = 'string' and length(p ->> 'preferredHeight') <= 120 then
+    v := v || jsonb_build_object('preferredHeight', left(trim(p ->> 'preferredHeight'), 120));
+  end if;
+
+  if jsonb_typeof(p -> 'locationLabel') = 'string' and length(p ->> 'locationLabel') <= 60 then
+    v := v || jsonb_build_object('locationLabel', left(trim(p ->> 'locationLabel'), 60));
+  end if;
+
+  if jsonb_typeof(p -> 'location') = 'object' then
+    v := v || jsonb_build_object(
+      'location',
+      jsonb_build_object(
+        'sido', left(coalesce(p -> 'location' ->> 'sido', ''), 30),
+        'sigungu', left(coalesce(p -> 'location' ->> 'sigungu', ''), 30),
+        'label', left(coalesce(p -> 'location' ->> 'label', ''), 60)
+      )
+    );
+  end if;
+
+  if jsonb_typeof(p -> 'voiceIntroText') = 'string' then
+    v := v || jsonb_build_object('voiceIntroText', left(trim(p ->> 'voiceIntroText'), 300));
+  end if;
+
+  foreach k in array array['hobbies', 'vibeKeywords', 'preferredMbti', 'preferredImpressions', 'preferredBuilds'] loop
+    if jsonb_typeof(p -> k) = 'array' then
+      select coalesce(jsonb_agg(left(trim(elem), 40)), '[]'::jsonb)
+        into arr_val
+      from (
+        select jsonb_array_elements_text(p -> k) as elem
+        limit 20
+      ) sub
+      where length(trim(elem)) between 1 and 40;
+      v := v || jsonb_build_object(k, arr_val);
+    end if;
+  end loop;
+
   return v;
 end;
 $$;
@@ -223,8 +271,9 @@ begin
     update public.ondo_members
     set
       nickname = coalesce(left(nullif(trim(p_nickname), ''), 30), v_existing.nickname),
-      -- 정식 학교 인증(SCHOOL_EMAIL / ADMIN_REVIEW)을 마친 뒤에만 학교 변경 잠금
-      univ = case when v_existing.verified and v_existing.verify_method in ('SCHOOL_EMAIL', 'ADMIN_REVIEW')
+      -- 정식 학교 인증 완료(verified) 또는 학생증 운영팀 심사 대기 중(pending_review)에는 학교 변경 잠금 (심사 중 학교 바꿔치기 방지)
+      univ = case when (v_existing.verified and v_existing.verify_method in ('SCHOOL_EMAIL', 'ADMIN_REVIEW'))
+                    or v_existing.student_id_status = 'pending_review'
                   then v_existing.univ
                   else coalesce(left(nullif(trim(p_univ), ''), 80), v_existing.univ) end,
       verified = case when v_existing.verify_method in ('SCHOOL_EMAIL', 'ADMIN_REVIEW')
@@ -292,20 +341,10 @@ as $$
 $$;
 
 -- ============================================================================
--- [비밀 주방 3] 내 매칭 내역만 조회 (로그인 토큰 기준, 인자 없음)
+-- [비밀 주방 3] 구버전 원본 매칭 행 조회 함수(ondo_get_my_matches) 폐지
+-- 상대 정보는 민감 정보가 걸러진 ondo_get_my_match_partners() 로만 조회 가능
 -- ============================================================================
-create or replace function public.ondo_get_my_matches()
-returns setof public.ondo_matches
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select m.* from public.ondo_matches m
-  where public.ondo_current_member_id() is not null
-    and (m.female_id = public.ondo_current_member_id()
-         or m.male_id = public.ondo_current_member_id());
-$$;
+drop function if exists public.ondo_get_my_matches();
 
 -- [비밀 주방 4] 닉네임/카카오ID 조회 로그인(ondo_login_lookup)은 폐지 → 카카오 로그인으로 대체
 
@@ -1178,7 +1217,20 @@ on conflict (id) do nothing;
 drop policy if exists "ondo student id upload own folder" on storage.objects;
 create policy "ondo student id upload own folder" on storage.objects
   for insert to authenticated
-  with check (bucket_id = 'student-ids' and (storage.foldername(name))[1] = auth.uid()::text);
+  with check (
+    bucket_id = 'student-ids'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and name ~ ('^' || auth.uid()::text || '/[0-9]{10,16}\.(jpg|jpeg|png|webp)$')
+    and not exists (
+      select 1 from public.ondo_members m
+      where m.auth_user_id = auth.uid() and m.verified
+    )
+    and (
+      select count(*) from storage.objects o
+      where o.bucket_id = 'student-ids'
+        and (storage.foldername(o.name))[1] = auth.uid()::text
+    ) < 3
+  );
 drop policy if exists "ondo student id admin read" on storage.objects;
 create policy "ondo student id admin read" on storage.objects
   for select to authenticated
@@ -1206,7 +1258,13 @@ begin
   if v_member.verified then
     raise exception 'Already verified';
   end if;
-  if p_path is null or p_path not like auth.uid()::text || '/%' then
+  if p_path is null or p_path !~ ('^' || auth.uid()::text || '/[0-9]{10,16}\.(jpg|jpeg|png|webp)$') then
+    raise exception 'Invalid path';
+  end if;
+  if not exists (
+    select 1 from storage.objects o
+    where o.bucket_id = 'student-ids' and o.name = p_path
+  ) then
     raise exception 'Invalid path';
   end if;
   if v_member.student_id_status = 'pending_review'
@@ -2044,7 +2102,6 @@ end $$;
 -- 로그인한 회원(authenticated)만 본인용 함수 실행 가능
 grant execute on function public.ondo_current_member_id() to authenticated;
 grant execute on function public.ondo_get_my_profile() to authenticated;
-grant execute on function public.ondo_get_my_matches() to authenticated;
 grant execute on function public.ondo_upsert_my_profile(text, text, text, text, integer, text, text, text, jsonb) to authenticated;
 grant execute on function public.ondo_respond_match(text, boolean) to authenticated;
 grant execute on function public.ondo_send_match_message(text, text) to authenticated;

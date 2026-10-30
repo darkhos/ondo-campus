@@ -55,6 +55,13 @@ export default function AuthCallbackPage() {
         setFailed(true);
         return;
       }
+      if (typeof window !== "undefined" && window.location.search) {
+        try {
+          window.history.replaceState({}, "", window.location.pathname);
+        } catch {
+          // ignore
+        }
+      }
       if (session.provider_token) {
         await saveMyKakaoProviderToken(
           session.provider_token,

@@ -6,12 +6,25 @@
 // 배포 시 "Verify JWT" 는 끔 — 대신 x-ondo-mail-secret 헤더(무작위 64자리 비밀값)로 호출자를 확인
 import nodemailer from "npm:nodemailer@6.9.16";
 
+function timingSafeEqualStr(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const ab = enc.encode(a);
+  const bb = enc.encode(b);
+  if (ab.length !== bb.length || ab.length === 0) return false;
+  let diff = 0;
+  for (let i = 0; i < ab.length; i++) {
+    diff |= ab[i] ^ bb[i];
+  }
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("method not allowed", { status: 405 });
   }
-  const hookSecret = Deno.env.get("MAIL_HOOK_SECRET");
-  if (!hookSecret || req.headers.get("x-ondo-mail-secret") !== hookSecret) {
+  const hookSecret = Deno.env.get("MAIL_HOOK_SECRET") ?? "";
+  const provided = req.headers.get("x-ondo-mail-secret") ?? "";
+  if (!timingSafeEqualStr(provided, hookSecret)) {
     return new Response("forbidden", { status: 403 });
   }
 
