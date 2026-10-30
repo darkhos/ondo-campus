@@ -4,7 +4,10 @@ import React, { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { useRouter } from "next/navigation";
 import {
   BookOpen,
+  Calendar,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   FileCheck2,
   Globe2,
   GraduationCap,
@@ -209,6 +212,383 @@ function toReviewJpeg(dataUrl: string): Promise<Blob | null> {
 }
 
 const SIGNUP_DRAFT_KEY = "ondo_signup_draft_v1";
+
+function getDaysInMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function toIsoDate(year: number, month: number, day: number): string {
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(
+    2,
+    "0"
+  )}-${String(day).padStart(2, "0")}`;
+}
+
+function isEligibleBirthDay(year: number, month: number, day: number): boolean {
+  const parsed = parseBirthDateAndAge(toIsoDate(year, month, day));
+  return parsed !== null && parsed.age >= AGE_MIN && parsed.age <= AGE_MAX;
+}
+
+function getEligibleMonths(year: number): number[] {
+  const months: number[] = [];
+  for (let m = 1; m <= 12; m++) {
+    const dim = getDaysInMonth(year, m);
+    for (let d = 1; d <= dim; d++) {
+      if (isEligibleBirthDay(year, m, d)) {
+        months.push(m);
+        break;
+      }
+    }
+  }
+  return months;
+}
+
+function getEligibleDays(year: number, month: number): number[] {
+  const days: number[] = [];
+  const dim = getDaysInMonth(year, month);
+  for (let d = 1; d <= dim; d++) {
+    if (isEligibleBirthDay(year, month, d)) {
+      days.push(d);
+    }
+  }
+  return days;
+}
+
+function getEligibleYears(): number[] {
+  const nowKst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const curY = nowKst.getUTCFullYear();
+  const years: number[] = [];
+  for (let y = curY - AGE_MIN; y >= curY - AGE_MAX - 1; y--) {
+    if (getEligibleMonths(y).length > 0) {
+      years.push(y);
+    }
+  }
+  return years;
+}
+
+function BirthDateCalendarPicker({
+  value,
+  onChange,
+  isJa,
+}: {
+  value: string;
+  onChange: (iso: string) => void;
+  isJa: boolean;
+}) {
+  const parsed = parseBirthDateAndAge(value);
+  const eligibleYears = getEligibleYears();
+  const defaultYear =
+    eligibleYears.find((y) => y === eligibleYears[0] - 4) ??
+    eligibleYears[0] ??
+    2004;
+
+  const [selY, setSelY] = useState<number | "">(() =>
+    parsed ? Number(parsed.iso.slice(0, 4)) : ""
+  );
+  const [selM, setSelM] = useState<number | "">(() =>
+    parsed ? Number(parsed.iso.slice(5, 7)) : ""
+  );
+  const [selD, setSelD] = useState<number | "">(() =>
+    parsed ? Number(parsed.iso.slice(8, 10)) : ""
+  );
+  const [calOpen, setCalOpen] = useState(false);
+  const [calY, setCalY] = useState<number>(() =>
+    parsed ? Number(parsed.iso.slice(0, 4)) : defaultYear
+  );
+  const [calM, setCalM] = useState<number>(() =>
+    parsed ? Number(parsed.iso.slice(5, 7)) : 5
+  );
+
+  const monthsForYear =
+    typeof selY === "number" ? getEligibleMonths(selY) : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  const daysForYearMonth =
+    typeof selY === "number" && typeof selM === "number"
+      ? getEligibleDays(selY, selM)
+      : typeof selM === "number"
+      ? Array.from({ length: getDaysInMonth(defaultYear, selM) }, (_, i) => i + 1)
+      : Array.from({ length: 31 }, (_, i) => i + 1);
+
+  const applySelection = (
+    nextY: number | "",
+    nextM: number | "",
+    nextD: number | ""
+  ) => {
+    let y = nextY;
+    let m = nextM;
+    let d = nextD;
+
+    if (typeof y === "number") {
+      const validMonths = getEligibleMonths(y);
+      if (typeof m === "number" && !validMonths.includes(m)) {
+        m = validMonths[0] ?? "";
+      }
+      if (typeof m === "number") {
+        const validDays = getEligibleDays(y, m);
+        if (typeof d === "number" && !validDays.includes(d)) {
+          const clamped =
+            validDays.filter((vd) => vd <= (d as number)).pop() ??
+            validDays[0] ??
+            "";
+          d = clamped;
+        }
+      }
+    } else if (typeof m === "number" && typeof d === "number") {
+      const maxDim = getDaysInMonth(2004, m);
+      if (d > maxDim) d = maxDim;
+    }
+
+    setSelY(y);
+    setSelM(m);
+    setSelD(d);
+    if (typeof y === "number") setCalY(y);
+    if (typeof m === "number") setCalM(m);
+
+    if (typeof y === "number" && typeof m === "number" && typeof d === "number") {
+      onChange(toIsoDate(y, m, d));
+    } else {
+      onChange("");
+    }
+  };
+
+  const stepCalendarMonth = (delta: number) => {
+    let nextY = calY;
+    let nextM = calM + delta;
+    if (nextM < 1) {
+      nextY -= 1;
+      nextM = 12;
+    } else if (nextM > 12) {
+      nextY += 1;
+      nextM = 1;
+    }
+    if (!eligibleYears.includes(nextY)) return;
+    const validMonths = getEligibleMonths(nextY);
+    if (!validMonths.includes(nextM)) {
+      nextM = delta > 0 ? validMonths[0] : validMonths[validMonths.length - 1];
+    }
+    if (nextM) {
+      setCalY(nextY);
+      setCalM(nextM);
+    }
+  };
+
+  const calDaysInMonth = getDaysInMonth(calY, calM);
+  const firstWeekday = new Date(Date.UTC(calY, calM - 1, 1)).getUTCDay();
+  const weekdays = isJa
+    ? ["日", "月", "火", "水", "木", "金", "土"]
+    : ["일", "월", "화", "수", "목", "금", "토"];
+
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <label className="text-[13px] font-medium text-zinc-600">
+          {isJa
+            ? `生年月日（満${AGE_MIN}〜${AGE_MAX}歳・カレンダー選択）`
+            : `생년월일 (만 ${AGE_MIN}~${AGE_MAX}세)`}
+        </label>
+        {parsed && (
+          <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11.5px] font-extrabold text-emerald-700">
+            {isJa
+              ? `✓ 満${parsed.age}歳（マッチング時表示）`
+              : `✓ 만 ${parsed.age}세 (매칭 시 표시)`}
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-[1.25fr_0.95fr_0.95fr_auto] gap-1.5 sm:gap-2">
+        <select
+          aria-label={isJa ? "生年" : "출생 연도"}
+          value={selY}
+          onChange={(e) =>
+            applySelection(
+              e.target.value ? Number(e.target.value) : "",
+              selM,
+              selD
+            )
+          }
+          className="h-12 w-full rounded-xl border border-stone-200 bg-white px-2.5 text-[14px] font-semibold text-zinc-900 focus:border-zinc-900 focus:outline-none"
+        >
+          <option value="">{isJa ? "年（西暦）" : "연도 선택"}</option>
+          {eligibleYears.map((y) => (
+            <option key={y} value={y}>
+              {isJa ? `${y}年` : `${y}년`}
+            </option>
+          ))}
+        </select>
+
+        <select
+          aria-label={isJa ? "生月" : "출생 월"}
+          value={selM}
+          onChange={(e) =>
+            applySelection(
+              selY,
+              e.target.value ? Number(e.target.value) : "",
+              selD
+            )
+          }
+          className="h-12 w-full rounded-xl border border-stone-200 bg-white px-2.5 text-[14px] font-semibold text-zinc-900 focus:border-zinc-900 focus:outline-none"
+        >
+          <option value="">{isJa ? "月" : "월"}</option>
+          {monthsForYear.map((m) => (
+            <option key={m} value={m}>
+              {isJa ? `${m}月` : `${m}월`}
+            </option>
+          ))}
+        </select>
+
+        <select
+          aria-label={isJa ? "生日" : "출생 일"}
+          value={selD}
+          onChange={(e) =>
+            applySelection(
+              selY,
+              selM,
+              e.target.value ? Number(e.target.value) : ""
+            )
+          }
+          className="h-12 w-full rounded-xl border border-stone-200 bg-white px-2.5 text-[14px] font-semibold text-zinc-900 focus:border-zinc-900 focus:outline-none"
+        >
+          <option value="">{isJa ? "日" : "일"}</option>
+          {daysForYearMonth.map((d) => (
+            <option key={d} value={d}>
+              {isJa ? `${d}日` : `${d}일`}
+            </option>
+          ))}
+        </select>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (!calOpen) {
+              const targetY =
+                typeof selY === "number" ? selY : defaultYear;
+              const validMonths = getEligibleMonths(targetY);
+              const targetM =
+                typeof selM === "number" && validMonths.includes(selM)
+                  ? selM
+                  : validMonths[0] ?? 5;
+              setCalY(targetY);
+              setCalM(targetM);
+            }
+            setCalOpen((prev) => !prev);
+          }}
+          className={cn(
+            "inline-flex h-12 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-[13px] font-bold transition-colors",
+            calOpen
+              ? "border-zinc-900 bg-zinc-900 text-white"
+              : "border-stone-200 bg-white text-zinc-700 hover:bg-stone-50"
+          )}
+        >
+          <Calendar className="h-4 w-4 text-rose-500" />
+          <span>{isJa ? "カレンダー" : "달력"}</span>
+        </button>
+      </div>
+
+      {calOpen && (
+        <div className="mt-2 rounded-2xl border border-stone-200 bg-white p-3.5 shadow-lg">
+          <div className="mb-2.5 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => stepCalendarMonth(-1)}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 text-zinc-600 hover:bg-stone-100"
+              aria-label={isJa ? "前の月" : "이전 달"}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+
+            <div className="flex items-center gap-1.5">
+              <select
+                value={calY}
+                onChange={(e) => {
+                  const nextY = Number(e.target.value);
+                  const validMonths = getEligibleMonths(nextY);
+                  setCalY(nextY);
+                  if (!validMonths.includes(calM)) {
+                    setCalM(validMonths[0] ?? 1);
+                  }
+                }}
+                className="h-8 rounded-lg border border-stone-200 bg-[#FAF9F6] px-2 text-[13px] font-bold text-zinc-900"
+              >
+                {eligibleYears.map((y) => (
+                  <option key={y} value={y}>
+                    {isJa ? `${y}年` : `${y}년`}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={calM}
+                onChange={(e) => setCalM(Number(e.target.value))}
+                className="h-8 rounded-lg border border-stone-200 bg-[#FAF9F6] px-2 text-[13px] font-bold text-zinc-900"
+              >
+                {getEligibleMonths(calY).map((m) => (
+                  <option key={m} value={m}>
+                    {isJa ? `${m}月` : `${m}월`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => stepCalendarMonth(1)}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 text-zinc-600 hover:bg-stone-100"
+              aria-label={isJa ? "次の月" : "다음 달"}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-7 text-center text-[11px] font-bold text-zinc-400">
+            {weekdays.map((w, i) => (
+              <span
+                key={w}
+                className={cn(
+                  "py-1",
+                  i === 0 && "text-rose-500",
+                  i === 6 && "text-sky-600"
+                )}
+              >
+                {w}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-1 grid grid-cols-7 gap-1">
+            {Array.from({ length: firstWeekday }).map((_, idx) => (
+              <div key={`empty-${idx}`} className="h-8" />
+            ))}
+            {Array.from({ length: calDaysInMonth }, (_, i) => i + 1).map((d) => {
+              const eligible = isEligibleBirthDay(calY, calM, d);
+              const selected =
+                selY === calY && selM === calM && selD === d && !!parsed;
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  disabled={!eligible}
+                  onClick={() => {
+                    applySelection(calY, calM, d);
+                    setCalOpen(false);
+                  }}
+                  className={cn(
+                    "flex h-8 items-center justify-center rounded-lg text-[12.5px] font-bold transition-colors",
+                    selected
+                      ? "bg-rose-600 text-white shadow-xs"
+                      : eligible
+                      ? "text-zinc-800 hover:bg-rose-50 hover:text-rose-600"
+                      : "cursor-not-allowed text-zinc-300 opacity-40"
+                  )}
+                >
+                  {d}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 type SignupDraft = Record<string, unknown>;
 type SignupQuery = { lang: string | null; track: string | null; from: string | null };
@@ -462,8 +842,8 @@ function JoinForm({
     if (!parsedBirth) {
       showError(
         isJa
-          ? "生年月日（8桁、例: 2003-05-14）を正しく入力してください。"
-          : "생년월일 8자리를 올바르게 입력해 주세요. (예: 2003-05-14)"
+          ? "生年月日（年・月・日またはカレンダー）を選択してください。"
+          : "생년월일(연·월·일 또는 달력)을 선택해 주세요."
       );
       return null;
     }
@@ -950,90 +1330,38 @@ function JoinForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2.5">
-          <div>
-            <div className="mb-1.5 flex items-center justify-between">
-              <label className="text-[13px] font-medium text-gray-600">
-                {isJa ? "ニックネーム（直接入力）" : "닉네임 (직접 입력)"}
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  setNickname((prev) => generateWittyNickname(isJa, prev));
-                }}
-                className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-600 hover:bg-rose-100"
-              >
-                {isJa ? "🎲 おすすめ" : "🎲 자동 추천"}
-              </button>
-            </div>
-            <input
-              className={FIELD_INPUT}
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              placeholder={
-                isJa
-                  ? "ニックネームを直接入力（2文字以上）"
-                  : "사용할 닉네임을 직접 입력 (2자 이상)"
-              }
-            />
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label className="text-[13px] font-medium text-gray-600">
+              {isJa ? "ニックネーム（直接入力）" : "닉네임 (직접 입력)"}
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                setNickname((prev) => generateWittyNickname(isJa, prev));
+              }}
+              className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-600 hover:bg-rose-100"
+            >
+              {isJa ? "🎲 おすすめ" : "🎲 자동 추천"}
+            </button>
           </div>
-          <div>
-            <div className="mb-1.5 flex items-center justify-between gap-1">
-              <label className="text-[13px] font-medium text-zinc-600">
-                {isJa
-                  ? `生年月日（満${AGE_MIN}〜${AGE_MAX}歳）`
-                  : `생년월일 (만 ${AGE_MIN}~${AGE_MAX}세)`}
-              </label>
-              {parsedBirth && (
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-[11px] font-extrabold",
-                    parsedBirth.age >= AGE_MIN && parsedBirth.age <= AGE_MAX
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-rose-50 text-rose-600"
-                  )}
-                >
-                  {isJa ? `満${parsedBirth.age}歳` : `만 ${parsedBirth.age}세`}
-                </span>
-              )}
-            </div>
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={10}
-              className={FIELD_INPUT}
-              value={birthDate}
-              onChange={(e) => setBirthDate(formatBirthDateInput(e.target.value))}
-              placeholder={
-                isJa ? "2003-05-14（8桁）" : "예: 2003-05-14"
-              }
-            />
-            {parsedBirth &&
-              parsedBirth.age >= AGE_MIN &&
-              parsedBirth.age <= AGE_MAX && (
-                <p className="mt-1 text-[11px] font-semibold text-emerald-700">
-                  {isJa
-                    ? `✓ マッチング時に「${parsedBirth.age}歳」として表示されます`
-                    : `✓ 매칭 시 만 ${parsedBirth.age}세로 표시돼요`}
-                </p>
-              )}
-            {parsedBirth &&
-              (parsedBirth.age < AGE_MIN || parsedBirth.age > AGE_MAX) && (
-                <p className="mt-1 text-[11px] font-bold text-rose-600">
-                  {isJa
-                    ? `⚠️ 満${parsedBirth.age}歳 — 満${AGE_MIN}歳〜${AGE_MAX}歳の方のみご登録いただけます。`
-                    : `⚠️ 만 ${parsedBirth.age}세 — 만 ${AGE_MIN}세~${AGE_MAX}세만 가입할 수 있어요.`}
-                </p>
-              )}
-            {birthDate.replace(/\D/g, "").length === 8 && !parsedBirth && (
-              <p className="mt-1 text-[11px] font-bold text-rose-600">
-                {isJa
-                  ? "⚠️ 正しい生年月日（YYYY-MM-DD）を入力してください。"
-                  : "⚠️ 올바른 생년월일(YYYY-MM-DD)을 입력해 주세요."}
-              </p>
-            )}
-          </div>
+          <input
+            className={FIELD_INPUT}
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder={
+              isJa
+                ? "ニックネームを直接入力（2文字以上）"
+                : "사용할 닉네임을 직접 입력 (2자 이상)"
+            }
+          />
         </div>
+
+        <BirthDateCalendarPicker
+          value={birthDate}
+          onChange={setBirthDate}
+          isJa={isJa}
+        />
 
         <div>
           <label className={FIELD_LABEL}>{isJa ? "性別（選択）" : "내 성별 (선택)"}</label>
