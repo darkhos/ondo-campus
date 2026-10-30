@@ -2,4 +2,4 @@
 :HL["https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css","style",{"crossOrigin":"anonymous"}]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"faq","h":96,"c":"$Q2"}]]
-0:{"b":"KY71Io_kZhd1m16V5YEzj","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"Wd5ieNe5YBUemWc9b0TMY","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
