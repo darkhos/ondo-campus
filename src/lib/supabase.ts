@@ -3,6 +3,7 @@ import {
   EMPTY_USER_PROFILE,
   UserProfile,
   normalizeStoredProfile,
+  parseBirthDateAndAge,
 } from "@/lib/ondo-constants";
 
 export const SUPABASE_URL =
@@ -347,6 +348,7 @@ export function persistMemberSession(member: DbOndoMember): void {
     window.localStorage.removeItem(LEGACY_SAVED_ACCOUNTS_KEY);
     const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : {};
+    const parsedBirth = parseBirthDateAndAge(member.profile_extra?.birthDate);
     parsed.isLoggedIn = true;
     parsed.user = {
       ...mergeProfileExtra(EMPTY_USER_PROFILE, member.profile_extra),
@@ -354,7 +356,8 @@ export function persistMemberSession(member: DbOndoMember): void {
       nickname: member.nickname,
       gender:
         member.gender === "M" || member.gender === "MALE" ? "MALE" : "FEMALE",
-      age: member.age,
+      age: parsedBirth?.age ?? member.age,
+      birthDate: parsedBirth?.iso ?? null,
       school: member.univ,
       department: member.major,
       mbti: member.mbti || null,
@@ -375,8 +378,10 @@ export function persistMemberSession(member: DbOndoMember): void {
 
 /** 서버에 함께 보관할 프로필·이상형 값 (음성 파일처럼 큰 데이터는 제외) */
 function buildProfileExtra(user: UserProfile) {
+  const parsedBirth = parseBirthDateAndAge(user.birthDate);
   return {
     selfRegisteredV2: true,
+    birthDate: parsedBirth?.iso ?? null,
     height: user.height,
     location: user.location,
     locationLabel: user.location?.label ?? null,
@@ -423,6 +428,7 @@ export async function syncUserProfileToSupabase(
   kakaoId: string
 ): Promise<boolean> {
   const contactVal = kakaoId || "ondo_univ";
+  const effectiveAge = parseBirthDateAndAge(user.birthDate)?.age ?? user.age;
   try {
     const { data: rpcRow, error: rpcErr } = await supabase.rpc(
       "ondo_upsert_my_profile",
@@ -431,7 +437,7 @@ export async function syncUserProfileToSupabase(
         p_univ: user.school,
         p_major: user.department,
         p_gender: user.gender === "FEMALE" ? "F" : "M",
-        p_age: user.age,
+        p_age: effectiveAge,
         p_mbti: user.mbti || "",
         p_contact: contactVal,
         p_bio: user.bio ?? "",

@@ -23,7 +23,9 @@ import {
   FIELD_LABEL,
   ROUTES,
   DISTRICTS_BY_SIDO,
+  formatBirthDateInput,
   generateWittyNickname,
+  parseBirthDateAndAge,
 } from "@/lib/ondo-constants";
 import {
   CAPITAL_UNIV_GROUPS,
@@ -266,7 +268,10 @@ function JoinForm({
   const [gender, setGender] = useState<"FEMALE" | "MALE" | "">(() =>
     d?.gender === "FEMALE" || d?.gender === "MALE" ? d.gender : ""
   );
-  const [age, setAge] = useState(() => draftText("age") ?? "");
+  const [birthDate, setBirthDate] = useState(() =>
+    formatBirthDateInput(draftText("birthDate") ?? "")
+  );
+  const parsedBirth = parseBirthDateAndAge(birthDate);
   const [school, setSchool] = useState<string>(() =>
     queryTrack ? "" : draftText("school") ?? ""
   );
@@ -329,7 +334,7 @@ function JoinForm({
         JSON.stringify({
           campusTrack,
           nickname,
-          age,
+          birthDate,
           gender,
           school,
           department,
@@ -391,9 +396,9 @@ function JoinForm({
       label: isJa ? "基本情報" : "기본 정보",
       done:
         nickname.trim().length >= 2 &&
-        Number.isInteger(Number(age.trim())) &&
-        Number(age.trim()) >= AGE_MIN &&
-        Number(age.trim()) <= AGE_MAX &&
+        parsedBirth !== null &&
+        parsedBirth.age >= AGE_MIN &&
+        parsedBirth.age <= AGE_MAX &&
         !!gender &&
         !!school.trim() &&
         (campusTrack === "KLI_JP" || !!department.trim()),
@@ -454,18 +459,20 @@ function JoinForm({
       return null;
     }
 
-    const parsedAge = Number(age.trim());
-    if (
-      !age.trim() ||
-      !Number.isFinite(parsedAge) ||
-      !Number.isInteger(parsedAge) ||
-      parsedAge < AGE_MIN ||
-      parsedAge > AGE_MAX
-    ) {
+    if (!parsedBirth) {
       showError(
         isJa
-          ? `満${AGE_MIN}歳〜${AGE_MAX}歳の方のみご登録いただけます。（満年齢${AGE_MIN}〜${AGE_MAX}を入力してください）`
-          : `만 ${AGE_MIN}세~${AGE_MAX}세만 가입할 수 있어요. (만 나이 ${AGE_MIN}~${AGE_MAX} 사이로 입력해 주세요)`
+          ? "生年月日（8桁、例: 2003-05-14）を正しく入力してください。"
+          : "생년월일 8자리를 올바르게 입력해 주세요. (예: 2003-05-14)"
+      );
+      return null;
+    }
+
+    if (parsedBirth.age < AGE_MIN || parsedBirth.age > AGE_MAX) {
+      showError(
+        isJa
+          ? `満${AGE_MIN}歳〜${AGE_MAX}歳の方のみご登録いただけます。（現在の生年月日基準：満${parsedBirth.age}歳）`
+          : `만 ${AGE_MIN}세~${AGE_MAX}세만 가입할 수 있어요. (입력한 생년월일 기준 만 ${parsedBirth.age}세)`
       );
       return null;
     }
@@ -539,7 +546,8 @@ function JoinForm({
       uid: newUid,
       nickname: nickname.trim(),
       gender,
-      age: parsedAge,
+      age: parsedBirth.age,
+      birthDate: parsedBirth.iso,
       school: finalSchool,
       department: finalDept,
       preferredHeight: heightPrefs.join(","),
@@ -970,34 +978,60 @@ function JoinForm({
             />
           </div>
           <div>
-            <label className={FIELD_LABEL}>
-              {isJa
-                ? `満年齢（${AGE_MIN}〜${AGE_MAX}歳のみ）`
-                : `만 나이 (만 ${AGE_MIN}~${AGE_MAX}세)`}
-            </label>
+            <div className="mb-1.5 flex items-center justify-between gap-1">
+              <label className="text-[13px] font-medium text-zinc-600">
+                {isJa
+                  ? `生年月日（満${AGE_MIN}〜${AGE_MAX}歳）`
+                  : `생년월일 (만 ${AGE_MIN}~${AGE_MAX}세)`}
+              </label>
+              {parsedBirth && (
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-[11px] font-extrabold",
+                    parsedBirth.age >= AGE_MIN && parsedBirth.age <= AGE_MAX
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-rose-50 text-rose-600"
+                  )}
+                >
+                  {isJa ? `満${parsedBirth.age}歳` : `만 ${parsedBirth.age}세`}
+                </span>
+              )}
+            </div>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              maxLength={10}
               className={FIELD_INPUT}
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
+              value={birthDate}
+              onChange={(e) => setBirthDate(formatBirthDateInput(e.target.value))}
               placeholder={
-                isJa
-                  ? `${AGE_MIN}〜${AGE_MAX}（例: 22）`
-                  : `${AGE_MIN}~${AGE_MAX} (예: 22)`
+                isJa ? "2003-05-14（8桁）" : "예: 2003-05-14"
               }
-              min={AGE_MIN}
-              max={AGE_MAX}
             />
-            {age.trim() !== "" &&
-              (!Number.isInteger(Number(age.trim())) ||
-                Number(age.trim()) < AGE_MIN ||
-                Number(age.trim()) > AGE_MAX) && (
-                <p className="mt-1 text-[11px] font-bold text-rose-600">
+            {parsedBirth &&
+              parsedBirth.age >= AGE_MIN &&
+              parsedBirth.age <= AGE_MAX && (
+                <p className="mt-1 text-[11px] font-semibold text-emerald-700">
                   {isJa
-                    ? `⚠️ 満${AGE_MIN}歳〜${AGE_MAX}歳の方のみご登録いただけます。`
-                    : `⚠️ 만 ${AGE_MIN}세~${AGE_MAX}세만 가입할 수 있어요.`}
+                    ? `✓ マッチング時に「${parsedBirth.age}歳」として表示されます`
+                    : `✓ 매칭 시 만 ${parsedBirth.age}세로 표시돼요`}
                 </p>
               )}
+            {parsedBirth &&
+              (parsedBirth.age < AGE_MIN || parsedBirth.age > AGE_MAX) && (
+                <p className="mt-1 text-[11px] font-bold text-rose-600">
+                  {isJa
+                    ? `⚠️ 満${parsedBirth.age}歳 — 満${AGE_MIN}歳〜${AGE_MAX}歳の方のみご登録いただけます。`
+                    : `⚠️ 만 ${parsedBirth.age}세 — 만 ${AGE_MIN}세~${AGE_MAX}세만 가입할 수 있어요.`}
+                </p>
+              )}
+            {birthDate.replace(/\D/g, "").length === 8 && !parsedBirth && (
+              <p className="mt-1 text-[11px] font-bold text-rose-600">
+                {isJa
+                  ? "⚠️ 正しい生年月日（YYYY-MM-DD）を入力してください。"
+                  : "⚠️ 올바른 생년월일(YYYY-MM-DD)을 입력해 주세요."}
+              </p>
+            )}
           </div>
         </div>
 

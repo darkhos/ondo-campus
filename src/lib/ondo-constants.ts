@@ -28,6 +28,56 @@ export const AGE_MAX = 28;
 export const HEIGHT_MIN = 140;
 export const HEIGHT_MAX = 210;
 
+export function formatBirthDateInput(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 4) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+  return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+}
+
+export function parseBirthDateAndAge(
+  raw?: string | null
+): { iso: string; age: number } | null {
+  if (!raw || typeof raw !== "string") return null;
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length !== 8) return null;
+  const year = Number(digits.slice(0, 4));
+  const month = Number(digits.slice(4, 6));
+  const day = Number(digits.slice(6, 8));
+  if (
+    year < 1900 ||
+    year > 2100 ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31
+  ) {
+    return null;
+  }
+  const check = new Date(Date.UTC(year, month - 1, day));
+  if (
+    check.getUTCFullYear() !== year ||
+    check.getUTCMonth() + 1 !== month ||
+    check.getUTCDate() !== day
+  ) {
+    return null;
+  }
+  // 한국 표준시(KST, UTC+9) 오늘 날짜 기준으로 만 나이 계산
+  const nowKst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const curY = nowKst.getUTCFullYear();
+  const curM = nowKst.getUTCMonth() + 1;
+  const curD = nowKst.getUTCDate();
+  let age = curY - year;
+  if (curM < month || (curM === month && curD < day)) {
+    age -= 1;
+  }
+  const iso = `${String(year).padStart(4, "0")}-${String(month).padStart(
+    2,
+    "0"
+  )}-${String(day).padStart(2, "0")}`;
+  return { iso, age };
+}
+
 export const VIBE_KEYWORD_LABEL = "분위기 키워드";
 export const VIBE_KEYWORD_MAX = 3;
 
@@ -182,6 +232,15 @@ export function normalizeStoredProfile<T extends Record<string, unknown>>(raw: T
   }
   if (p.matchingStatus !== undefined && p.matchingStatus !== "PAUSED") {
     p.matchingStatus = "ACTIVE";
+  }
+  if (typeof p.birthDate === "string") {
+    const parsedBirth = parseBirthDateAndAge(p.birthDate);
+    if (parsedBirth) {
+      p.birthDate = parsedBirth.iso;
+      p.age = parsedBirth.age;
+    } else {
+      p.birthDate = null;
+    }
   }
   if (typeof p.preferredAgeMin === "number" && Number.isFinite(p.preferredAgeMin)) {
     p.preferredAgeMin = Math.min(AGE_MAX, Math.max(AGE_MIN, Math.round(p.preferredAgeMin)));
@@ -469,6 +528,7 @@ export interface UserProfile {
   nickname: string;
   gender: "FEMALE" | "MALE";
   age: number;
+  birthDate?: string | null;
   school: string;
   department: string;
   height: number;
@@ -614,6 +674,7 @@ export const EMPTY_USER_PROFILE: UserProfile = {
   nickname: "",
   gender: "FEMALE",
   age: 22,
+  birthDate: null,
   school: "",
   department: "",
   height: 0,

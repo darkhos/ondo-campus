@@ -144,11 +144,36 @@ join public.ondo_members m on m.auth_user_id = i.user_id
 order by i.user_id, i.created_at
 on conflict (id_hash) do nothing;
 
+-- 생년월일(YYYY-MM-DD)에서 한국 표준시(KST) 기준 만 나이를 계산 (없거나 잘못된 형식이면 fallback 반환)
+create or replace function public.ondo_calc_age(p_birth_date text, p_fallback integer default null)
+returns integer
+language plpgsql
+stable
+set search_path = public
+as $$
+declare
+  v_date date;
+begin
+  if coalesce(trim(p_birth_date), '') !~ '^\d{4}-\d{2}-\d{2}$' then
+    return p_fallback;
+  end if;
+  begin
+    v_date := trim(p_birth_date)::date;
+  exception when others then
+    return p_fallback;
+  end;
+  if extract(year from v_date) < 1900 or v_date > (now() at time zone 'Asia/Seoul')::date then
+    return p_fallback;
+  end if;
+  return extract(year from age((now() at time zone 'Asia/Seoul')::date, v_date))::integer;
+end;
+$$;
+
 -- 프로필 부가 정보 정리: 허용된 키만 남기고 타입·길이를 엄격히 검증해 이상한 값이나 악성 페이로드 유입을 차단
 create or replace function public.ondo_clean_profile_extra(p jsonb)
 returns jsonb
 language plpgsql
-immutable
+stable
 set search_path = public
 as $$
 declare
@@ -165,6 +190,11 @@ begin
 
   if coalesce(p ->> 'selfRegisteredV2', '') = 'true' then
     v := v || jsonb_build_object('selfRegisteredV2', true);
+  end if;
+
+  if coalesce(p ->> 'birthDate', '') ~ '^\d{4}-\d{2}-\d{2}$'
+     and public.ondo_calc_age(p ->> 'birthDate', null) is not null then
+    v := v || jsonb_build_object('birthDate', trim(p ->> 'birthDate'));
   end if;
 
   if coalesce(p ->> 'height', '') ~ '^\d{2,3}$' and (p ->> 'height')::integer between 120 and 230 then
@@ -251,6 +281,7 @@ declare
   v_result public.ondo_members;
   v_mbti text := upper(nullif(trim(coalesce(p_mbti, '')), ''));
   v_extra jsonb := case when p_extra is null then null else public.ondo_clean_profile_extra(p_extra) end;
+  v_age integer;
   v_welcome_hash text;
   v_welcome_tickets integer := 2;
 begin
@@ -261,13 +292,15 @@ begin
     v_mbti := null;
   end if;
 
-  if p_age is not null and (p_age < 18 or p_age > 28) then
+  v_age := public.ondo_calc_age(v_extra ->> 'birthDate', p_age);
+  if v_age is not null and (v_age < 18 or v_age > 28) then
     raise exception 'Age must be between 18 and 28';
   end if;
 
   select * into v_existing from public.ondo_members where auth_user_id = v_auth;
 
   if v_existing.id is not null then
+    v_age := coalesce(v_age, public.ondo_calc_age(v_existing.profile_extra ->> 'birthDate', v_existing.age));
     update public.ondo_members
     set
       nickname = coalesce(left(nullif(trim(p_nickname), ''), 30), v_existing.nickname),
@@ -283,7 +316,7 @@ begin
       major = coalesce(left(nullif(trim(p_major), ''), 80), v_existing.major),
       -- 성별은 가입할 때 한 번만 정함 (나중에 바꿔서 티켓 규칙을 피하지 못하게)
       gender = coalesce(v_existing.gender, case when p_gender in ('F', 'FEMALE') then 'F' else 'M' end),
-      age = coalesce(p_age, v_existing.age),
+      age = coalesce(v_age, v_existing.age),
       mbti = coalesce(v_mbti, v_existing.mbti),
       contact = coalesce(left(nullif(trim(p_contact), ''), 80), v_existing.contact),
       bio = coalesce(left(p_bio, 1000), v_existing.bio),
@@ -314,7 +347,7 @@ begin
     ) values (
       'u-' || v_auth::text, v_auth, left(trim(p_nickname), 30), left(trim(p_univ), 80), left(trim(p_major), 80),
       case when p_gender in ('F', 'FEMALE') then 'F' else 'M' end,
-      coalesce(p_age, 22), v_mbti, 38.5,
+      coalesce(v_age, 22), v_mbti, 38.5,
       false, 'pending', true, '00:10',
       v_welcome_tickets, '방금 전', left(trim(p_contact), 80), left(coalesce(p_bio, ''), 1000), coalesce(v_extra, '{}'::jsonb), now()
     )
@@ -1576,7 +1609,9 @@ as $$
          case when m.ticket_status = 'HELD' then 'PENDING' else m.ticket_status end,
          case when m.female_id = me.id then m.female_response else m.male_response end,
          case when m.female_id = me.id then m.male_response else m.female_response end,
-         p.id, p.nickname, p.univ, p.major, p.age, p.gender, p.mbti, p.bio,
+         p.id, p.nickname, p.univ, p.major,
+         coalesce(public.ondo_calc_age(p.profile_extra ->> 'birthDate', p.age), p.age),
+         p.gender, p.mbti, p.bio,
          nullif(p.profile_extra ->> 'height', '')::integer,
          p.profile_extra ->> 'locationLabel',
          coalesce(p.profile_extra -> 'hobbies', '[]'::jsonb),
@@ -1924,6 +1959,12 @@ begin
   --    같은 날(21시·22시·23시) 이미 자동 매칭을 받은 회원은 중복 매칭하지 않음
   --    가능한 모든 짝을 한꺼번에 비교해 가장 잘 맞는 짝부터 정함 (먼저 차례가 온 사람이 좋은 짝을 가져가지 않도록)
   if v_kst_hour >= 21 or v_admin then
+    -- 생년월일이 저장된 회원은 오늘 날짜 기준으로 만 나이를 먼저 최신화
+    update public.ondo_members
+    set age = public.ondo_calc_age(profile_extra ->> 'birthDate', age)
+    where profile_extra ? 'birthDate'
+      and public.ondo_calc_age(profile_extra ->> 'birthDate', age) is distinct from age;
+
     -- 24시간 내 첫 답장 미응답 패널티(3회 매칭 제한): 하루에 1회씩 차감하며 해당 날짜 밤 매칭에서 제외
     update public.ondo_members
     set penalty_skip_remaining = greatest(0, coalesce(penalty_skip_remaining, 0) - 1),
@@ -1939,7 +1980,7 @@ begin
           and not coalesce(f.matching_paused, false)
           and coalesce(f.penalty_skip_remaining, 0) = 0
           and coalesce(f.penalty_last_skipped_date, '') <> v_today_date
-          and coalesce(f.age, 22) between 18 and 28
+          and coalesce(public.ondo_calc_age(f.profile_extra ->> 'birthDate', f.age), 22) between 18 and 28
           and public.ondo_extra_int(f.profile_extra, 'height', 0) between 140 and 210
           and coalesce(trim(f.contact), '') not in ('', 'ondo_univ')
           and not exists (select 1 from public.ondo_matches om
@@ -1955,7 +1996,7 @@ begin
           and not coalesce(m.matching_paused, false)
           and coalesce(m.penalty_skip_remaining, 0) = 0
           and coalesce(m.penalty_last_skipped_date, '') <> v_today_date
-          and coalesce(m.age, 24) between 18 and 28
+          and coalesce(public.ondo_calc_age(m.profile_extra ->> 'birthDate', m.age), 24) between 18 and 28
           and public.ondo_extra_int(m.profile_extra, 'height', 0) between 140 and 210
           and coalesce(trim(m.contact), '') not in ('', 'ondo_univ')
           and not exists (select 1 from public.ondo_matches om
@@ -1967,7 +2008,8 @@ begin
       ),
       c as (
         select f.id as f_id, f.nickname as f_name, m.id as m_id, m.nickname as m_name,
-               coalesce(f.age, 22) as fa, coalesce(m.age, 24) as ma,
+               coalesce(public.ondo_calc_age(f.profile_extra ->> 'birthDate', f.age), 22) as fa,
+               coalesce(public.ondo_calc_age(m.profile_extra ->> 'birthDate', m.age), 24) as ma,
                least(28, greatest(18, public.ondo_extra_int(f.profile_extra, 'preferredAgeMin', 18))) as f_min,
                least(28, greatest(18, public.ondo_extra_int(f.profile_extra, 'preferredAgeMax', 28))) as f_max,
                least(28, greatest(18, public.ondo_extra_int(m.profile_extra, 'preferredAgeMin', 18))) as m_min,
