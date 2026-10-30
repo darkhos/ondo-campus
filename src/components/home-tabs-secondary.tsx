@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { DbMatchPartner, deleteMyAccount, logoutEverywhere } from "@/lib/supabase";
 import { RealMatchPanel } from "@/components/real-match-panel";
-import { useInViewOnce } from "@/components/reveal";
+import { useInViewRepeat } from "@/components/reveal";
 import { useRouter } from "next/navigation";
 import {
   CalendarHeart,
@@ -182,7 +182,7 @@ export function IdealTypeTab({
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
 
-  const [recRef, recSeen] = useInViewOnce<HTMLDivElement>(0.3);
+  const [recRef, recSeen] = useInViewRepeat<HTMLDivElement>(0.25);
   // MBTI "상관없어요" = 16개 유형을 모두 고른 것으로 저장 (서버는 목록에 들어 있으면 맞는 것으로 봄)
   const mbtiAny = MBTI_TYPES.every((m) => prefMbti.includes(m));
   const myMbti = (user.mbti ?? "").toUpperCase();

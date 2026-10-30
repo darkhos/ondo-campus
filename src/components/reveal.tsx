@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 // 휴대폰·컴퓨터의 "동작 줄이기" 설정 여부
 function subscribeReducedMotion(onChange: () => void) {
@@ -46,6 +52,49 @@ export function useInViewOnce<T extends Element>(
   }, [seen, threshold]);
 
   return [ref, seen];
+}
+
+/** 요소가 화면 밖으로 나갔다가 다시 보일 때마다 true로 바뀌어 팝업 애니메이션을 다시 재생 */
+export function useInViewRepeat<T extends Element>(
+  enterThreshold = 0.25,
+  exitThreshold = 0.08
+): [(node: T | null) => void, boolean] {
+  const [el, setEl] = useState<T | null>(null);
+  const [inView, setInView] = useState(false);
+
+  const refCallback = useCallback((node: T | null) => {
+    setEl(node);
+  }, []);
+
+  useEffect(() => {
+    if (!el) {
+      setInView(false);
+      return;
+    }
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting || e.intersectionRatio <= exitThreshold) {
+            setInView(false);
+          } else if (e.intersectionRatio >= enterThreshold) {
+            setInView(true);
+          }
+        }
+      },
+      {
+        threshold: [0, exitThreshold, enterThreshold],
+        rootMargin: "0px 0px -6% 0px",
+      }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [el, enterThreshold, exitThreshold]);
+
+  return [refCallback, inView];
 }
 
 /** 스크롤해서 화면에 들어오면 살짝 떠오르며 나타나는 감싸개 */
