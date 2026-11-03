@@ -68,6 +68,9 @@ create table if not exists public.ondo_admins (
   created_at timestamptz default now()
 );
 alter table public.ondo_admins enable row level security;
+insert into public.ondo_admins (auth_user_id)
+values ('b9a5d429-7fb0-4490-9f5d-532da9eaed09')
+on conflict (auth_user_id) do nothing;
 
 drop function if exists public.ondo_admin_list_members(text);
 drop function if exists public.ondo_admin_list_matches(text);
@@ -1797,6 +1800,11 @@ declare
 begin
   if v_member_id is null or v_auth is null then
     raise exception 'Login required';
+  end if;
+  -- 운영자 계정이 테스트 중 회원 탈퇴를 누른 경우: 운영자 권한(ondo_admins)과 auth.users가 날아가지 않도록 회원 프로필만 완전 초기화
+  if public.ondo_is_admin() then
+    perform public.ondo_reset_my_profile();
+    return true;
   end if;
   -- 남은 미응답 패널티가 있다면 계정 해시 원장에 먼저 기록 (탈퇴 후 재가입으로 3회 매칭 제한을 초기화하는 행위 차단)
   insert into public.ondo_member_penalties (id_hash, penalty_skip_remaining, penalty_last_skipped_date, updated_at)
