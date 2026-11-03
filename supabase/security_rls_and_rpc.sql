@@ -2517,6 +2517,236 @@ end;
 $$;
 
 -- ============================================================================
+-- [방문·활성 통계] 일별 순방문자(UV) · 일별 활성 회원(DAU) · 페이지뷰(PV) 집계
+-- ============================================================================
+create table if not exists public.ondo_daily_visits (
+  visit_date date not null default ((now() at time zone 'Asia/Seoul')::date),
+  visitor_key text not null,
+  member_id text,
+  is_member boolean not null default false,
+  is_jp boolean not null default false,
+  hit_count integer not null default 1,
+  first_seen_at timestamptz not null default now(),
+  last_seen_at timestamptz not null default now(),
+  primary key (visit_date, visitor_key)
+);
+alter table public.ondo_daily_visits enable row level security;
+
+-- 기존 DB에 남아 있는 로그인·가입·인증·대화 시각으로 과거 일별 활성 기록 자동 복원
+insert into public.ondo_daily_visits (visit_date, visitor_key, member_id, is_member, is_jp, hit_count, first_seen_at, last_seen_at)
+select
+  d.visit_date,
+  d.visitor_key,
+  d.member_id,
+  true as is_member,
+  bool_or(d.is_jp) as is_jp,
+  greatest(1, count(*)::integer) as hit_count,
+  min(d.ts) as first_seen_at,
+  max(d.ts) as last_seen_at
+from (
+  select (u.created_at at time zone 'Asia/Seoul')::date as visit_date,
+         coalesce(m.id, 'u_' || substr(u.id::text, 1, 8)) as visitor_key,
+         coalesce(m.id, 'u_' || substr(u.id::text, 1, 8)) as member_id,
+         coalesce(m.univ like '%어학당%' or m.univ like '%워킹홀리데이%' or m.major like '%🇯🇵%', false) as is_jp,
+         u.created_at as ts
+  from auth.users u
+  left join public.ondo_members m on m.auth_user_id = u.id
+  where u.created_at is not null
+    and not exists (select 1 from public.ondo_admins a where a.auth_user_id = u.id)
+  union all
+  select (u.last_sign_in_at at time zone 'Asia/Seoul')::date as visit_date,
+         coalesce(m.id, 'u_' || substr(u.id::text, 1, 8)) as visitor_key,
+         coalesce(m.id, 'u_' || substr(u.id::text, 1, 8)) as member_id,
+         coalesce(m.univ like '%어학당%' or m.univ like '%워킹홀리데이%' or m.major like '%🇯🇵%', false) as is_jp,
+         u.last_sign_in_at as ts
+  from auth.users u
+  left join public.ondo_members m on m.auth_user_id = u.id
+  where u.last_sign_in_at is not null
+    and not exists (select 1 from public.ondo_admins a where a.auth_user_id = u.id)
+  union all
+  select (m.updated_at at time zone 'Asia/Seoul')::date as visit_date,
+         m.id as visitor_key,
+         m.id as member_id,
+         (m.univ like '%어학당%' or m.univ like '%워킹홀리데이%' or m.major like '%🇯🇵%') as is_jp,
+         m.updated_at as ts
+  from public.ondo_members m
+  where m.updated_at is not null
+    and (m.auth_user_id is null or not exists (select 1 from public.ondo_admins a where a.auth_user_id = m.auth_user_id))
+  union all
+  select (m.verified_at at time zone 'Asia/Seoul')::date as visit_date,
+         m.id as visitor_key,
+         m.id as member_id,
+         (m.univ like '%어학당%' or m.univ like '%워킹홀리데이%' or m.major like '%🇯🇵%') as is_jp,
+         m.verified_at as ts
+  from public.ondo_members m
+  where m.verified_at is not null
+    and (m.auth_user_id is null or not exists (select 1 from public.ondo_admins a where a.auth_user_id = m.auth_user_id))
+  union all
+  select (msg.created_at at time zone 'Asia/Seoul')::date as visit_date,
+         msg.sender_id as visitor_key,
+         msg.sender_id as member_id,
+         false as is_jp,
+         msg.created_at as ts
+  from public.ondo_match_messages msg
+  where msg.created_at is not null and msg.sender_id is not null
+) d
+where d.visit_date is not null and d.visitor_key is not null
+group by d.visit_date, d.visitor_key, d.member_id
+on conflict (visit_date, visitor_key) do update set
+  member_id = coalesce(public.ondo_daily_visits.member_id, excluded.member_id),
+  is_member = public.ondo_daily_visits.is_member or excluded.is_member,
+  is_jp = public.ondo_daily_visits.is_jp or excluded.is_jp,
+  last_seen_at = greatest(public.ondo_daily_visits.last_seen_at, excluded.last_seen_at);
+
+-- 방문자 및 활성 회원 기록 (비회원·회원 모두 호출, 어드민 페이지 및 운영자 계정은 제외)
+create or replace function public.ondo_record_visit(
+  p_visitor_id text,
+  p_path text default '/'
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_today date := (now() at time zone 'Asia/Seoul')::date;
+  v_clean_vid text := regexp_replace(trim(coalesce(p_visitor_id, '')), '[^A-Za-z0-9_-]', '', 'g');
+  v_path text := lower(trim(coalesce(p_path, '/')));
+  v_member_id text := public.ondo_current_member_id();
+  v_auth_uid uuid := auth.uid();
+  v_key text;
+  v_is_member boolean := false;
+  v_is_jp boolean := (v_path like '%/jp%');
+  v_prev_hits integer := 0;
+begin
+  if v_path like '%/admin%' or public.ondo_is_admin() then
+    return false;
+  end if;
+
+  if v_member_id is not null then
+    v_key := v_member_id;
+    v_is_member := true;
+  elsif v_auth_uid is not null then
+    v_key := 'u_' || substr(v_auth_uid::text, 1, 8);
+    v_is_member := true;
+  else
+    if length(v_clean_vid) < 6 or length(v_clean_vid) > 64 then
+      return false;
+    end if;
+    if (select count(*) from public.ondo_daily_visits where visit_date = v_today and not is_member) >= 5000 then
+      return false;
+    end if;
+    v_key := 'v_' || left(v_clean_vid, 32);
+  end if;
+
+  -- 비회원으로 접속했다가 같은 날 로그인한 경우 기존 비회원 행을 회원 행에 병합하여 중복 카운트 방지
+  if v_is_member and length(v_clean_vid) between 6 and 64 then
+    delete from public.ondo_daily_visits
+    where visit_date = v_today
+      and visitor_key in (v_clean_vid, 'v_' || left(v_clean_vid, 32))
+      and visitor_key <> v_key
+    returning hit_count into v_prev_hits;
+    v_prev_hits := coalesce(v_prev_hits, 0);
+  end if;
+
+  insert into public.ondo_daily_visits (
+    visit_date, visitor_key, member_id, is_member, is_jp, hit_count, first_seen_at, last_seen_at
+  ) values (
+    v_today,
+    v_key,
+    case when v_is_member then v_key else null end,
+    v_is_member,
+    v_is_jp,
+    1 + v_prev_hits,
+    now(),
+    now()
+  )
+  on conflict (visit_date, visitor_key) do update set
+    member_id = coalesce(public.ondo_daily_visits.member_id, excluded.member_id),
+    is_member = public.ondo_daily_visits.is_member or excluded.is_member,
+    is_jp = public.ondo_daily_visits.is_jp or excluded.is_jp,
+    hit_count = least(9999, public.ondo_daily_visits.hit_count + 1 + v_prev_hits),
+    last_seen_at = now();
+
+  return true;
+end;
+$$;
+
+-- 운영자 전용 일별 방문자(UV) · 활성 회원(DAU) · 페이지뷰(PV) · 신규가입 · 매칭 통계 조회
+create or replace function public.ondo_admin_get_daily_stats(p_days integer default 14)
+returns table (
+  visit_date text,
+  date_label text,
+  visitor_count integer,
+  active_member_count integer,
+  page_views integer,
+  jp_visitor_count integer,
+  new_member_count integer,
+  match_count integer
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_days integer := least(60, greatest(7, coalesce(p_days, 14)));
+  v_today date := (now() at time zone 'Asia/Seoul')::date;
+begin
+  if not public.ondo_is_admin() then
+    return;
+  end if;
+
+  return query
+  with days as (
+    select generate_series(v_today - (v_days - 1), v_today, interval '1 day')::date as d
+  ),
+  v as (
+    select
+      dv.visit_date as d,
+      count(*)::integer as uv,
+      count(*) filter (where dv.is_member)::integer as dau,
+      coalesce(sum(dv.hit_count), 0)::integer as pv,
+      count(*) filter (where dv.is_jp)::integer as jp_uv
+    from public.ondo_daily_visits dv
+    where dv.visit_date >= v_today - (v_days - 1)
+    group by dv.visit_date
+  ),
+  nm as (
+    select
+      (coalesce(m.verified_at, m.updated_at) at time zone 'Asia/Seoul')::date as d,
+      count(*)::integer as cnt
+    from public.ondo_members m
+    where coalesce(m.verified_at, m.updated_at) is not null
+      and (m.auth_user_id is null or not exists (select 1 from public.ondo_admins a where a.auth_user_id = m.auth_user_id))
+    group by 1
+  ),
+  mc as (
+    select
+      (om.created_at_ts at time zone 'Asia/Seoul')::date as d,
+      count(*)::integer as cnt
+    from public.ondo_matches om
+    where om.created_at_ts is not null
+    group by 1
+  )
+  select
+    to_char(days.d, 'YYYY-MM-DD') as visit_date,
+    to_char(days.d, 'MM/DD') as date_label,
+    greatest(coalesce(v.uv, 0), coalesce(nm.cnt, 0))::integer as visitor_count,
+    greatest(coalesce(v.dau, 0), coalesce(nm.cnt, 0))::integer as active_member_count,
+    greatest(coalesce(v.pv, 0), coalesce(v.uv, 0), coalesce(nm.cnt, 0))::integer as page_views,
+    coalesce(v.jp_uv, 0)::integer as jp_visitor_count,
+    coalesce(nm.cnt, 0)::integer as new_member_count,
+    coalesce(mc.cnt, 0)::integer as match_count
+  from days
+  left join v on v.d = days.d
+  left join nm on nm.d = days.d
+  left join mc on mc.d = days.d
+  order by days.d asc;
+end;
+$$;
+
+-- ============================================================================
 -- [경비 규칙] 모르는 사람(anon)에게는 어떤 사물함도 열어 주지 않기
 -- Supabase는 새 함수/테이블에 anon·authenticated 실행 권한을 기본으로 주므로 명시적으로 회수합니다.
 -- ============================================================================
@@ -2530,7 +2760,8 @@ revoke all on table public.ondo_members, public.ondo_matches,
   public.ondo_support_tickets, public.ondo_admins,
   public.ondo_univ_email_domains, public.ondo_school_email_codes,
   public.ondo_kakao_notify, public.ondo_kakao_connect_states,
-  public.ondo_member_kakao_tokens, public.ondo_member_penalties
+  public.ondo_member_kakao_tokens, public.ondo_member_penalties,
+  public.ondo_daily_visits
   from anon, authenticated;
 
 -- Supabase가 만든 자동 보안 켜기 함수(rls_auto_enable)는 사람이 직접 부를 일이 없으므로 실행 권한 회수
@@ -2589,9 +2820,11 @@ grant execute on function public.ondo_admin_kakao_notify_status() to authenticat
 grant execute on function public.ondo_admin_kakao_notify_test() to authenticated;
 grant execute on function public.ondo_admin_update_support_ticket(bigint, text) to authenticated;
 grant execute on function public.ondo_admin_review_student(text, boolean) to authenticated;
+grant execute on function public.ondo_admin_get_daily_stats(integer) to authenticated;
 
--- 문의 접수는 비회원(anon)도 가능 — 넣기만 되고 꺼내 보기는 불가
+-- 문의 접수 및 방문 집계를 위한 함수는 비회원(anon)도 가능 — 넣기만 되고 꺼내 보기는 불가
 grant execute on function public.ondo_submit_support_ticket(text, text, text, text) to anon, authenticated;
+grant execute on function public.ondo_record_visit(text, text) to anon, authenticated;
 
 -- 기존 회원의 선호 나이 범위가 만 28세를 초과해 저장된 경우 만 18~28세 범위로 자동 보정
 update public.ondo_members

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { recordDailyVisit, supabase } from "@/lib/supabase";
 
 /**
  * ONDO 36.5° Anti-Clone & Anti-Scraper Runtime Shield
@@ -10,6 +11,13 @@ import { useEffect } from "react";
  */
 export function SecurityShield() {
   useEffect(() => {
+    void recordDailyVisit(false);
+    const { data: authSub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
+        void recordDailyVisit(true);
+      }
+    });
+
     // 1. Frame-busting against unauthorized mirror iframes
     try {
       if (window.self !== window.top && window.top) {
@@ -55,6 +63,7 @@ export function SecurityShield() {
     window.addEventListener("keydown", handleKeyDown, true);
 
     return () => {
+      authSub.subscription.unsubscribe();
       document.removeEventListener("contextmenu", handleContextMenu);
       document.removeEventListener("dragstart", handleDragStart);
       window.removeEventListener("keydown", handleKeyDown, true);

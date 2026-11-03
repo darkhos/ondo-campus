@@ -702,3 +702,54 @@ export async function sendMatchMessage(
     return { ok: false, error: "failed" };
   }
 }
+
+export interface DbDailyStat {
+  visit_date: string;
+  date_label: string;
+  visitor_count: number;
+  active_member_count: number;
+  page_views: number;
+  jp_visitor_count: number;
+  new_member_count: number;
+  match_count: number;
+}
+
+const VISITOR_ID_STORAGE_KEY = "ondo_visitor_vid_v1";
+const VISIT_SESSION_SENT_KEY = "ondo_visit_sent_ts_v1";
+
+/**
+ * 일별 방문자(UV) · 활성 회원(DAU) · 페이지뷰(PV) 자동 기록
+ * - 어드민 페이지(/admin)는 제외
+ * - 60초 내 중복 호출은 생략하되, 로그인 상태 전환 시에는 즉시 회원 활성(DAU)으로 병합 기록
+ */
+export async function recordDailyVisit(force = false): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const path = window.location.pathname || "/";
+    if (path.includes("/admin")) return;
+
+    const now = Date.now();
+    if (!force) {
+      const lastTs = Number(sessionStorage.getItem(VISIT_SESSION_SENT_KEY) || "0");
+      if (now - lastTs < 60_000) return;
+    }
+    sessionStorage.setItem(VISIT_SESSION_SENT_KEY, String(now));
+
+    let vid = localStorage.getItem(VISITOR_ID_STORAGE_KEY);
+    if (!vid || vid.length < 8) {
+      const rand =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID().replace(/-/g, "").slice(0, 16)
+          : `${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+      vid = `vid_${rand}`;
+      localStorage.setItem(VISITOR_ID_STORAGE_KEY, vid);
+    }
+
+    await supabase.rpc("ondo_record_visit", {
+      p_visitor_id: vid,
+      p_path: path,
+    });
+  } catch {
+    // ignore analytics network error
+  }
+}

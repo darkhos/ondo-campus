@@ -22,6 +22,7 @@ import {
   ROUTES,
 } from "@/lib/ondo-constants";
 import {
+  DbDailyStat,
   DbOndoMember,
   DbSupportTicket,
   checkIsAdmin,
@@ -97,9 +98,10 @@ type AdminData =
       members: AdminMember[];
       escrowPairs: EscrowPair[];
       tickets: DbSupportTicket[];
+      dailyStats: DbDailyStat[];
     };
 
-/** 운영자 전용 서버 함수로 회원·매칭·문의 목록을 한 번에 불러옴 */
+/** 운영자 전용 서버 함수로 회원·매칭·문의·일별 통계 목록을 한 번에 불러옴 */
 async function loadAdminData(): Promise<AdminData> {
   try {
     const { data: rpcMembers, error: rpcErr } = await supabase.rpc(
@@ -116,6 +118,11 @@ async function loadAdminData(): Promise<AdminData> {
 
     const { data: rpcTickets, error: ticketRpcErr } = await supabase.rpc(
       "ondo_admin_list_support_tickets"
+    );
+
+    const { data: rpcDailyStats, error: statsRpcErr } = await supabase.rpc(
+      "ondo_admin_get_daily_stats",
+      { p_days: 30 }
     );
 
     return {
@@ -173,6 +180,10 @@ async function loadAdminData(): Promise<AdminData> {
         !ticketRpcErr && Array.isArray(rpcTickets)
           ? (rpcTickets as DbSupportTicket[])
           : [],
+      dailyStats:
+        !statsRpcErr && Array.isArray(rpcDailyStats)
+          ? (rpcDailyStats as DbDailyStat[])
+          : [],
     };
   } catch {
     return { ok: false };
@@ -209,6 +220,9 @@ export default function AdminDashboardPage() {
   const [selectedFemaleUid, setSelectedFemaleUid] = useState<string>("");
   const [selectedMaleUid, setSelectedMaleUid] = useState<string>("");
   const [escrowPairs, setEscrowPairs] = useState<EscrowPair[]>([]);
+  const [dailyStats, setDailyStats] = useState<DbDailyStat[]>([]);
+  const [statsRangeDays, setStatsRangeDays] = useState<7 | 14 | 30>(14);
+  const [selectedStatDate, setSelectedStatDate] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [studentIdModal, setStudentIdModal] = useState<{
     member: AdminMember;
@@ -287,6 +301,7 @@ export default function AdminDashboardPage() {
       setMembers(result.members);
       setEscrowPairs(result.escrowPairs);
       setTickets(result.tickets);
+      setDailyStats(result.dailyStats);
       const firstFemale = result.members.find((m) => m.gender === "FEMALE");
       const firstMale = result.members.find((m) => m.gender === "MALE");
       if (firstFemale) {
@@ -387,6 +402,53 @@ export default function AdminDashboardPage() {
   const maleCount = members.filter((m) => m.gender === "MALE").length;
   const pendingVerifyCount = members.filter((m) => !m.emailVerified).length;
   const openTicketCount = tickets.filter((t) => t.status === "OPEN").length;
+
+  const visibleStats = dailyStats.slice(-statsRangeDays);
+  const todayStat = visibleStats[visibleStats.length - 1] ?? {
+    visit_date: "",
+    date_label: "오늘",
+    visitor_count: 0,
+    active_member_count: 0,
+    page_views: 0,
+    jp_visitor_count: 0,
+    new_member_count: 0,
+    match_count: 0,
+  };
+  const totalVisitorsInRange = visibleStats.reduce(
+    (sum, s) => sum + Number(s.visitor_count ?? 0),
+    0
+  );
+  const totalDauInRange = visibleStats.reduce(
+    (sum, s) => sum + Number(s.active_member_count ?? 0),
+    0
+  );
+  const totalPvInRange = visibleStats.reduce(
+    (sum, s) => sum + Number(s.page_views ?? 0),
+    0
+  );
+  const activeDaysInRange = visibleStats.filter(
+    (s) => Number(s.visitor_count ?? 0) > 0 || Number(s.active_member_count ?? 0) > 0
+  );
+  const avgDailyVisitors = (
+    totalVisitorsInRange / Math.max(1, visibleStats.length)
+  ).toFixed(1);
+  const avgDailyDau = (
+    totalDauInRange / Math.max(1, visibleStats.length)
+  ).toFixed(1);
+  const activeDayAvgVisitors = (
+    totalVisitorsInRange / Math.max(1, activeDaysInRange.length)
+  ).toFixed(1);
+  const activeDayAvgDau = (
+    totalDauInRange / Math.max(1, activeDaysInRange.length)
+  ).toFixed(1);
+  const maxStatVal = Math.max(
+    5,
+    ...visibleStats.map((s) =>
+      Math.max(Number(s.visitor_count ?? 0), Number(s.active_member_count ?? 0))
+    )
+  );
+  const focusedStat =
+    visibleStats.find((s) => s.visit_date === selectedStatDate) ?? todayStat;
 
   if (adminState !== "ok") {
     return (
@@ -599,6 +661,183 @@ export default function AdminDashboardPage() {
             <p className="mt-0.5 text-[11px] font-medium text-zinc-500">
               누적 {tickets.length}건
             </p>
+          </div>
+        </section>
+
+        {/* Daily Visitors (UV) & Daily Active Users (DAU) Visualization */}
+        <section className="rounded-2xl border border-stone-200 bg-white p-4 sm:rounded-3xl sm:p-5">
+          <div className="flex flex-col justify-between gap-2.5 sm:flex-row sm:items-center">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-[15px] font-extrabold text-zinc-900 sm:text-[17px]">
+                  📊 일별 유입 방문자 & 일 평균 활성자 수 (DAU)
+                </h2>
+                <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10.5px] font-bold text-rose-600">
+                  실시간 집계
+                </span>
+              </div>
+              <p className="mt-0.5 text-[11.5px] text-zinc-500">
+                하루 방문자 수(UV)와 로그인·활동한 활성 회원 수(DAU) 추이입니다. 막대를 누르면 날짜별 상세 지표를 볼 수 있어요.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1 self-start rounded-full bg-stone-100 p-1 sm:self-auto">
+              {([7, 14, 30] as const).map((days) => (
+                <button
+                  key={days}
+                  type="button"
+                  onClick={() => setStatsRangeDays(days)}
+                  className={cn(
+                    "rounded-full px-3 py-1 text-[11.5px] font-bold transition-all",
+                    statsRangeDays === days
+                      ? "bg-zinc-900 text-white shadow-xs"
+                      : "text-zinc-600 hover:text-zinc-900"
+                  )}
+                >
+                  최근 {days}일
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 4 Analytics Summary Metrics */}
+          <div className="mt-3.5 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5">
+            <div className="rounded-2xl bg-[#FAF9F6] px-3.5 py-2.5">
+              <span className="text-[11px] font-bold text-zinc-500">
+                오늘 들어온 방문자 (UV)
+              </span>
+              <p className="mt-0.5 text-[19px] font-black text-zinc-900 sm:text-[21px]">
+                {todayStat.visitor_count}명
+              </p>
+              <p className="mt-0.5 text-[10.5px] font-semibold text-zinc-500">
+                페이지뷰 {todayStat.page_views}회 · 🇯🇵 {todayStat.jp_visitor_count}명
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-rose-50/60 px-3.5 py-2.5">
+              <span className="text-[11px] font-bold text-rose-600">
+                오늘 활성자 수 (DAU)
+              </span>
+              <p className="mt-0.5 text-[19px] font-black text-rose-600 sm:text-[21px]">
+                {todayStat.active_member_count}명
+              </p>
+              <p className="mt-0.5 text-[10.5px] font-semibold text-rose-600/80">
+                신규·인증 {todayStat.new_member_count}명 · 매칭 {todayStat.match_count}건
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-[#FAF9F6] px-3.5 py-2.5">
+              <span className="text-[11px] font-bold text-zinc-500">
+                일 평균 방문자 수 ({statsRangeDays}일)
+              </span>
+              <p className="mt-0.5 text-[19px] font-black text-zinc-900 sm:text-[21px]">
+                {avgDailyVisitors}명<span className="text-[12px] font-bold text-zinc-400"> /일</span>
+              </p>
+              <p className="mt-0.5 text-[10.5px] font-semibold text-zinc-500">
+                활성일 평균 {activeDayAvgVisitors}명 · 누적 {totalVisitorsInRange}명
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-[#FAF9F6] px-3.5 py-2.5">
+              <span className="text-[11px] font-bold text-zinc-500">
+                일 평균 활성자 수 (평균 DAU)
+              </span>
+              <p className="mt-0.5 text-[19px] font-black text-emerald-700 sm:text-[21px]">
+                {avgDailyDau}명<span className="text-[12px] font-bold text-zinc-400"> /일</span>
+              </p>
+              <p className="mt-0.5 text-[10.5px] font-semibold text-emerald-700">
+                활성일 평균 {activeDayAvgDau}명 · 누적 PV {totalPvInRange}회
+              </p>
+            </div>
+          </div>
+
+          {/* Interactive Bar Chart */}
+          <div className="mt-4 rounded-2xl border border-stone-100 bg-[#FAF9F6]/70 p-3.5 sm:p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-zinc-500">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-xs bg-amber-300" />
+                  하루 방문자 수 (UV)
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-xs bg-rose-500" />
+                  일 활성 회원 수 (DAU)
+                </span>
+              </div>
+              <span>
+                선택일:{" "}
+                <strong className="text-zinc-900">
+                  {focusedStat.visit_date || "오늘"}
+                </strong>{" "}
+                (방문 {focusedStat.visitor_count}명 · 활성{" "}
+                {focusedStat.active_member_count}명 · PV {focusedStat.page_views}회)
+              </span>
+            </div>
+
+            <div className="flex h-40 items-end gap-1 overflow-x-auto pb-1 pt-5 sm:gap-1.5">
+              {visibleStats.map((item, idx) => {
+                const isToday = idx === visibleStats.length - 1;
+                const isSelected =
+                  selectedStatDate != null
+                    ? item.visit_date === selectedStatDate
+                    : isToday;
+                const uv = Number(item.visitor_count ?? 0);
+                const dau = Number(item.active_member_count ?? 0);
+                const uvHeightPct =
+                  uv > 0 ? Math.max(10, Math.round((uv / maxStatVal) * 100)) : 3;
+                const dauHeightPct =
+                  dau > 0
+                    ? Math.max(8, Math.round((dau / maxStatVal) * 100))
+                    : 0;
+
+                return (
+                  <button
+                    key={item.visit_date}
+                    type="button"
+                    onClick={() => setSelectedStatDate(item.visit_date)}
+                    className={cn(
+                      "group flex min-w-[26px] flex-1 flex-col items-center rounded-xl px-0.5 py-1 transition-all",
+                      isSelected
+                        ? "bg-white ring-1 ring-rose-300 shadow-2xs"
+                        : "hover:bg-white/70"
+                    )}
+                    title={`${item.visit_date}: 방문자 ${uv}명 / 활성 ${dau}명 / 페이지뷰 ${item.page_views}회`}
+                  >
+                    <span className="mb-1 text-[9.5px] font-extrabold text-zinc-600">
+                      {uv > 0 || dau > 0 ? `${uv}/${dau}` : "0"}
+                    </span>
+                    <div className="relative flex h-24 w-full items-end justify-center gap-0.5 px-0.5">
+                      <div
+                        style={{ height: `${uvHeightPct}%` }}
+                        className={cn(
+                          "w-2.5 rounded-t-sm transition-all sm:w-3",
+                          uv > 0 ? "bg-amber-300" : "bg-stone-200"
+                        )}
+                      />
+                      <div
+                        style={{ height: `${ Math.max(dauHeightPct, dau > 0 ? 8 : 2) }%` }}
+                        className={cn(
+                          "w-2.5 rounded-t-sm transition-all sm:w-3",
+                          dau > 0 ? "bg-rose-500" : "bg-stone-200/60"
+                        )}
+                      />
+                    </div>
+                    <span
+                      className={cn(
+                        "mt-1.5 text-[10px] font-bold tracking-tight",
+                        isToday
+                          ? "font-black text-rose-600"
+                          : isSelected
+                          ? "text-zinc-900"
+                          : "text-zinc-400"
+                      )}
+                    >
+                      {isToday ? "오늘" : item.date_label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </section>
 
