@@ -65,7 +65,13 @@ interface EscrowPair {
   maleName: string;
   schoolPair: string;
   responseSummary: string;
-  escrowStatus: "HELD" | "CHATTING" | "CONFIRMED" | "PASSED" | "REFUNDED";
+  escrowStatus:
+    | "SCHEDULED"
+    | "HELD"
+    | "CHATTING"
+    | "CONFIRMED"
+    | "PASSED"
+    | "REFUNDED";
   createdAt: string;
 }
 
@@ -148,7 +154,9 @@ async function loadAdminData(): Promise<AdminData> {
             m.male_response ?? "대기"
           }${m.male_ticket_charged ? " · 티켓예치" : ""}`,
           escrowStatus:
-            m.ticket_status === "CONFIRMED" || m.ticket_status === "settled"
+            m.ticket_status === "SCHEDULED"
+              ? "SCHEDULED"
+              : m.ticket_status === "CONFIRMED" || m.ticket_status === "settled"
               ? "CONFIRMED"
               : m.ticket_status === "CHATTING"
               ? "CHATTING"
@@ -350,13 +358,13 @@ export default function AdminDashboardPage() {
     if (error || !created) {
       showToast(
         error?.message?.includes("Active match already exists")
-          ? "이미 두 회원 사이에 진행 중인 매칭이 있습니다."
-          : "매칭 생성에 실패했습니다. 운영자 로그인 상태를 확인해 주세요."
+          ? "이미 두 회원 사이에 예약되었거나 진행 중인 매칭이 있습니다."
+          : "매칭 예약에 실패했습니다. 운영자 로그인 상태를 확인해 주세요."
       );
       return;
     }
     await fetchFromSupabase();
-    showToast(`${female.nickname}님과 ${male.nickname}님을 매칭했습니다.`);
+    showToast(`${female.nickname}님과 ${male.nickname}님을 밤 9시 매칭으로 예약했습니다.`);
   };
 
   const handleRunNightBatchMatching = async () => {
@@ -808,10 +816,10 @@ export default function AdminDashboardPage() {
             {/* Manual Matchmaker */}
             <div className="rounded-2xl border border-stone-200 bg-white p-4 sm:rounded-3xl sm:p-5">
               <h3 className="text-[16px] font-extrabold text-zinc-900">
-                수동 커플 매칭
+                수동 커플 매칭 (밤 9시 발송 예약)
               </h3>
               <p className="mt-0.5 text-[12px] text-zinc-500">
-                여·남 회원을 선택해 즉시 매칭을 생성합니다.
+                여·남 회원을 선택해 예약하면, 즉시 발송되지 않고 밤 9시 매칭 시간에 맞춰 도착합니다.
               </p>
 
               <div className="mt-3.5 space-y-3">
@@ -860,7 +868,7 @@ export default function AdminDashboardPage() {
                   onClick={handleCreateManualMatch}
                 >
                   <Link2 className="h-4 w-4" />
-                  선택 회원 매칭 생성
+                  밤 9시 매칭 예약 등록
                 </Button>
               </div>
             </div>
@@ -931,7 +939,9 @@ export default function AdminDashboardPage() {
                         <span
                           className={cn(
                             "rounded-full px-2 py-0.5 text-[11px] font-bold",
-                            pair.escrowStatus === "CONFIRMED"
+                            pair.escrowStatus === "SCHEDULED"
+                              ? "bg-indigo-50 text-indigo-700"
+                              : pair.escrowStatus === "CONFIRMED"
                               ? "bg-emerald-50 text-emerald-700"
                               : pair.escrowStatus === "CHATTING"
                               ? "bg-rose-50 text-rose-600"
@@ -941,7 +951,9 @@ export default function AdminDashboardPage() {
                               : "bg-amber-50 text-amber-700"
                           )}
                         >
-                          {pair.escrowStatus === "CONFIRMED"
+                          {pair.escrowStatus === "SCHEDULED"
+                            ? "밤 9시 발송 예약"
+                            : pair.escrowStatus === "CONFIRMED"
                             ? "연락처 공개"
                             : pair.escrowStatus === "CHATTING"
                             ? "블라인드 대화 중"
@@ -959,6 +971,31 @@ export default function AdminDashboardPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-1.5">
+                      {pair.escrowStatus === "SCHEDULED" && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="h-7 rounded-full px-3 text-[11.5px]"
+                          onClick={async () => {
+                            const ok = window.confirm(
+                              `${pair.femaleName} ↔ ${pair.maleName} 밤 9시 매칭 예약을 취소할까요?`
+                            );
+                            if (!ok) return;
+                            const { data: updated, error } = await supabase.rpc(
+                              "ondo_admin_update_match_status",
+                              { p_match_id: pair.id, p_status: "CANCELLED" }
+                            );
+                            if (error || updated !== true) {
+                              showToast("예약 취소에 실패했습니다.");
+                              return;
+                            }
+                            await fetchFromSupabase();
+                            showToast("밤 9시 매칭 예약을 취소했습니다.");
+                          }}
+                        >
+                          예약 취소
+                        </Button>
+                      )}
                       {(pair.escrowStatus === "HELD" ||
                         pair.escrowStatus === "CHATTING") &&
                         (["CONFIRMED", "REFUNDED"] as const).map((next) => (

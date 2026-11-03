@@ -629,6 +629,11 @@ begin
     return false;
   end if;
 
+  if p_status = 'CANCELLED' and v_m.ticket_status = 'SCHEDULED' then
+    delete from public.ondo_matches where id = p_match_id;
+    return true;
+  end if;
+
   if p_status in ('REFUNDED', 'EXPIRED', 'PASSED') and coalesce(v_m.male_ticket_charged, false) then
     update public.ondo_members
     set tickets = coalesce(tickets, 0) + 1, updated_at = now()
@@ -675,7 +680,7 @@ begin
     select 1 from public.ondo_matches om
     where om.female_id = v_female.id
       and om.male_id = v_male.id
-      and om.ticket_status in ('PENDING', 'HELD', 'CHATTING')
+      and om.ticket_status in ('SCHEDULED', 'PENDING', 'HELD', 'CHATTING')
   ) then
     raise exception 'Active match already exists';
   end if;
@@ -688,6 +693,7 @@ begin
   end if;
   v_score := least(99, greatest(85, v_score));
 
+  -- 즉시 발송('PENDING')하지 않고 'SCHEDULED' 상태로 예약 등록 → 밤 9시 매칭 배치(ondo_run_autonomous_batch) 실행 시 일괄 발송
   insert into public.ondo_matches (
     id, female_id, female_name, male_id, male_name, score, ticket_status, created_at, created_at_ts
   ) values (
@@ -697,8 +703,8 @@ begin
     v_male.id,
     coalesce(v_male.nickname, '남성 학우'),
     v_score,
-    'PENDING',
-    '방금 (운영자 매칭)',
+    'SCHEDULED',
+    '밤 9시 매칭 예약 (운영자 지정)',
     now()
   )
   returning * into v_result;
@@ -1772,7 +1778,7 @@ begin
   where match_id in (
     select id from public.ondo_matches
     where (female_id = v_member_id or male_id = v_member_id)
-      and ticket_status in ('PENDING', 'HELD', 'CHATTING')
+      and ticket_status in ('SCHEDULED', 'PENDING', 'HELD', 'CHATTING')
   );
   update public.ondo_matches
   set ticket_status = 'PASSED',
@@ -1780,7 +1786,7 @@ begin
       male_response = case when male_id = v_member_id then 'PASS' else male_response end,
       male_ticket_charged = false
   where (female_id = v_member_id or male_id = v_member_id)
-    and ticket_status in ('PENDING', 'HELD', 'CHATTING');
+    and ticket_status in ('SCHEDULED', 'PENDING', 'HELD', 'CHATTING');
 
   -- 메일 인증번호는 즉시 만료시키되 발송 횟수·쿨다운(send_count, window_start, last_sent_at)은 유지해 도배 우회 차단
   update public.ondo_school_email_codes
@@ -1985,6 +1991,7 @@ as $$
     on p.id = case when m.female_id = me.id then m.male_id else m.female_id end
   where me.id is not null
     and (m.female_id = me.id or m.male_id = me.id)
+    and m.ticket_status <> 'SCHEDULED'
   order by
     (m.ticket_status in ('PENDING', 'HELD', 'CHATTING', 'CONFIRMED')) desc,
     coalesce(m.created_at_ts, now()) desc
@@ -2223,6 +2230,7 @@ as $$
 declare
   v_refunded_count integer := 0;
   v_matched_count integer := 0;
+  v_scheduled_count integer := 0;
   v_stale_count integer := 0;
   v_extra_stale integer := 0;
   v_today_date text := to_char(now() at time zone 'Asia/Seoul', 'YYYYMMDD');
@@ -2358,6 +2366,17 @@ begin
     where coalesce(penalty_skip_remaining, 0) > 0
       and coalesce(penalty_last_skipped_date, '') <> v_today_date;
 
+    -- 운영자가 미리 예약해 둔 수동 커플 매칭('SCHEDULED')을 밤 9시 매칭 시간에 맞춰 일괄 발송('PENDING')
+    update public.ondo_matches m
+    set ticket_status = 'PENDING',
+        created_at = to_char(now() at time zone 'Asia/Seoul', 'MM/DD') || ' 밤 9시 매칭',
+        created_at_ts = now()
+    where m.ticket_status = 'SCHEDULED'
+      and exists (select 1 from public.ondo_members f where f.id = m.female_id)
+      and exists (select 1 from public.ondo_members mm where mm.id = m.male_id);
+    get diagnostics v_scheduled_count = row_count;
+    v_matched_count := v_matched_count + v_scheduled_count;
+
     for r_pair in
       with f as (
         select f.* from public.ondo_members f
@@ -2370,7 +2389,7 @@ begin
           and coalesce(trim(f.contact), '') not in ('', 'ondo_univ')
           and not exists (select 1 from public.ondo_matches om
                           where om.female_id = f.id
-                            and (om.ticket_status in ('PENDING', 'HELD', 'CHATTING')
+                            and (om.ticket_status in ('SCHEDULED', 'PENDING', 'HELD', 'CHATTING')
                                  or (not v_admin and om.id like v_today_prefix || '%')))
         order by f.updated_at desc
         limit 300
@@ -2386,7 +2405,7 @@ begin
           and coalesce(trim(m.contact), '') not in ('', 'ondo_univ')
           and not exists (select 1 from public.ondo_matches om
                           where om.male_id = m.id
-                            and (om.ticket_status in ('PENDING', 'HELD', 'CHATTING')
+                            and (om.ticket_status in ('SCHEDULED', 'PENDING', 'HELD', 'CHATTING')
                                  or (not v_admin and om.id like v_today_prefix || '%')))
         order by m.updated_at desc
         limit 300
