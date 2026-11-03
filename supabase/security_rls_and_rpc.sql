@@ -144,6 +144,54 @@ join public.ondo_members m on m.auth_user_id = i.user_id
 order by i.user_id, i.created_at
 on conflict (id_hash) do nothing;
 
+-- 카카오 로그인 계정 고유 식별 해시 (원문은 저장하지 않고 SHA-256 해시만 사용)
+create or replace function public.ondo_identity_hash(p_auth uuid)
+returns text
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_hash text;
+begin
+  if p_auth is null then
+    return null;
+  end if;
+  select encode(extensions.digest('ondo-welcome-v1:' || i.provider || ':' || i.provider_id, 'sha256'), 'hex')
+    into v_hash
+  from auth.identities i
+  where i.user_id = p_auth
+  order by i.created_at
+  limit 1;
+  return coalesce(
+    v_hash,
+    encode(extensions.digest('ondo-welcome-v1:uid:' || p_auth::text, 'sha256'), 'hex')
+  );
+end;
+$$;
+
+-- 24시간 미응답 패널티(3회 매칭 제한) 원장: 프로필 초기화·탈퇴 후 재가입해도 남은 패널티가 그대로 유지됨
+create table if not exists public.ondo_member_penalties (
+  id_hash text primary key,
+  penalty_skip_remaining integer not null default 0,
+  penalty_last_skipped_date text,
+  updated_at timestamptz not null default now()
+);
+alter table public.ondo_member_penalties enable row level security;
+revoke all on table public.ondo_member_penalties from anon, authenticated;
+
+-- 기존에 부여된 패널티가 있다면 원장에 동기화
+insert into public.ondo_member_penalties (id_hash, penalty_skip_remaining, penalty_last_skipped_date, updated_at)
+select public.ondo_identity_hash(m.auth_user_id), m.penalty_skip_remaining, m.penalty_last_skipped_date, now()
+from public.ondo_members m
+where m.auth_user_id is not null
+  and (coalesce(m.penalty_skip_remaining, 0) > 0 or m.penalty_last_skipped_date is not null)
+on conflict (id_hash) do update set
+  penalty_skip_remaining = greatest(public.ondo_member_penalties.penalty_skip_remaining, excluded.penalty_skip_remaining),
+  penalty_last_skipped_date = coalesce(excluded.penalty_last_skipped_date, public.ondo_member_penalties.penalty_last_skipped_date),
+  updated_at = now();
+
 -- 생년월일(YYYY-MM-DD)에서 한국 표준시(KST) 기준 만 나이를 계산 (없거나 잘못된 형식이면 fallback 반환)
 create or replace function public.ondo_calc_age(p_birth_date text, p_fallback integer default null)
 returns integer
@@ -284,6 +332,10 @@ declare
   v_age integer;
   v_welcome_hash text;
   v_welcome_tickets integer := 2;
+  v_penalty public.ondo_member_penalties;
+  v_locked boolean := false;
+  v_clean_univ text := nullif(regexp_replace(trim(coalesce(p_univ, '')), '[.;/\\]+$', ''), '');
+  v_clean_major text := nullif(trim(coalesce(p_major, '')), '');
 begin
   if v_auth is null then
     raise exception 'Login required';
@@ -292,28 +344,57 @@ begin
     v_mbti := null;
   end if;
 
-  v_age := public.ondo_calc_age(v_extra ->> 'birthDate', p_age);
-  if v_age is not null and (v_age < 18 or v_age > 28) then
-    raise exception 'Age must be between 18 and 28';
-  end if;
-
-  select * into v_existing from public.ondo_members where auth_user_id = v_auth;
+  v_welcome_hash := public.ondo_identity_hash(v_auth);
+  select * into v_penalty from public.ondo_member_penalties where id_hash = v_welcome_hash;
+  select * into v_existing from public.ondo_members where auth_user_id = v_auth for update;
 
   if v_existing.id is not null then
-    v_age := coalesce(v_age, public.ondo_calc_age(v_existing.profile_extra ->> 'birthDate', v_existing.age));
+    v_locked := (v_existing.verified and v_existing.verify_method in ('SCHOOL_EMAIL', 'ADMIN_REVIEW'))
+                or v_existing.student_id_status = 'pending_review';
+
+    -- 인증 완료 또는 학생증 심사 대기 중에는 가입 시 등록한 생년월일(birthDate)과 만 나이(age) 변경 잠금
+    if v_locked and coalesce(v_existing.profile_extra ->> 'birthDate', '') ~ '^\d{4}-\d{2}-\d{2}$' then
+      if v_extra is not null then
+        v_extra := jsonb_set(v_extra, '{birthDate}', to_jsonb(v_existing.profile_extra ->> 'birthDate'), true);
+      end if;
+      v_age := public.ondo_calc_age(v_existing.profile_extra ->> 'birthDate', v_existing.age);
+    elsif v_locked then
+      -- 생년월일 도입 이전에 인증받은 기존 회원은 기존 나이와 일치하는 생년월일만 등록 가능하며 나이 임의 변경 불가
+      v_age := v_existing.age;
+      if v_extra is not null and (v_extra ? 'birthDate')
+         and public.ondo_calc_age(v_extra ->> 'birthDate', null) is distinct from v_existing.age then
+        v_extra := v_extra - 'birthDate';
+      end if;
+    else
+      v_age := public.ondo_calc_age(coalesce(v_extra ->> 'birthDate', v_existing.profile_extra ->> 'birthDate'), coalesce(p_age, v_existing.age));
+    end if;
+
+    if v_age is not null and (v_age < 18 or v_age > 28) then
+      raise exception 'Age must be between 18 and 28';
+    end if;
+
+    -- 한국 학교 메일 인증(SCHOOL_EMAIL) 회원이 전공 문자열에 🇯🇵 태그를 넣어 유학생 트랙을 사칭하는 것 방지
+    if coalesce(v_existing.verify_method, '') <> 'ADMIN_REVIEW' and v_existing.student_id_status <> 'pending_review' then
+      if v_existing.verified and v_existing.verify_method = 'SCHOOL_EMAIL' and v_clean_major is not null then
+        v_clean_major := trim(replace(v_clean_major, '🇯🇵', ''));
+      end if;
+    end if;
+
     update public.ondo_members
     set
       nickname = coalesce(left(nullif(trim(p_nickname), ''), 30), v_existing.nickname),
       -- 정식 학교 인증 완료(verified) 또는 학생증 운영팀 심사 대기 중(pending_review)에는 학교 변경 잠금 (심사 중 학교 바꿔치기 방지)
-      univ = case when (v_existing.verified and v_existing.verify_method in ('SCHOOL_EMAIL', 'ADMIN_REVIEW'))
-                    or v_existing.student_id_status = 'pending_review'
+      univ = case when v_locked
                   then v_existing.univ
-                  else coalesce(left(nullif(trim(p_univ), ''), 80), v_existing.univ) end,
+                  else coalesce(left(v_clean_univ, 80), v_existing.univ) end,
       verified = case when v_existing.verify_method in ('SCHOOL_EMAIL', 'ADMIN_REVIEW')
                       then v_existing.verified else false end,
       student_id_status = case when v_existing.verify_method in ('SCHOOL_EMAIL', 'ADMIN_REVIEW')
                                then v_existing.student_id_status else 'pending' end,
-      major = coalesce(left(nullif(trim(p_major), ''), 80), v_existing.major),
+      -- 학생증 심사 대기 중이거나 운영팀 승인(ADMIN_REVIEW) 회원은 전공/트랙 변경 잠금
+      major = case when v_existing.verify_method = 'ADMIN_REVIEW' or v_existing.student_id_status = 'pending_review'
+                   then v_existing.major
+                   else coalesce(left(nullif(v_clean_major, ''), 80), v_existing.major) end,
       -- 성별은 가입할 때 한 번만 정함 (나중에 바꿔서 티켓 규칙을 피하지 못하게)
       gender = coalesce(v_existing.gender, case when p_gender in ('F', 'FEMALE') then 'F' else 'M' end),
       age = coalesce(v_age, v_existing.age),
@@ -321,17 +402,18 @@ begin
       contact = coalesce(left(nullif(trim(p_contact), ''), 80), v_existing.contact),
       bio = coalesce(left(p_bio, 1000), v_existing.bio),
       profile_extra = coalesce(v_extra, v_existing.profile_extra),
+      penalty_skip_remaining = greatest(coalesce(v_existing.penalty_skip_remaining, 0), coalesce(v_penalty.penalty_skip_remaining, 0)),
+      penalty_last_skipped_date = coalesce(v_existing.penalty_last_skipped_date, v_penalty.penalty_last_skipped_date),
       updated_at = now()
     where id = v_existing.id
     returning * into v_result;
   else
+    v_age := public.ondo_calc_age(v_extra ->> 'birthDate', p_age);
+    if v_age is not null and (v_age < 18 or v_age > 28) then
+      raise exception 'Age must be between 18 and 28';
+    end if;
+
     -- 같은 카카오 계정이 축하 티켓을 이미 받은 적이 있으면 다시 주지 않음
-    select encode(extensions.digest('ondo-welcome-v1:' || i.provider || ':' || i.provider_id, 'sha256'), 'hex')
-    into v_welcome_hash
-    from auth.identities i where i.user_id = v_auth
-    order by i.created_at limit 1;
-    v_welcome_hash := coalesce(v_welcome_hash,
-      encode(extensions.digest('ondo-welcome-v1:uid:' || v_auth::text, 'sha256'), 'hex'));
     insert into public.ondo_welcome_grants (id_hash) values (v_welcome_hash)
     on conflict (id_hash) do nothing;
     if not found then
@@ -340,16 +422,19 @@ begin
 
     -- 신규 가입자: 회원 id는 서버가 로그인 계정으로 정함 (u-<auth uuid>), 웰컴 티켓 2장 (처음 가입한 계정만)
     -- 학생 인증 전에는 verified=false (학교 메일 인증 또는 운영자 학생증 확인 후에만 true)
+    -- 이전에 부여된 미응답 패널티가 남아 있으면 그대로 복원
     insert into public.ondo_members (
       id, auth_user_id, nickname, univ, major, gender, age, mbti, temp,
       verified, student_id_status, voice_recorded, voice_duration,
-      tickets, joined_at, contact, bio, profile_extra, updated_at
+      tickets, joined_at, contact, bio, profile_extra,
+      penalty_skip_remaining, penalty_last_skipped_date, updated_at
     ) values (
-      'u-' || v_auth::text, v_auth, left(trim(p_nickname), 30), left(trim(p_univ), 80), left(trim(p_major), 80),
+      'u-' || v_auth::text, v_auth, left(trim(p_nickname), 30), left(coalesce(v_clean_univ, ''), 80), left(coalesce(v_clean_major, ''), 80),
       case when p_gender in ('F', 'FEMALE') then 'F' else 'M' end,
       coalesce(v_age, 22), v_mbti, 38.5,
       false, 'pending', true, '00:10',
-      v_welcome_tickets, '방금 전', left(trim(p_contact), 80), left(coalesce(p_bio, ''), 1000), coalesce(v_extra, '{}'::jsonb), now()
+      v_welcome_tickets, '방금 전', left(trim(p_contact), 80), left(coalesce(p_bio, ''), 1000), coalesce(v_extra, '{}'::jsonb),
+      coalesce(v_penalty.penalty_skip_remaining, 0), v_penalty.penalty_last_skipped_date, now()
     )
     returning * into v_result;
   end if;
@@ -1103,6 +1188,27 @@ create table if not exists public.ondo_school_email_codes (
 );
 alter table public.ondo_school_email_codes enable row level security;
 
+-- 학교 이름에서 본교 기준 이름 추출 (예: '연세대학교 한국어학당' · '연세대학교.' → '연세대학교')
+-- 같은 학교 학부생과 어학당 학생, 또는 학교명 뒤에 특수문자를 붙인 우회 시도를 모두 같은 학교로 판별
+create or replace function public.ondo_univ_root(p_univ text)
+returns text
+language sql
+stable
+set search_path = public
+as $$
+  select coalesce(
+    (
+      select d.univ_keyword
+      from public.ondo_univ_email_domains d
+      where trim(coalesce(p_univ, '')) like d.univ_keyword || '%'
+      order by length(d.univ_keyword) desc
+      limit 1
+    ),
+    nullif(regexp_replace(split_part(trim(coalesce(p_univ, '')), ' ', 1), '[^가-힣A-Za-z0-9]', '', 'g'), ''),
+    trim(coalesce(p_univ, ''))
+  );
+$$;
+
 -- 학교 메일로 6자리 인증번호 발송 (Gmail 발송용 Edge Function 'ondo-send-mail' 을 pg_net 으로 호출)
 -- Vault 필요: ondo_mail_hook_secret (Edge Function 의 MAIL_HOOK_SECRET 과 같은 값)
 create or replace function public.ondo_request_school_email_code(p_email text)
@@ -1115,13 +1221,15 @@ declare
   v_member public.ondo_members;
   v_email text := lower(trim(coalesce(p_email, '')));
   v_domain text;
+  v_univ_clean text;
   v_has_rule boolean;
   v_row public.ondo_school_email_codes;
   v_code text;
   v_secret text;
 begin
   select * into v_member from public.ondo_members
-  where auth.uid() is not null and auth_user_id = auth.uid();
+  where auth.uid() is not null and auth_user_id = auth.uid()
+  for update;
   if v_member.id is null then
     raise exception 'Login required';
   end if;
@@ -1133,10 +1241,13 @@ begin
     raise exception 'Invalid school email';
   end if;
   v_domain := split_part(v_email, '@', 2);
+  v_univ_clean := trim(coalesce(v_member.univ, ''));
 
+  -- 학교 이름은 등록된 정식 학교명과 정확히 일치하거나 '<학교명> <어학당/캠퍼스>' 형태만 허용 (점·특수문자 덧붙이기 우회 차단)
   select exists (
     select 1 from public.ondo_univ_email_domains d
-    where v_member.univ like d.univ_keyword || '%'
+    where v_univ_clean = d.univ_keyword
+       or (v_univ_clean like d.univ_keyword || ' %' and v_univ_clean !~ '[.;/\\]')
   ) into v_has_rule;
 
   if not v_has_rule then
@@ -1144,7 +1255,7 @@ begin
   end if;
   if not exists (
     select 1 from public.ondo_univ_email_domains d
-    where v_member.univ like d.univ_keyword || '%'
+    where (v_univ_clean = d.univ_keyword or (v_univ_clean like d.univ_keyword || ' %' and v_univ_clean !~ '[.;/\\]'))
       and (v_domain = d.domain or v_domain like '%.' || d.domain)
   ) then
     raise exception 'Invalid school email';
@@ -1157,7 +1268,7 @@ begin
     raise exception 'Email already used';
   end if;
 
-  select * into v_row from public.ondo_school_email_codes where member_id = v_member.id;
+  select * into v_row from public.ondo_school_email_codes where member_id = v_member.id for update;
   if v_row.member_id is not null then
     if v_row.last_sent_at > now() - interval '60 seconds' then
       raise exception 'Too many requests';
@@ -1216,7 +1327,8 @@ begin
   if v_member_id is null then
     raise exception 'Login required';
   end if;
-  select * into v_row from public.ondo_school_email_codes where member_id = v_member_id;
+  -- 동시 다중 요청(Race Condition)으로 5회 시도 제한을 우회하지 못하도록 행 잠금(FOR UPDATE)
+  select * into v_row from public.ondo_school_email_codes where member_id = v_member_id for update;
   if v_row.member_id is null or v_row.expires_at < now() then
     raise exception 'Code expired';
   end if;
@@ -1466,6 +1578,7 @@ $$;
 
 
 -- 가입 정보 초기화: 카카오 로그인 계정(auth.users)과 운영자 권한(ondo_admins)은 유지한 채 내 회원 프로필·인증 상태만 초기화
+-- 단, 미응답 패널티·과거 매칭 이력(PASSED/EXPIRED/CONFIRMED)·메일 발송 쿨다운 기록은 초기화로 우회할 수 없도록 보존
 create or replace function public.ondo_reset_my_profile()
 returns boolean
 language plpgsql
@@ -1478,22 +1591,42 @@ begin
   if v_member_id is null then
     return false;
   end if;
-  -- 진행 중인 매칭에서 상대 남학생이 이미 티켓을 냈다면 돌려준 뒤 지움
+  -- 남은 미응답 패널티가 있다면 계정 해시 원장에 먼저 기록 (프로필 초기화 후 재가입해도 패널티 유지)
+  insert into public.ondo_member_penalties (id_hash, penalty_skip_remaining, penalty_last_skipped_date, updated_at)
+  select public.ondo_identity_hash(m.auth_user_id), m.penalty_skip_remaining, m.penalty_last_skipped_date, now()
+  from public.ondo_members m
+  where m.id = v_member_id and m.auth_user_id is not null
+    and (coalesce(m.penalty_skip_remaining, 0) > 0 or m.penalty_last_skipped_date is not null)
+  on conflict (id_hash) do update set
+    penalty_skip_remaining = greatest(public.ondo_member_penalties.penalty_skip_remaining, excluded.penalty_skip_remaining),
+    penalty_last_skipped_date = coalesce(excluded.penalty_last_skipped_date, public.ondo_member_penalties.penalty_last_skipped_date),
+    updated_at = now();
+
+  -- 진행 중인 매칭에서 상대 남학생이 이미 티켓을 냈다면 돌려준 뒤, 진행 중인 매칭만 정리 (과거 PASSED/EXPIRED/CONFIRMED 이력은 보존해 재매칭 방지)
   update public.ondo_members mm
   set tickets = coalesce(mm.tickets, 0) + 1, updated_at = now()
   from public.ondo_matches m
   where m.female_id = v_member_id and m.male_id = mm.id
     and m.male_ticket_charged and m.ticket_status in ('PENDING', 'HELD', 'CHATTING');
   delete from public.ondo_match_messages
-  where match_id in (select id from public.ondo_matches where female_id = v_member_id or male_id = v_member_id);
-  delete from public.ondo_matches where female_id = v_member_id or male_id = v_member_id;
-  delete from public.ondo_school_email_codes where member_id = v_member_id;
+  where match_id in (
+    select id from public.ondo_matches
+    where (female_id = v_member_id or male_id = v_member_id)
+      and ticket_status in ('PENDING', 'HELD', 'CHATTING')
+  );
+  delete from public.ondo_matches
+  where (female_id = v_member_id or male_id = v_member_id)
+    and ticket_status in ('PENDING', 'HELD', 'CHATTING');
+  -- 메일 인증번호는 즉시 만료시키되 발송 횟수·쿨다운(send_count, window_start, last_sent_at)은 유지해 도배 우회 차단
+  update public.ondo_school_email_codes
+  set expires_at = now() - interval '1 second', attempts = 5
+  where member_id = v_member_id;
   delete from public.ondo_members where id = v_member_id;
   return true;
 end;
 $$;
 
--- 회원 탈퇴: 프로필·매칭·인증번호·로그인 계정까지 삭제 (문의·신고 기록은 회원 연결만 끊고 보관)
+-- 회원 탈퇴: 프로필·매칭·인증번호·로그인 계정까지 삭제 (문의·신고 기록은 회원 연결만 끊고 보관, 미응답 패널티는 해시 원장에 보존)
 -- 학생증 사진은 관리자 화면 또는 아래 본인 삭제 권한으로 앱이 먼저 지움
 create or replace function public.ondo_delete_my_account()
 returns boolean
@@ -1508,6 +1641,17 @@ begin
   if v_member_id is null or v_auth is null then
     raise exception 'Login required';
   end if;
+  -- 남은 미응답 패널티가 있다면 계정 해시 원장에 먼저 기록 (탈퇴 후 재가입으로 3회 매칭 제한을 초기화하는 행위 차단)
+  insert into public.ondo_member_penalties (id_hash, penalty_skip_remaining, penalty_last_skipped_date, updated_at)
+  select public.ondo_identity_hash(m.auth_user_id), m.penalty_skip_remaining, m.penalty_last_skipped_date, now()
+  from public.ondo_members m
+  where m.id = v_member_id and m.auth_user_id is not null
+    and (coalesce(m.penalty_skip_remaining, 0) > 0 or m.penalty_last_skipped_date is not null)
+  on conflict (id_hash) do update set
+    penalty_skip_remaining = greatest(public.ondo_member_penalties.penalty_skip_remaining, excluded.penalty_skip_remaining),
+    penalty_last_skipped_date = coalesce(excluded.penalty_last_skipped_date, public.ondo_member_penalties.penalty_last_skipped_date),
+    updated_at = now();
+
   -- 진행 중인 매칭에서 상대 남학생이 이미 티켓을 냈다면 돌려준 뒤 지움
   update public.ondo_members mm
   set tickets = coalesce(mm.tickets, 0) + 1, updated_at = now()
@@ -1942,6 +2086,17 @@ begin
     v_stale_count := v_stale_count + 1;
   end loop;
 
+  -- 새로 부여된 미응답 패널티를 계정 해시 원장(ondo_member_penalties)에 동기화 (초기화·탈퇴 우회 차단)
+  insert into public.ondo_member_penalties (id_hash, penalty_skip_remaining, penalty_last_skipped_date, updated_at)
+  select public.ondo_identity_hash(m.auth_user_id), m.penalty_skip_remaining, m.penalty_last_skipped_date, now()
+  from public.ondo_members m
+  where m.auth_user_id is not null
+    and (coalesce(m.penalty_skip_remaining, 0) > 0 or m.penalty_last_skipped_date is not null)
+  on conflict (id_hash) do update set
+    penalty_skip_remaining = greatest(public.ondo_member_penalties.penalty_skip_remaining, excluded.penalty_skip_remaining),
+    penalty_last_skipped_date = coalesce(excluded.penalty_last_skipped_date, public.ondo_member_penalties.penalty_last_skipped_date),
+    updated_at = now();
+
   -- 1-3) 양쪽 모두 첫 답장을 한 뒤 대화가 오가다 3일 동안 멈추면 종료 → 다시 새 소개를 받을 수 있게 함
   update public.ondo_matches m
   set ticket_status = 'EXPIRED'
@@ -1967,6 +2122,13 @@ begin
 
     -- 24시간 내 첫 답장 미응답 패널티(3회 매칭 제한): 하루에 1회씩 차감하며 해당 날짜 밤 매칭에서 제외
     update public.ondo_members
+    set penalty_skip_remaining = greatest(0, coalesce(penalty_skip_remaining, 0) - 1),
+        penalty_last_skipped_date = v_today_date,
+        updated_at = now()
+    where coalesce(penalty_skip_remaining, 0) > 0
+      and coalesce(penalty_last_skipped_date, '') <> v_today_date;
+
+    update public.ondo_member_penalties
     set penalty_skip_remaining = greatest(0, coalesce(penalty_skip_remaining, 0) - 1),
         penalty_last_skipped_date = v_today_date,
         updated_at = now()
@@ -2020,7 +2182,7 @@ begin
                f.updated_at as f_upd, m.updated_at as m_upd
         from f
         join mm m
-          on m.univ <> f.univ
+          on public.ondo_univ_root(m.univ) <> public.ondo_univ_root(f.univ)
           or (not public.ondo_extra_bool(f.profile_extra, 'avoidSameSchool', true)
               and not public.ondo_extra_bool(m.profile_extra, 'avoidSameSchool', true))
         where not exists (select 1 from public.ondo_matches om
@@ -2125,7 +2287,7 @@ revoke all on table public.ondo_members, public.ondo_matches,
   public.ondo_support_tickets, public.ondo_admins,
   public.ondo_univ_email_domains, public.ondo_school_email_codes,
   public.ondo_kakao_notify, public.ondo_kakao_connect_states,
-  public.ondo_member_kakao_tokens
+  public.ondo_member_kakao_tokens, public.ondo_member_penalties
   from anon, authenticated;
 
 -- Supabase가 만든 자동 보안 켜기 함수(rls_auto_enable)는 사람이 직접 부를 일이 없으므로 실행 권한 회수
