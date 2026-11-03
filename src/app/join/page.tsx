@@ -886,7 +886,14 @@ function JoinForm({
     },
     { label: isJa ? "カカオID" : "카톡 아이디", done: kakaoId.trim().length > 0 },
     {
-      label: isJa ? "学生認証" : "학생 인증",
+      label:
+        campusTrack === "WH_JP"
+          ? isJa
+            ? "ビザ確認書認証"
+            : "워홀 비자 인증"
+          : isJa
+          ? "学生認証"
+          : "학생 인증",
       done: usesStudentIdVerification ? !!studentIdBlob : emailStage === "verified",
     },
   ];
@@ -909,7 +916,11 @@ function JoinForm({
       setStudentIdBlob(blob);
       setAiStatus("VERIFIED");
       setAiReason(
-        isJa
+        campusTrack === "WH_JP"
+          ? isJa
+            ? "登録を完了すると、運営者がワーキングホリデー（H-1）ビザ発給確認書を直接確認して承認します。（写真は運営者のみ閲覧でき、承認・却下の直後に削除されます）"
+            : "가입을 완료하면 운영자가 워홀 비자 확인서(H-1 사증발급확인서)를 직접 확인한 뒤 승인해 드려요. (사진은 운영자만 볼 수 있고, 승인·반려 즉시 삭제돼요)"
+          : isJa
           ? "登録を完了すると、運営者が学生証を直接確認して承認します。（写真は運営者のみ閲覧でき、承認・却下の直後に削除されます）"
           : "가입을 완료하면 운영자가 학생증을 직접 확인한 뒤 승인해 드려요. (사진은 운영자만 볼 수 있고, 승인·반려 즉시 삭제돼요)"
       );
@@ -1219,9 +1230,14 @@ function JoinForm({
 
     if (usesStudentIdVerification && (aiStatus !== "VERIFIED" || !studentIdBlob)) {
       setAiStatus("REJECTED");
-      const msg = isJa
-        ? "ONDO 36.5°は100%学生認証制です。学生証（または図書館モバイル利用証などご自身の身分を証明できるもの）の写真を先にアップロードしてください。運営チームが直接確認して承認します。"
-        : "ONDO 36.5°는 100% 학생 인증제예요. 학생증(또는 도서관 모바일 이용증 등 본인의 신분을 입증할 수 있는 자료) 사진을 먼저 올려 주세요. 운영자가 직접 확인해 승인해 드려요.";
+      const msg =
+        campusTrack === "WH_JP"
+          ? isJa
+            ? "日本人ワーキングホリデー学生トラックは「韓国ワーキングホリデー（H-1）ビザ発給確認書（査証発給確認書）」の写真でのみ認証可能です。先にビザ確認書の写真をアップロードしてください。"
+            : "일본인 워홀 학생 트랙은 '워홀 비자 확인서(H-1 사증발급확인서)' 사진으로만 인증할 수 있어요. 워홀 비자 확인서 사진을 먼저 올려 주세요."
+          : isJa
+          ? "ONDO 36.5°は100%学生認証制です。学生証（または図書館モバイル利用証などご自身の身分を証明できるもの）の写真を先にアップロードしてください。運営チームが直接確認して承認します。"
+          : "ONDO 36.5°는 100% 학생 인증제예요. 학생증(또는 도서관 모바일 이용증 등 본인의 신분을 입증할 수 있는 자료) 사진을 먼저 올려 주세요. 운영자가 직접 확인해 승인해 드려요.";
       setAiReason(msg);
       setSubmitError(msg);
       return;
@@ -2172,18 +2188,28 @@ function JoinForm({
           </section>
         )}
 
-        {/* Student ID / Mobile Library Card photo → operator review */}
+        {/* Student ID / Working Holiday Visa Confirmation photo → operator review */}
         {usesStudentIdVerification && (
         <section className="rounded-3xl border border-rose-200 bg-white p-4 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-rose-600">
               <Sparkles className="h-3.5 w-3.5" />
-              {isJa
+              {campusTrack === "WH_JP"
+                ? isJa
+                  ? "ワーホリビザ確認書 運営確認"
+                  : "워홀 비자 확인서 운영팀 확인"
+                : isJa
                 ? "学生証・モバイル身分証 確認"
                 : "학생증·모바일 신분증 운영팀 확인"}
             </span>
             <span className="rounded-full bg-zinc-900 px-2.5 py-0.5 text-[12px] font-extrabold text-white">
-              {isJa ? "身分証明なら何でもOK" : "신분 입증 자료 모두 가능"}
+              {campusTrack === "WH_JP"
+                ? isJa
+                  ? "H-1ビザ確認書のみ可能"
+                  : "워홀 비자 확인서만 가능"
+                : isJa
+                ? "身分証明なら何でもOK"
+                : "신분 입증 자료 모두 가능"}
             </span>
           </div>
 
@@ -2198,8 +2224,8 @@ function JoinForm({
                 : "🇯🇵 일본인 대학교 유학생 학생증 · 모바일 신분증으로 인증"
               : campusTrack === "WH_JP"
               ? isJa
-                ? "🇯🇵 日本の学生証・外国人登録証(ARC)・ワーホリビザで認証"
-                : "🇯🇵 일본 학생증 · 외국인등록증(ARC) · 워홀 비자 확인서로 인증"
+                ? "🇯🇵 韓国ワーキングホリデー（H-1）ビザ発給確認書で認証（必須）"
+                : "🇯🇵 워홀 비자 확인서(H-1 사증발급확인서)로만 인증 (필수)"
               : isJa
               ? "🇰🇷 韓国大学生の学生証・モバイル身分証で認証"
               : "🇰🇷 한국 대학생 학생증 · 모바일 신분증으로 인증"}
@@ -2207,8 +2233,8 @@ function JoinForm({
           <p className="mt-1 text-[12px] leading-relaxed text-zinc-600">
             {campusTrack === "WH_JP"
               ? isJa
-                ? "日本の大学の学生証、外国人登録証（ARC・裏番号は隠してOK）、ワーキングホリデー（H-1）ビザ発給確認書、または韓国語学院の受講証など、ご自身の身分を証明できる写真を1枚アップロードしてください。写真は運営者のみ閲覧でき、承認・却下の直後に削除されます。"
-                : "일본 대학교 학생증, 외국인등록증(ARC·뒷번호 가림 가능), 워킹홀리데이(H-1) 비자 사증·발급확인서, 또는 어학원 수강증 등 본인의 신분을 입증할 수 있는 사진 1장을 올려 주세요. 사진은 운영자만 볼 수 있고 승인·반려 즉시 삭제돼요."
+                ? "日本人ワーホリ学生トラックは「韓国ワーキングホリデー（H-1）ビザ発給確認書（査証発給確認書）」でのみ認証可能です。氏名・生年月日・在留資格（H-1）が見えるように撮影またはスクショしてアップロードしてください。（旅券番号などは隠してOKです。写真は運営者のみ閲覧でき、承認・却下の直後に削除されます）"
+                : "일본인 워홀 학생 트랙은 '한국 워킹홀리데이(H-1) 비자 확인서(사증발급확인서)'로만 인증할 수 있어요. 성명·생년월일·체류자격(H-1)이 보이도록 촬영하거나 캡처해 올려 주세요. (여권번호 등은 가려도 되며, 사진은 운영자만 볼 수 있고 승인·반려 즉시 삭제돼요)"
               : isJa
               ? "実物の学生証、モバイル学生証、図書館モバイル利用証など、ご自身の学校・身分を証明できるものなら何でもOKです！学校名とご自身の身分が見えるように撮影またはスクショしてアップロードしてください。写真は運営者のみ閲覧でき、承認・却下の直後に削除されます。"
               : "실물 학생증, 모바일 학생증, 도서관 모바일 이용증 등 자기 신분을 입증할 수 있는 거면 뭐든지 가능해요! 학교 이름과 본인 신분이 보이도록 찍거나 캡처해 올려 주세요. 사진은 운영자만 볼 수 있고 승인·반려 즉시 삭제돼요."}
@@ -2235,7 +2261,11 @@ function JoinForm({
             >
               <Upload className="h-4 w-4" />
               <span>
-                {isJa
+                {campusTrack === "WH_JP"
+                  ? isJa
+                    ? "ワーキングホリデー（H-1）ビザ発給確認書の写真をアップロード"
+                    : "워킹홀리데이(H-1) 비자 확인서 사진 올리기"
+                  : isJa
                   ? "学生証・図書館モバイル利用証など身分証明の写真をアップロード"
                   : "학생증 · 도서관 모바일 이용증 등 신분 입증 사진 올리기"}
               </span>
@@ -2316,7 +2346,11 @@ function JoinForm({
             onClick={handleStart}
           >
             <FileCheck2 className="h-4 w-4" />
-            {usesStudentIdVerification
+            {campusTrack === "WH_JP"
+              ? isJa
+                ? "ワーホリビザ確認書を提出して登録する →"
+                : "워홀 비자 확인서 인증 신청하고 회원가입 완료하기 →"
+              : usesStudentIdVerification
               ? isJa
                 ? "学生証認証を完了して登録する →"
                 : "학생증 인증 신청하고 회원가입 완료하기 →"
