@@ -47,6 +47,7 @@ import {
   fetchMyMemberSecure,
   getAuthUserId,
   isStaleAutoCreatedMember,
+  mergeProfileExtra,
   purgeStaleMemberRow,
   requestSchoolEmailCode,
   signInWithKakao,
@@ -1045,8 +1046,23 @@ function JoinForm({
           }`
         : department.trim();
 
+    const existingMember = await fetchMyMemberSecure();
+    const preservedBase =
+      existingMember && !isStaleAutoCreatedMember(existingMember)
+        ? {
+            ...mergeProfileExtra(EMPTY_USER_PROFILE, existingMember.profile_extra),
+            mbti: existingMember.mbti || null,
+            bio: existingMember.bio || "",
+          }
+        : {
+            ...EMPTY_USER_PROFILE,
+            preferredHeight: heightPrefs.join(","),
+            location: null,
+            bio: "",
+          };
+
     const updatedUser = {
-      ...EMPTY_USER_PROFILE,
+      ...preservedBase,
       uid: newUid,
       nickname: nickname.trim(),
       gender,
@@ -1054,9 +1070,6 @@ function JoinForm({
       birthDate: parsedBirth.iso,
       school: finalSchool,
       department: finalDept,
-      preferredHeight: heightPrefs.join(","),
-      location: null,
-      bio: "",
       verificationStatus: (
         !usesStudentIdVerification && emailStage === "verified"
           ? "verified"

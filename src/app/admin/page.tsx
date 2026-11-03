@@ -738,7 +738,10 @@ export default function AdminDashboardPage() {
                           onClick={() => openStudentIdModal(m)}
                           className="h-7 rounded-full px-2.5 text-[11.5px]"
                         >
-                          🪪 학생증
+                          {m.school.includes("워킹홀리데이") ||
+                          m.department.includes("워홀")
+                            ? "🪪 워홀비자"
+                            : "🪪 학생증"}
                         </Button>
                       )}
 

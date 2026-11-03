@@ -171,13 +171,17 @@ begin
 end;
 $$;
 
--- 24시간 미응답 패널티(3회 매칭 제한) 원장: 프로필 초기화·탈퇴 후 재가입해도 남은 패널티가 그대로 유지됨
+-- 24시간 미응답 패널티(3회 매칭 제한) 및 프로필 초기화 시 잔여 티켓 보존 원장:
+-- 프로필 초기화·탈퇴 후 재가입해도 남은 패널티가 그대로 유지되며, 프로필 초기화 시 보유하던 유료·잔여 티켓도 증발하지 않도록 보관
 create table if not exists public.ondo_member_penalties (
   id_hash text primary key,
   penalty_skip_remaining integer not null default 0,
   penalty_last_skipped_date text,
+  saved_tickets integer not null default 0,
   updated_at timestamptz not null default now()
 );
+alter table public.ondo_member_penalties
+  add column if not exists saved_tickets integer not null default 0;
 alter table public.ondo_member_penalties enable row level security;
 revoke all on table public.ondo_member_penalties from anon, authenticated;
 
@@ -373,10 +377,17 @@ begin
       raise exception 'Age must be between 18 and 28';
     end if;
 
-    -- 한국 학교 메일 인증(SCHOOL_EMAIL) 회원이 전공 문자열에 🇯🇵 태그를 넣어 유학생 트랙을 사칭하는 것 방지
+    -- 한국 학교 메일 인증(SCHOOL_EMAIL) 회원이 전공 문자열에 🇯🇵·유학생·워홀 태그를 넣어 일본인 트랙을 사칭하는 것 방지
     if coalesce(v_existing.verify_method, '') <> 'ADMIN_REVIEW' and v_existing.student_id_status <> 'pending_review' then
       if v_existing.verified and v_existing.verify_method = 'SCHOOL_EMAIL' and v_clean_major is not null then
-        v_clean_major := trim(replace(v_clean_major, '🇯🇵', ''));
+        v_clean_major := trim(
+          regexp_replace(
+            replace(v_clean_major, '🇯🇵', ''),
+            '(일본인\s*(어학당생|유학생|워홀생)|워킹홀리데이)',
+            '',
+            'g'
+          )
+        );
       end if;
     end if;
 
@@ -420,11 +431,17 @@ begin
       raise exception 'Age must be between 18 and 28';
     end if;
 
-    -- 같은 카카오 계정이 축하 티켓을 이미 받은 적이 있으면 다시 주지 않음
+    -- 같은 카카오 계정이 축하 티켓을 이미 받은 적이 있으면 다시 주지 않되,
+    -- 프로필 초기화(ondo_reset_my_profile) 직전 보유하던 잔여·유료 티켓(saved_tickets)이 있으면 그대로 복원 후 0으로 소진
     insert into public.ondo_welcome_grants (id_hash) values (v_welcome_hash)
     on conflict (id_hash) do nothing;
     if not found then
-      v_welcome_tickets := 0;
+      v_welcome_tickets := greatest(0, coalesce(v_penalty.saved_tickets, 0));
+      if coalesce(v_penalty.saved_tickets, 0) > 0 then
+        update public.ondo_member_penalties
+        set saved_tickets = 0, updated_at = now()
+        where id_hash = v_welcome_hash;
+      end if;
     end if;
 
     -- 신규 가입자: 회원 id는 서버가 로그인 계정으로 정함 (u-<auth uuid>), 웰컴 티켓 2장 (처음 가입한 계정만)
@@ -1514,9 +1531,17 @@ begin
   update public.ondo_support_tickets set status = 'DONE'
   where kind = 'VERIFY' and member_id = v_member.id and status = 'OPEN';
   insert into public.ondo_support_tickets (kind, member_id, reply_contact, reason, message, client_key)
-  values ('VERIFY', v_member.id, v_member.contact, v_member.univ,
-          v_member.nickname || ' · ' || v_member.univ || ' · ' || v_member.major || ' 학생증 확인 요청',
-          v_member.id);
+  values (
+    'VERIFY',
+    v_member.id,
+    v_member.contact,
+    v_member.univ,
+    v_member.nickname || ' · ' || v_member.univ || ' · ' || v_member.major ||
+      case when v_member.univ like '%워킹홀리데이%' or v_member.major like '%워홀%'
+           then ' 워홀 비자 확인서 심사 요청'
+           else ' 학생증 확인 요청' end,
+    v_member.id
+  );
   return true;
 end;
 $$;
@@ -1670,7 +1695,7 @@ $$;
 
 
 -- 가입 정보 초기화: 카카오 로그인 계정(auth.users)과 운영자 권한(ondo_admins)은 유지한 채 내 회원 프로필·인증 상태만 초기화
--- 단, 미응답 패널티·과거 매칭 이력(PASSED/EXPIRED/CONFIRMED)·메일 발송 쿨다운 기록은 초기화로 우회할 수 없도록 보존
+-- 단, 미응답 패널티·과거 매칭 이력(PASSED로 전환 보존)·보유 잔여 티켓·메일 발송 쿨다운 기록은 초기화로 우회하거나 증발하지 않도록 보존
 create or replace function public.ondo_reset_my_profile()
 returns boolean
 language plpgsql
@@ -1679,36 +1704,70 @@ set search_path = public
 as $$
 declare
   v_member_id text := public.ondo_current_member_id();
+  v_unreplied_chat boolean := false;
 begin
   if v_member_id is null then
     return false;
   end if;
-  -- 남은 미응답 패널티가 있다면 계정 해시 원장에 먼저 기록 (프로필 초기화 후 재가입해도 패널티 유지)
-  insert into public.ondo_member_penalties (id_hash, penalty_skip_remaining, penalty_last_skipped_date, updated_at)
-  select public.ondo_identity_hash(m.auth_user_id), m.penalty_skip_remaining, m.penalty_last_skipped_date, now()
+
+  -- 대화방(CHATTING)이 열린 뒤 본인이 아직 첫 답장을 보내지 않은 상태에서 프로필 초기화로 도망가는 경우 미응답 패널티(3회) 즉시 부여
+  select exists (
+    select 1 from public.ondo_matches m
+    where (m.female_id = v_member_id or m.male_id = v_member_id)
+      and m.ticket_status = 'CHATTING'
+      and not exists (
+        select 1 from public.ondo_match_messages x
+        where x.match_id = m.id and x.sender_id = v_member_id
+      )
+  ) into v_unreplied_chat;
+
+  -- 남은 미응답 패널티 및 현재 보유 중인 잔여·유료 티켓(tickets)을 계정 해시 원장에 기록 (프로필 초기화 후 재가입 시 복원)
+  insert into public.ondo_member_penalties (id_hash, penalty_skip_remaining, penalty_last_skipped_date, saved_tickets, updated_at)
+  select public.ondo_identity_hash(m.auth_user_id),
+         case when v_unreplied_chat then greatest(coalesce(m.penalty_skip_remaining, 0), 3) else coalesce(m.penalty_skip_remaining, 0) end,
+         m.penalty_last_skipped_date,
+         greatest(0, coalesce(m.tickets, 0)),
+         now()
   from public.ondo_members m
   where m.id = v_member_id and m.auth_user_id is not null
-    and (coalesce(m.penalty_skip_remaining, 0) > 0 or m.penalty_last_skipped_date is not null)
   on conflict (id_hash) do update set
     penalty_skip_remaining = greatest(public.ondo_member_penalties.penalty_skip_remaining, excluded.penalty_skip_remaining),
     penalty_last_skipped_date = coalesce(excluded.penalty_last_skipped_date, public.ondo_member_penalties.penalty_last_skipped_date),
+    saved_tickets = excluded.saved_tickets,
     updated_at = now();
 
-  -- 진행 중인 매칭에서 상대 남학생이 이미 티켓을 냈다면 돌려준 뒤, 진행 중인 매칭만 정리 (과거 PASSED/EXPIRED/CONFIRMED 이력은 보존해 재매칭 방지)
+  -- 진행 중인 매칭에서 상대 남학생이 티켓을 냈고, 아직 대기 중(PENDING/HELD)이거나 여학생이 첫 답장을 보내기 전인 경우에만 남학생에게 티켓 환급
   update public.ondo_members mm
   set tickets = coalesce(mm.tickets, 0) + 1, updated_at = now()
   from public.ondo_matches m
   where m.female_id = v_member_id and m.male_id = mm.id
-    and m.male_ticket_charged and m.ticket_status in ('PENDING', 'HELD', 'CHATTING');
+    and m.male_ticket_charged
+    and (
+      m.ticket_status in ('PENDING', 'HELD')
+      or (
+        m.ticket_status = 'CHATTING'
+        and not exists (
+          select 1 from public.ondo_match_messages x
+          where x.match_id = m.id and x.sender_id = v_member_id
+        )
+      )
+    );
+
+  -- 진행 중인 매칭을 삭제(DELETE)하면 같은 상대와 재매칭되거나 이력이 세탁되므로, 삭제 대신 'PASSED' 상태로 마감 보존
   delete from public.ondo_match_messages
   where match_id in (
     select id from public.ondo_matches
     where (female_id = v_member_id or male_id = v_member_id)
       and ticket_status in ('PENDING', 'HELD', 'CHATTING')
   );
-  delete from public.ondo_matches
+  update public.ondo_matches
+  set ticket_status = 'PASSED',
+      female_response = case when female_id = v_member_id then 'PASS' else female_response end,
+      male_response = case when male_id = v_member_id then 'PASS' else male_response end,
+      male_ticket_charged = false
   where (female_id = v_member_id or male_id = v_member_id)
     and ticket_status in ('PENDING', 'HELD', 'CHATTING');
+
   -- 메일 인증번호는 즉시 만료시키되 발송 횟수·쿨다운(send_count, window_start, last_sent_at)은 유지해 도배 우회 차단
   update public.ondo_school_email_codes
   set expires_at = now() - interval '1 second', attempts = 5
@@ -2318,6 +2377,7 @@ begin
         from f
         join mm m
           on public.ondo_univ_root(m.univ) <> public.ondo_univ_root(f.univ)
+          or (f.univ like '%워킹홀리데이%' and m.univ like '%워킹홀리데이%')
           or (not public.ondo_extra_bool(f.profile_extra, 'avoidSameSchool', true)
               and not public.ondo_extra_bool(m.profile_extra, 'avoidSameSchool', true))
         where not exists (select 1 from public.ondo_matches om

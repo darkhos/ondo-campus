@@ -750,7 +750,14 @@ export function ProfileTab({
               </p>
               {user.verificationStatus === "verified" ? (
                 <span className="rounded-md bg-rose-50 px-1.5 py-0.5 text-[12px] font-bold text-rose-600">
-                  {isJa ? "学校認証済み" : "학교 인증됨"}
+                  {user.school.includes("워킹홀리데이") ||
+                  user.department.includes("워홀")
+                    ? isJa
+                      ? "ワーホリビザ認証済み"
+                      : "워홀 비자 인증됨"
+                    : isJa
+                    ? "学校認証済み"
+                    : "학교 인증됨"}
                 </span>
               ) : (
                 <button
@@ -759,12 +766,17 @@ export function ProfileTab({
                   className="rounded-md bg-amber-50 px-2 py-0.5 text-[12px] font-bold text-amber-700 underline hover:bg-amber-100"
                 >
                   {user.verificationStatus === "pending_review"
-                    ? isJa
+                    ? user.school.includes("워킹홀리데이") ||
+                      user.department.includes("워홀")
+                      ? isJa
+                        ? "ビザ確認書確認中"
+                        : "워홀 비자 확인 중"
+                      : isJa
                       ? "学生証確認中"
                       : "학생증 확인 중"
                     : isJa
-                    ? "学生認証する →"
-                    : "학생 인증하러 가기 →"}
+                    ? "本人・学生認証する →"
+                    : "학생·체류 인증하러 가기 →"}
                 </button>
               )}
               <button
