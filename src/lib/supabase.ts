@@ -320,10 +320,15 @@ export async function purgeStaleMemberRow(
       return { sessionKept: true };
     }
 
-    // 1) 전용 프로필 초기화 RPC 시도 (auth.users 및 ondo_admins 보존)
+    // 1) 전용 프로필 초기화 RPC 시도 (auth.users, ondo_admins 및 과거 매칭·패널티 이력 보존)
     await supabase.rpc("ondo_reset_my_profile");
 
-    // 2) 운영자 계정인 경우 이미 배포된 ondo_admin_delete_members 로 본인 회원 행만 즉시 삭제 (auth.users 및 ondo_admins 보존)
+    const afterReset = await fetchMyMemberSecure();
+    if (!afterReset) {
+      return { sessionKept: true };
+    }
+
+    // 2) 폴백: 운영자 계정인 경우 ondo_admin_delete_members 로 본인 회원 행만 삭제
     await supabase.rpc("ondo_admin_delete_members", {
       p_uids: [target.id],
     });

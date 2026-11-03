@@ -380,6 +380,13 @@ begin
       end if;
     end if;
 
+    -- 미인증 상태에서 학교(univ)를 바꾸면 기존에 발급받았던 타 학교 메일 인증번호를 즉시 무효화 (학교 바꿔치기 TOCTOU 차단)
+    if not v_locked and v_clean_univ is not null and left(v_clean_univ, 80) is distinct from v_existing.univ then
+      update public.ondo_school_email_codes
+      set expires_at = now() - interval '1 second', attempts = 5
+      where member_id = v_existing.id;
+    end if;
+
     update public.ondo_members
     set
       nickname = coalesce(left(nullif(trim(p_nickname), ''), 30), v_existing.nickname),
@@ -547,10 +554,30 @@ begin
   if not public.ondo_is_admin() then
     return false;
   end if;
+  -- 삭제 대상 여학생과 진행 중이던 매칭에서 상대 남학생이 예치한 티켓이 있으면 먼저 환급
+  update public.ondo_members mm
+  set tickets = coalesce(mm.tickets, 0) + 1, updated_at = now()
+  from public.ondo_matches m
+  where m.female_id = any(p_uids) and m.male_id = mm.id
+    and not (mm.id = any(p_uids))
+    and m.male_ticket_charged and m.ticket_status in ('PENDING', 'HELD', 'CHATTING');
+  -- 삭제 대상 회원의 학생증 사진(storage.objects) 서버 측 즉시 파기
+  delete from storage.objects
+  where bucket_id = 'student-ids'
+    and (storage.foldername(name))[1] in (
+      select m.auth_user_id::text from public.ondo_members m
+      where m.id = any(p_uids) and m.auth_user_id is not null
+    );
+  delete from public.ondo_match_messages
+  where match_id in (
+    select id from public.ondo_matches
+    where female_id = any(p_uids) or male_id = any(p_uids) or id = any(p_uids)
+  );
   delete from public.ondo_matches
   where female_id = any(p_uids)
      or male_id = any(p_uids)
      or id = any(p_uids);
+  delete from public.ondo_school_email_codes where member_id = any(p_uids);
   delete from public.ondo_members where id = any(p_uids);
   return true;
 end;
@@ -758,9 +785,13 @@ begin
     end if;
   end if;
 
-  -- [도배 방지] 같은 회원 또는 같은 접속지(IP 해시)에서 10분 내 5건 초과 차단
+  -- [도배 방지] 클라이언트가 조작할 수 없는 cf-connecting-ip 또는 프록시 체인의 마지막 IP 기준으로 제한
   begin
-    v_ip := split_part(coalesce(current_setting('request.headers', true)::json ->> 'x-forwarded-for', ''), ',', 1);
+    v_ip := coalesce(
+      nullif(trim(coalesce(current_setting('request.headers', true)::json ->> 'cf-connecting-ip', '')), ''),
+      nullif(trim(regexp_replace(coalesce(current_setting('request.headers', true)::json ->> 'x-forwarded-for', ''), '^.*,', '')), ''),
+      ''
+    );
   exception when others then
     v_ip := '';
   end;
@@ -770,15 +801,26 @@ begin
   from public.ondo_support_tickets
   where client_key = v_client
     and created_at > now() - interval '10 minutes';
-  if v_recent >= 5 then
+  if v_recent >= (case when v_member is null then 2 else 5 end) then
     raise exception 'Rate limit exceeded for support tickets';
   end if;
 
-  -- [전체 폭주 방지] 1시간에 전체 300건 초과 시 차단
+  -- [비회원 문의 폭주 방지] 비회원(INQUIRY)은 전체 10분당 10건 초과 차단
+  if v_member is null then
+    select count(*) into v_recent
+    from public.ondo_support_tickets
+    where member_id is null
+      and created_at > now() - interval '10 minutes';
+    if v_recent >= 10 then
+      raise exception 'Rate limit exceeded for support tickets';
+    end if;
+  end if;
+
+  -- [전체 폭주 방지] 1시간에 전체 60건 초과 시 차단
   select count(*) into v_recent
   from public.ondo_support_tickets
   where created_at > now() - interval '1 hour';
-  if v_recent >= 300 then
+  if v_recent >= 60 then
     raise exception 'Rate limit exceeded for support tickets';
   end if;
 
@@ -849,8 +891,13 @@ set search_path = public
 as $$
 declare
   v_auth uuid := auth.uid();
+  v_acc text := trim(coalesce(p_access_token, ''));
+  v_ref text := nullif(trim(coalesce(p_refresh_token, '')), '');
 begin
-  if v_auth is null or coalesce(trim(p_access_token), '') = '' then
+  if v_auth is null
+     or length(v_acc) not between 10 and 512
+     or v_acc ~ '[[:space:]]'
+     or (v_ref is not null and (length(v_ref) > 512 or v_ref ~ '[[:space:]]')) then
     return false;
   end if;
 
@@ -858,8 +905,8 @@ begin
     auth_user_id, access_token, refresh_token, access_expires_at, updated_at
   ) values (
     v_auth,
-    trim(p_access_token),
-    nullif(trim(coalesce(p_refresh_token, '')), ''),
+    v_acc,
+    v_ref,
     now() + interval '5 hours',
     now()
   )
@@ -875,8 +922,8 @@ begin
       id, access_token, refresh_token, access_expires_at, connected_at, updated_at
     ) values (
       1,
-      trim(p_access_token),
-      nullif(trim(coalesce(p_refresh_token, '')), ''),
+      v_acc,
+      v_ref,
       now() + interval '5 hours',
       now(),
       now()
@@ -991,7 +1038,20 @@ declare
   v_to text;
   v_label text;
   v_html text;
+  v_recent_inquiries integer := 0;
 begin
+  -- 일반 문의(INQUIRY)가 단시간에 몰릴 때는 DB 접수는 모두 보존하되 외부 알림(Resend·카톡)만 제한해
+  -- 중요 알림(VERIFY 학생증·TOPUP 충전·REPORT 신고)의 발송 쿼터를 보호
+  if new.kind not in ('VERIFY', 'TOPUP', 'REPORT') then
+    select count(*) into v_recent_inquiries
+    from public.ondo_support_tickets
+    where kind not in ('VERIFY', 'TOPUP', 'REPORT')
+      and created_at > now() - interval '10 minutes';
+    if v_recent_inquiries > 6 then
+      return new;
+    end if;
+  end if;
+
   -- 운영자 카카오톡 "나에게 보내기" 알림 (연결 안 됐거나 실패해도 접수는 그대로)
   begin
     perform public.ondo_kakao_notify_call(jsonb_build_object(
@@ -1321,14 +1381,19 @@ security definer
 set search_path = public
 as $$
 declare
-  v_member_id text := public.ondo_current_member_id();
+  v_member public.ondo_members;
   v_row public.ondo_school_email_codes;
+  v_domain text;
+  v_univ_clean text;
 begin
-  if v_member_id is null then
+  select * into v_member from public.ondo_members
+  where auth.uid() is not null and auth_user_id = auth.uid()
+  for update;
+  if v_member.id is null then
     raise exception 'Login required';
   end if;
   -- 동시 다중 요청(Race Condition)으로 5회 시도 제한을 우회하지 못하도록 행 잠금(FOR UPDATE)
-  select * into v_row from public.ondo_school_email_codes where member_id = v_member_id for update;
+  select * into v_row from public.ondo_school_email_codes where member_id = v_member.id for update;
   if v_row.member_id is null or v_row.expires_at < now() then
     raise exception 'Code expired';
   end if;
@@ -1336,8 +1401,27 @@ begin
     raise exception 'Too many attempts';
   end if;
 
-  if encode(extensions.digest(v_member_id || ':' || trim(coalesce(p_code, '')), 'sha256'), 'hex') <> v_row.code_hash then
-    update public.ondo_school_email_codes set attempts = attempts + 1 where member_id = v_member_id;
+  -- 인증번호 발급 이후 학교(univ)를 바꿔치기했거나 다른 회원이 같은 이메일로 먼저 인증했는지 최종 재검증 (TOCTOU 완벽 차단)
+  v_domain := split_part(lower(trim(v_row.email)), '@', 2);
+  v_univ_clean := trim(coalesce(v_member.univ, ''));
+  if not exists (
+    select 1 from public.ondo_univ_email_domains d
+    where (v_univ_clean = d.univ_keyword or (v_univ_clean like d.univ_keyword || ' %' and v_univ_clean !~ '[.;/\\]'))
+      and (v_domain = d.domain or v_domain like '%.' || d.domain)
+  ) then
+    delete from public.ondo_school_email_codes where member_id = v_member.id;
+    raise exception 'Invalid school email';
+  end if;
+  if exists (
+    select 1 from public.ondo_members
+    where lower(school_email) = lower(trim(v_row.email)) and id <> v_member.id
+  ) then
+    delete from public.ondo_school_email_codes where member_id = v_member.id;
+    raise exception 'Email already used';
+  end if;
+
+  if encode(extensions.digest(v_member.id || ':' || trim(coalesce(p_code, '')), 'sha256'), 'hex') <> v_row.code_hash then
+    update public.ondo_school_email_codes set attempts = attempts + 1 where member_id = v_member.id;
     return false;
   end if;
 
@@ -1348,13 +1432,13 @@ begin
       school_email = v_row.email,
       verified_at = now(),
       updated_at = now()
-  where id = v_member_id;
-  delete from public.ondo_school_email_codes where member_id = v_member_id;
+  where id = v_member.id;
+  delete from public.ondo_school_email_codes where member_id = v_member.id;
   return true;
 end;
 $$;
 
--- 학생증 사진 보관함: 비공개. 본인 폴더(<auth uuid>/)에 올리기만 가능, 보기·삭제는 운영자만
+-- 학생증 사진 보관함: 비공개. 본인 폴더(<auth uuid>/)에 올리기만 가능(심사 대기 중·인증 완료 후에는 잠금), 보기·삭제는 운영자만
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('student-ids', 'student-ids', false, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
 on conflict (id) do nothing;
@@ -1368,7 +1452,8 @@ create policy "ondo student id upload own folder" on storage.objects
     and name ~ ('^' || auth.uid()::text || '/[0-9]{10,16}\.(jpg|jpeg|png|webp)$')
     and not exists (
       select 1 from public.ondo_members m
-      where m.auth_user_id = auth.uid() and m.verified
+      where m.auth_user_id = auth.uid()
+        and (m.verified or m.student_id_status = 'pending_review')
     )
     and (
       select count(*) from storage.objects o
@@ -1474,6 +1559,13 @@ begin
       student_id_image_path = null,
       updated_at = now()
   where id = p_member_id;
+
+  -- 승인·반려 즉시 서버 측에서도 해당 회원의 학생증 사진(storage.objects)을 완전 파기
+  if v_auth_user_id is not null then
+    delete from storage.objects
+    where bucket_id = 'student-ids'
+      and (storage.foldername(name))[1] = v_auth_user_id::text;
+  end if;
 
   update public.ondo_support_tickets set status = 'DONE'
   where kind = 'VERIFY' and member_id = p_member_id and status = 'OPEN';
@@ -1621,6 +1713,12 @@ begin
   update public.ondo_school_email_codes
   set expires_at = now() - interval '1 second', attempts = 5
   where member_id = v_member_id;
+  -- 학생증 사진 보관함(storage.objects)에 남은 본인 파일도 서버 측에서 즉시 파기
+  if auth.uid() is not null then
+    delete from storage.objects
+    where bucket_id = 'student-ids'
+      and (storage.foldername(name))[1] = auth.uid()::text;
+  end if;
   delete from public.ondo_members where id = v_member_id;
   return true;
 end;
@@ -1665,6 +1763,10 @@ begin
   update public.ondo_support_tickets
   set member_id = null, client_key = null, reply_contact = null
   where member_id = v_member_id;
+  -- 학생증 사진 보관함(storage.objects)에 남은 본인 파일도 서버 측에서 즉시 파기
+  delete from storage.objects
+  where bucket_id = 'student-ids'
+    and (storage.foldername(name))[1] = v_auth::text;
   delete from public.ondo_members where id = v_member_id;
   delete from public.ondo_member_kakao_tokens where auth_user_id = v_auth;
   delete from public.ondo_admins where auth_user_id = v_auth;
@@ -1676,7 +1778,15 @@ $$;
 drop policy if exists "ondo student id delete own folder" on storage.objects;
 create policy "ondo student id delete own folder" on storage.objects
   for delete to authenticated
-  using (bucket_id = 'student-ids' and (storage.foldername(name))[1] = auth.uid()::text);
+  using (
+    bucket_id = 'student-ids'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and not exists (
+      select 1 from public.ondo_members m
+      where m.auth_user_id = auth.uid()
+        and m.student_id_status = 'pending_review'
+    )
+  );
 
 -- ============================================================================
 -- [매칭 2.0] 서로 수락 → 남학생 티켓 1장 서버 차감(여학생 무료) → 실제 채팅
@@ -1752,22 +1862,33 @@ as $$
   select m.id,
          case when m.ticket_status = 'HELD' then 'PENDING' else m.ticket_status end,
          case when m.female_id = me.id then m.female_response else m.male_response end,
-         case when m.female_id = me.id then m.male_response else m.female_response end,
+         -- 내가 아직 응답(PENDING)하지 않은 대기 매칭에서는 상대의 수락 여부를 미리 엿볼 수 없도록 'PENDING'으로 마스킹 (양방향 블라인드 수락 보장)
+         case
+           when m.ticket_status in ('PENDING', 'HELD')
+                and (case when m.female_id = me.id then m.female_response else m.male_response end) = 'PENDING'
+             then 'PENDING'
+           when m.female_id = me.id then m.male_response
+           else m.female_response
+         end,
          p.id, p.nickname, p.univ, p.major,
          coalesce(public.ondo_calc_age(p.profile_extra ->> 'birthDate', p.age), p.age),
-         p.gender, p.mbti, p.bio,
+         p.gender, p.mbti,
+         -- 이미 거절(PASSED)·만료(EXPIRED)된 매칭에서는 상대의 실시간 상세 자기소개·부가 정보를 비워서 반환
+         case when m.ticket_status in ('PENDING', 'HELD', 'CHATTING', 'CONFIRMED') then p.bio else null end,
          nullif(p.profile_extra ->> 'height', '')::integer,
-         p.profile_extra ->> 'locationLabel',
-         coalesce(p.profile_extra -> 'hobbies', '[]'::jsonb),
+         case when m.ticket_status in ('PENDING', 'HELD', 'CHATTING', 'CONFIRMED') then p.profile_extra ->> 'locationLabel' else null end,
+         case when m.ticket_status in ('PENDING', 'HELD', 'CHATTING', 'CONFIRMED') then coalesce(p.profile_extra -> 'hobbies', '[]'::jsonb) else '[]'::jsonb end,
          -- 상대 카드에 보이는 항목만 전달 (선호 조건·위치 등 나머지 profile_extra는 보내지 않음)
-         jsonb_strip_nulls(jsonb_build_object(
-           'build', coalesce(p.profile_extra -> 'build', p.profile_extra -> 'bodyType'),
-           'impression', p.profile_extra -> 'impression',
-           'smokingStatus', p.profile_extra -> 'smokingStatus',
-           'religion', p.profile_extra -> 'religion',
-           'vibeKeywords', coalesce(p.profile_extra -> 'vibeKeywords', p.profile_extra -> 'celebrityLookalikes'),
-           'voiceIntroText', p.profile_extra -> 'voiceIntroText'
-         )),
+         case when m.ticket_status in ('PENDING', 'HELD', 'CHATTING', 'CONFIRMED') then
+           jsonb_strip_nulls(jsonb_build_object(
+             'build', coalesce(p.profile_extra -> 'build', p.profile_extra -> 'bodyType'),
+             'impression', p.profile_extra -> 'impression',
+             'smokingStatus', p.profile_extra -> 'smokingStatus',
+             'religion', p.profile_extra -> 'religion',
+             'vibeKeywords', coalesce(p.profile_extra -> 'vibeKeywords', p.profile_extra -> 'celebrityLookalikes'),
+             'voiceIntroText', p.profile_extra -> 'voiceIntroText'
+           ))
+         else '{}'::jsonb end,
          case when public.ondo_match_contact_open(m.id) then p.contact else null end,
          coalesce(m.created_at_ts, now())
   from public.ondo_matches m
@@ -1776,7 +1897,10 @@ as $$
     on p.id = case when m.female_id = me.id then m.male_id else m.female_id end
   where me.id is not null
     and (m.female_id = me.id or m.male_id = me.id)
-  order by coalesce(m.created_at_ts, now()) desc;
+  order by
+    (m.ticket_status in ('PENDING', 'HELD', 'CHATTING', 'CONFIRMED')) desc,
+    coalesce(m.created_at_ts, now()) desc
+  limit 30;
 $$;
 -- 다시 만들 때 기본 권한(PUBLIC 실행 허용)이 붙으므로 비로그인 호출은 바로 막음
 revoke all on function public.ondo_get_my_match_partners() from public, anon;
@@ -1845,6 +1969,11 @@ begin
     return 'PASSED';
   end if;
 
+  -- 수락 시에는 현재 학생 인증(verified)이 유효한 상태인지 확인 (만료·반려 계정의 수락 차단)
+  if not exists (select 1 from public.ondo_members where id = v_me and verified) then
+    raise exception 'Verification required';
+  end if;
+
   -- 베타 기간에는 티켓을 쓰지 않고 무료로 수락
   if v_is_male and not v_m.male_ticket_charged and not v_free then
     update public.ondo_members set tickets = tickets - 1, updated_at = now()
@@ -1886,7 +2015,10 @@ begin
   if v_me is null then
     raise exception 'Login required';
   end if;
-  select * into v_m from public.ondo_matches where id = p_match_id;
+  if not exists (select 1 from public.ondo_members where id = v_me and verified) then
+    raise exception 'Verification required';
+  end if;
+  select * into v_m from public.ondo_matches where id = p_match_id for update;
   if v_m.id is null or (v_m.female_id <> v_me and v_m.male_id <> v_me) then
     raise exception 'Not your match';
   end if;
@@ -1898,6 +2030,9 @@ begin
   end if;
   if (select count(*) from public.ondo_match_messages
       where sender_id = v_me and created_at > now() - interval '1 minute') >= 15 then
+    raise exception 'Too many messages';
+  end if;
+  if (select count(*) from public.ondo_match_messages where match_id = p_match_id) >= 500 then
     raise exception 'Too many messages';
   end if;
 
