@@ -159,8 +159,8 @@ export default function LandingPage() {
           <div className="ondo-rise inline-flex max-w-full items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1 text-[11.5px] font-bold text-zinc-700 shadow-2xs sm:text-[12px]" style={{ "--ondo-rise-delay": "0ms" } as React.CSSProperties}>
             <span>
               {isJa
-                ? "🇰🇷 韓国の大学生 ＆ 🇯🇵 日本人留学生・語学堂生"
-                : "🇰🇷 한국 대학생 & 🇯🇵 일본인 유학생·어학당생"}
+                ? "🇰🇷 韓国の大学生 ＆ 🇯🇵 日本人留学生・語学堂生・ワーホリ生"
+                : "🇰🇷 한국 대학생 & 🇯🇵 일본인 유학생·어학당·워홀생"}
             </span>
           </div>
 
@@ -225,8 +225,8 @@ export default function LandingPage() {
           </h3>
           <p className="mt-1 text-[12px] text-zinc-500 sm:text-[13px]">
             {isJa
-              ? "在学生・休学生・語学堂生・留学生なら誰でも登録できます"
-              : "재학생 · 휴학생 · 어학당생 · 유학생 누구나 가입할 수 있어요"}
+              ? "在学生・休学生・語学堂生・留学生・韓国ワーキングホリデー学生なら誰でも登録できます"
+              : "재학생 · 휴학생 · 어학당생 · 유학생 · 워킹홀리데이 일본 학생 누구나 가입할 수 있어요"}
           </p>
 
           <div className="-mx-2 mt-3 sm:mx-0 sm:mt-4">

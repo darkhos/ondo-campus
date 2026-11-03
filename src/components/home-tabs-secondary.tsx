@@ -391,17 +391,17 @@ export function IdealTypeTab({
               <div className="flex items-center gap-1.5">
                 <p className="text-[14px] font-semibold text-gray-900">
                   {isJa
-                    ? "🇯🇵 日本人語学堂生・大学留学生とのマッチングを含む"
-                    : "🇯🇵 일본인 어학당생·대학 유학생 글로벌 매칭 포함"}
+                    ? "🇯🇵 日本人語学堂生・留学生・ワーホリ生とのマッチングを含む"
+                    : "🇯🇵 일본인 어학당·유학생·워홀생 글로벌 매칭 포함"}
                 </p>
                 <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-600">
-                  {isJa ? "学生認証" : "학생 인증"}
+                  {isJa ? "本人・学生認証" : "학생·체류 인증"}
                 </span>
               </div>
               <p className="text-[12px] text-gray-500">
                 {isJa
-                  ? "学生認証を済ませた韓国の大学生・日本人語学堂生・日本人正規/交換留学生と繋がります"
-                  : "학생 인증을 마친 일본인 어학당생 및 일본인 대학 유학생과도 연결해요"}
+                  ? "認証を済ませた韓国の大学生・日本人語学堂生・正規/交換留学生・韓国ワーホリ学生と繋がります"
+                  : "인증을 마친 일본인 어학당생, 대학 유학생, 한국 워킹홀리데이 학생과도 연결해요"}
               </p>
             </div>
             <button

@@ -511,9 +511,21 @@ const SIDO_ABBR_LABEL_JA: Record<string, string> = {
 // 선택 목록용 번역에 붙은 （위치 설명）을 떼어 프로필에 짧게 보여 줌
 const stripNote = (label: string) => label.replace(/（[^）]*）/g, "").trim();
 
-/** 학교·어학당 이름을 일본어로 (번역표에 없으면 원래 이름 그대로) */
+export const WH_AREA_LABEL_JA: Record<string, string> = {
+  "🇯🇵 워킹홀리데이 (서울 신촌·홍대·마포)": "🇯🇵 ワーキングホリデー（ソウル 新村・弘大・麻浦）",
+  "🇯🇵 워킹홀리데이 (서울 건대·성수·왕십리)": "🇯🇵 ワーキングホリデー（ソウル 建大・聖水・往十里）",
+  "🇯🇵 워킹홀리데이 (서울 강남·잠실·송파)": "🇯🇵 ワーキングホリデー（ソウル 江南・蚕室・松坡）",
+  "🇯🇵 워킹홀리데이 (서울 안암·혜화·회기)": "🇯🇵 ワーキングホリデー（ソウル 安岩・恵化・回基）",
+  "🇯🇵 워킹홀리데이 (서울 용산·이태원·종로)": "🇯🇵 ワーキングホリデー（ソウル 龍山・梨泰院・鍾路）",
+  "🇯🇵 워킹홀리데이 (서울 관악·동작·영등포)": "🇯🇵 ワーキングホリデー（ソウル 冠岳・銅雀・永登浦）",
+  "🇯🇵 워킹홀리데이 (경기권 체류)": "🇯🇵 ワーキングホリデー（京畿道エリア滞在）",
+  "🇯🇵 워킹홀리데이 (인천권 체류)": "🇯🇵 ワーキングホリデー（仁川エリア滞在）",
+};
+
+/** 학교·어학당·워홀 소속 이름을 일본어로 (번역표에 없으면 원래 이름 그대로) */
 export function schoolLabelJa(name: string): string {
   const key = name.trim();
+  if (WH_AREA_LABEL_JA[key]) return WH_AREA_LABEL_JA[key];
   const ja = UNIV_LABEL_JA[key] || KLI_INSTITUTE_LABEL_JA[key];
   return ja ? stripNote(ja) : name;
 }
@@ -533,6 +545,12 @@ export function departmentLabelJa(dept: string): string {
   return dept
     .replace("일본인 어학당생", "日本人語学堂生")
     .replace("일본인 유학생", "日本人留学生")
+    .replace("일본인 워홀생", "日本人ワーホリ学生")
+    .replace(" (일본 대학 재학·휴학)", "（日本の大学 在学・休学）")
+    .replace(" (일본 대학·전문대 졸업)", "（日本の大学・専門卒）")
+    .replace(" (한국어 학원·어학연수)", "（韓国語学院・語学研修）")
+    .replace(" (한일 문화교류 워홀)", "（日韓文化交流ワーホリ）")
+    .replace("한일 문화·언어 교류", "日韓文化・言語交流")
     .replace(" (학부)", "（学部）")
     .replace(" (교환·방문)", "（交換・訪問）")
     .replace(" (대학원)", "（大学院）")
