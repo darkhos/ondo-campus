@@ -10,17 +10,20 @@
       {
         "ja": "三年も中国に住んでいたんですか。だから中国語が上手なわけですね。",
         "furigana": "{三|さん}{年|ねん}も{中国|ちゅうごく}に{住|す}んでいたんですか。だから{中国|ちゅうごく}{語|ご}が{上手|じょうず}なわけですね。",
-        "en": "You lived in China for three years? That's why your Chinese is so good."
+        "en": "You lived in China for three years? That's why your Chinese is so good.",
+        "ko": "3년이나 중국에 살았습니까? 그러니까 중국어가 잘 되는군요."
       },
       {
         "ja": "窓が全部開いている。どうりで寒いわけだ。",
         "furigana": "{窓|まど}が{全部|ぜんぶ}{開|あ}いている。どうりで{寒|さむ}いわけだ。",
-        "en": "All the windows are open. No wonder it's cold."
+        "en": "All the windows are open. No wonder it's cold.",
+        "ko": "창문이 모두 열려있다. 오히려 추운 셈이다."
       },
       {
         "ja": "この本は三百ページだから、一日に二十ページ読めば、十五日で読み終わるわけだ。",
         "furigana": "この{本|ほん}は{三百|さんびゃく}ページだから、{一|いち}{日|にち}に{二|に}{十|じゅう}ページ{読|よ}めば、{十|じゅう}{五|ご}{日|にち}で{読|よ}み{終|お}わるわけだ。",
-        "en": "This book has 300 pages, so if I read twenty pages a day, that means I'll finish it in fifteen days."
+        "en": "This book has 300 pages, so if I read twenty pages a day, that means I'll finish it in fifteen days.",
+        "ko": "이 책은 300 페이지이기 때문에 하루에 20 페이지를 읽으면 15 일에 읽고 끝나는 것이다."
       }
     ],
     "tags": [
@@ -42,17 +45,20 @@
       {
         "ja": "料理が嫌いなわけではないが、毎日作る時間がない。",
         "furigana": "{料理|りょうり}が{嫌|きら}いなわけではないが、{毎日|まいにち}{作|つく}る{時間|じかん}がない。",
-        "en": "It's not that I dislike cooking, but I don't have time to cook every day."
+        "en": "It's not that I dislike cooking, but I don't have time to cook every day.",
+        "ko": "요리를 싫어하는 것은 아니지만 매일 만드는 시간이 없다."
       },
       {
         "ja": "値段が高ければおいしいというわけではない。",
         "furigana": "{値段|ねだん}が{高|たか}ければおいしいというわけではない。",
-        "en": "Just because something is expensive doesn't mean it tastes good."
+        "en": "Just because something is expensive doesn't mean it tastes good.",
+        "ko": "가격이 비싸면 맛있다는 건 아니다."
       },
       {
         "ja": "全然分からないわけではありませんが、もう少しゆっくり話していただけますか。",
         "furigana": "{全然|ぜんぜん}{分|わ}からないわけではありませんが、もう{少|すこ}しゆっくり{話|はな}していただけますか。",
-        "en": "It's not that I don't understand at all, but could you speak a little more slowly?"
+        "en": "It's not that I don't understand at all, but could you speak a little more slowly?",
+        "ko": "전혀 모르는 것은 아니지만 조금 더 천천히 말해 주시겠습니까?"
       }
     ],
     "tags": [
@@ -74,17 +80,20 @@
       {
         "ja": "こんなに練習したんだから、負けるわけがない。",
         "furigana": "こんなに{練習|れんしゅう}したんだから、{負|ま}けるわけがない。",
-        "en": "We've practiced this hard, so there's no way we'll lose."
+        "en": "We've practiced this hard, so there's no way we'll lose.",
+        "ko": "이렇게 연습했기 때문에 지는 것은 없다."
       },
       {
         "ja": "あんなにまじめな人が、約束を忘れるわけがありません。",
         "furigana": "あんなにまじめな{人|ひと}が、{約束|やくそく}を{忘|わす}れるわけがありません。",
-        "en": "There's no way someone that conscientious would forget a promise."
+        "en": "There's no way someone that conscientious would forget a promise.",
+        "ko": "그렇게 진지한 사람이 약속을 잊을 리가 없습니다."
       },
       {
         "ja": "一日で漢字を百個覚えるなんて、できるわけがないよ。",
         "furigana": "{一|いち}{日|にち}で{漢字|かんじ}を{百|ひゃく}{個|こ}{覚|おぼ}えるなんて、できるわけがないよ。",
-        "en": "Learn a hundred kanji in one day? There's no way you can do that."
+        "en": "Learn a hundred kanji in one day? There's no way you can do that.",
+        "ko": "하루에 한자를 백개 기억한다니 할 수 있는 것이 없어."
       }
     ],
     "tags": [
@@ -107,17 +116,20 @@
       {
         "ja": "明日は大事な会議があるから、休むわけにはいかない。",
         "furigana": "{明日|あした}は{大事|だいじ}な{会議|かいぎ}があるから、{休|やす}むわけにはいかない。",
-        "en": "There's an important meeting tomorrow, so I can't afford to take the day off."
+        "en": "There's an important meeting tomorrow, so I can't afford to take the day off.",
+        "ko": "내일은 소중한 회의가 있기 때문에 쉬지 않을 수 없다."
       },
       {
         "ja": "友達に頼まれたことだから、断るわけにはいかなかった。",
         "furigana": "{友達|ともだち}に{頼|たの}まれたことだから、{断|ことわ}るわけにはいかなかった。",
-        "en": "It was a favor my friend had asked, so I couldn't very well say no."
+        "en": "It was a favor my friend had asked, so I couldn't very well say no.",
+        "ko": "친구에게 부탁받았기 때문에 거절할 수는 없었다."
       },
       {
         "ja": "招待されたのだから、パーティーに行かないわけにはいかない。",
         "furigana": "{招待|しょうたい}されたのだから、パーティーに{行|い}かないわけにはいかない。",
-        "en": "I was invited, so I can't not go to the party."
+        "en": "I was invited, so I can't not go to the party.",
+        "ko": "초대 되었기 때문에, 파티에 가지 않을 수는 없다."
       }
     ],
     "tags": [
@@ -139,17 +151,20 @@
       {
         "ja": "子どものころは、この川でよく泳いだものだ。",
         "furigana": "{子|こ}どものころは、この{川|かわ}でよく{泳|およ}いだものだ。",
-        "en": "When I was a child, I used to swim in this river a lot."
+        "en": "When I was a child, I used to swim in this river a lot.",
+        "ko": "어린 시절은 이 강에서 잘 헤엄친 것이다."
       },
       {
         "ja": "新しい環境に慣れるには、時間がかかるものだ。",
         "furigana": "{新|あたら}しい{環境|かんきょう}に{慣|な}れるには、{時間|じかん}がかかるものだ。",
-        "en": "It naturally takes time to get used to a new environment."
+        "en": "It naturally takes time to get used to a new environment.",
+        "ko": "새로운 환경에 익숙해지려면 시간이 걸리는 것이다."
       },
       {
         "ja": "目上の人には敬語を使うものだ。",
         "furigana": "{目上|めうえ}の{人|ひと}には{敬語|けいご}を{使|つか}うものだ。",
-        "en": "You're supposed to use honorific language with your superiors."
+        "en": "You're supposed to use honorific language with your superiors.",
+        "ko": "눈상의 사람에게는 경어를 사용하는 것이다."
       }
     ],
     "tags": [
@@ -172,17 +187,20 @@
       {
         "ja": "人の失敗を笑うものではない。",
         "furigana": "{人|ひと}の{失敗|しっぱい}を{笑|わら}うものではない。",
-        "en": "You shouldn't laugh at other people's mistakes."
+        "en": "You shouldn't laugh at other people's mistakes.",
+        "ko": "사람의 실패를 웃는 것은 아니다."
       },
       {
         "ja": "出された食べ物を残すものじゃないよ。",
         "furigana": "{出|だ}された{食|た}べ{物|もの}を{残|のこ}すものじゃないよ。",
-        "en": "You shouldn't leave food that's been served to you."
+        "en": "You shouldn't leave food that's been served to you.",
+        "ko": "낸 음식을 남기는 것이 아닙니다."
       },
       {
         "ja": "夜遅くに人の家に電話をかけるものではありません。",
         "furigana": "{夜|よる}{遅|おそ}くに{人|ひと}の{家|いえ}に{電話|でんわ}をかけるものではありません。",
-        "en": "One shouldn't phone someone's home late at night."
+        "en": "One shouldn't phone someone's home late at night.",
+        "ko": "밤늦게 사람의 집에 전화를 걸지 않습니다."
       }
     ],
     "tags": [
@@ -204,17 +222,20 @@
       {
         "ja": "「どうして食べないの？」「だって、ピーマン嫌いなんだもん。」",
         "furigana": "「どうして{食|た}べないの？」「だって、ピーマン{嫌|きら}いなんだもん。」",
-        "en": "'Why aren't you eating?' 'Because I hate green peppers!'"
+        "en": "'Why aren't you eating?' 'Because I hate green peppers!'",
+        "ko": "\"왜 먹지 않아?\" \"그래도 피망 싫어.\""
       },
       {
         "ja": "一人で行けるよ。もう子どもじゃないもん。",
         "furigana": "{一人|ひとり}で{行|い}けるよ。もう{子|こ}どもじゃないもん。",
-        "en": "I can go by myself. I'm not a kid anymore!"
+        "en": "I can go by myself. I'm not a kid anymore!",
+        "ko": "혼자 갈 수 있어. 이제 아이가 아니야."
       },
       {
         "ja": "ケーキ、全部食べちゃった。だって、すごくおいしかったんだもん。",
         "furigana": "ケーキ、{全部|ぜんぶ}{食|た}べちゃった。だって、すごくおいしかったんだもん。",
-        "en": "I ate the whole cake. Well, it was just so good!"
+        "en": "I ate the whole cake. Well, it was just so good!",
+        "ko": "케이크, 전부 먹어 버렸다. 왜냐하면 정말 맛있었습니다."
       }
     ],
     "tags": [
@@ -236,17 +257,20 @@
       {
         "ja": "道がすごく混んでいたものだから、約束の時間に間に合わなかった。",
         "furigana": "{道|みち}がすごく{混|こ}んでいたものだから、{約束|やくそく}の{時間|じかん}に{間|ま}に{合|あ}わなかった。",
-        "en": "The roads were really crowded, so I couldn't make it on time."
+        "en": "The roads were really crowded, so I couldn't make it on time.",
+        "ko": "길이 굉장히 혼잡했기 때문에 약속 시간에 늦지 않았다."
       },
       {
         "ja": "すみません、急いでいたもので、書類を持ってくるのを忘れてしまいました。",
         "furigana": "すみません、{急|いそ}いでいたもので、{書類|しょるい}を{持|も}ってくるのを{忘|わす}れてしまいました。",
-        "en": "I'm sorry, I was in such a hurry that I forgot to bring the documents."
+        "en": "I'm sorry, I was in such a hurry that I forgot to bring the documents.",
+        "ko": "죄송합니다. 서둘러서 서류를 가져오는 것을 잊어버렸습니다."
       },
       {
         "ja": "初めての海外旅行だったものだから、見るものすべてが珍しかった。",
         "furigana": "{初|はじ}めての{海外|かいがい}{旅行|りょこう}だったものだから、{見|み}るものすべてが{珍|めずら}しかった。",
-        "en": "It was my first trip abroad, so everything I saw seemed new."
+        "en": "It was my first trip abroad, so everything I saw seemed new.",
+        "ko": "첫 해외여행이었기 때문에 보는 모든 것이 드물었다."
       }
     ],
     "tags": [
@@ -267,17 +291,20 @@
       {
         "ja": "日本語が上手になりたいなら、毎日少しずつでも話すことだ。",
         "furigana": "{日本語|にほんご}が{上手|じょうず}になりたいなら、{毎日|まいにち}{少|すこ}しずつでも{話|はな}すことだ。",
-        "en": "If you want to get good at Japanese, you should speak it every day, even just a little."
+        "en": "If you want to get good at Japanese, you should speak it every day, even just a little.",
+        "ko": "일본어가 잘되고 싶다면 매일 조금씩이라도 말하는 것이다."
       },
       {
         "ja": "風邪を早く治したければ、無理をしないでゆっくり休むことです。",
         "furigana": "{風邪|かぜ}を{早|はや}く{治|なお}したければ、{無理|むり}をしないでゆっくり{休|やす}むことです。",
-        "en": "If you want to get over your cold quickly, the best thing is not to push yourself and to rest well."
+        "en": "If you want to get over your cold quickly, the best thing is not to push yourself and to rest well.",
+        "ko": "감기를 빨리 치료하고 싶다면 무리하지 않고 천천히 쉬는 것입니다."
       },
       {
         "ja": "人の話は最後までよく聞くことだ。",
         "furigana": "{人|ひと}の{話|はなし}は{最後|さいご}までよく{聞|き}くことだ。",
-        "en": "You should always listen carefully to what people say, right to the end."
+        "en": "You should always listen carefully to what people say, right to the end.",
+        "ko": "사람의 이야기는 끝까지 잘 듣는 것이다."
       }
     ],
     "tags": [
@@ -298,17 +325,20 @@
       {
         "ja": "簡単な手術ですから、そんなに心配することはありませんよ。",
         "furigana": "{簡単|かんたん}な{手術|しゅじゅつ}ですから、そんなに{心配|しんぱい}することはありませんよ。",
-        "en": "It's a simple operation, so there's no need to worry so much."
+        "en": "It's a simple operation, so there's no need to worry so much.",
+        "ko": "간단한 수술이므로 그렇게 걱정할 필요가 없습니다."
       },
       {
         "ja": "駅までは歩いて五分だから、タクシーを使うことはない。",
         "furigana": "{駅|えき}までは{歩|ある}いて{五|ご}{分|ふん}だから、タクシーを{使|つか}うことはない。",
-        "en": "The station is a five-minute walk, so there's no need to take a taxi."
+        "en": "The station is a five-minute walk, so there's no need to take a taxi.",
+        "ko": "역까지는 걸어 오분이니까 택시를 쓰지 않는다."
       },
       {
         "ja": "一回失敗したくらいで、あきらめることはないよ。",
         "furigana": "{一回|いっかい}{失敗|しっぱい}したくらいで、あきらめることはないよ。",
-        "en": "There's no need to give up just because you failed once."
+        "en": "There's no need to give up just because you failed once.",
+        "ko": "한 번 실패했을 정도로 포기하지 않을거야."
       }
     ],
     "tags": [
@@ -331,17 +361,20 @@
       {
         "ja": "健康のために、週に三回はジムに通うことにしている。",
         "furigana": "{健康|けんこう}のために、{週|しゅう}に{三|さん}{回|かい}はジムに{通|かよ}うことにしている。",
-        "en": "For my health, I make it a rule to go to the gym at least three times a week."
+        "en": "For my health, I make it a rule to go to the gym at least three times a week.",
+        "ko": "건강을 위해 일주일에 세 번 체육관에 다니기로 결정했습니다."
       },
       {
         "ja": "夜十時以降は、スマホを見ないことにしています。",
         "furigana": "{夜|よる}{十|じゅう}{時|じ}{以降|いこう}は、スマホを{見|み}ないことにしています。",
-        "en": "I make a point of not looking at my phone after 10 p.m."
+        "en": "I make a point of not looking at my phone after 10 p.m.",
+        "ko": "밤 10시 이후는 스마트 폰을 보지 않기로하고 있습니다."
       },
       {
         "ja": "父は、給料日には家族を外食に連れていくことにしている。",
         "furigana": "{父|ちち}は、{給料|きゅうりょう}{日|び}には{家族|かぞく}を{外食|がいしょく}に{連|つ}れていくことにしている。",
-        "en": "My dad makes a point of taking the family out to eat on payday."
+        "en": "My dad makes a point of taking the family out to eat on payday.",
+        "ko": "아버지는 월급날에는 가족을 외식으로 데려가기로 했다."
       }
     ],
     "tags": [
@@ -363,17 +396,20 @@
       {
         "ja": "この寮では、夜十一時までに戻ることになっている。",
         "furigana": "この{寮|りょう}では、{夜|よる}{十|じゅう}{一|いち}{時|じ}までに{戻|もど}ることになっている。",
-        "en": "In this dorm, you're supposed to be back by 11 p.m."
+        "en": "In this dorm, you're supposed to be back by 11 p.m.",
+        "ko": "이 기숙사에서는 밤 11시까지 돌아오게 되어 있다."
       },
       {
         "ja": "来月から大阪の支社で働くことになっています。",
         "furigana": "{来月|らいげつ}から{大阪|おおさか}の{支社|ししゃ}で{働|はたら}くことになっています。",
-        "en": "It's been arranged that I'll work at the Osaka branch from next month."
+        "en": "It's been arranged that I'll work at the Osaka branch from next month.",
+        "ko": "다음 달부터 오사카의 지사에서 일할 예정입니다."
       },
       {
         "ja": "図書館の中では、飲み物を飲んではいけないことになっている。",
         "furigana": "{図書館|としょかん}の{中|なか}では、{飲|の}み{物|もの}を{飲|の}んではいけないことになっている。",
-        "en": "The rules say you can't have drinks inside the library."
+        "en": "The rules say you can't have drinks inside the library.",
+        "ko": "도서관 중에서는 음료를 마시지 말아야 한다."
       }
     ],
     "tags": [
@@ -395,17 +431,20 @@
       {
         "ja": "レポートは、来週の金曜日までに提出すること。",
         "furigana": "レポートは、{来週|らいしゅう}の{金曜日|きんようび}までに{提出|ていしゅつ}すること。",
-        "en": "Reports must be submitted by next Friday."
+        "en": "Reports must be submitted by next Friday.",
+        "ko": "보고서는 다음 주 금요일까지 제출할 것."
       },
       {
         "ja": "図書館の本に、線を引かないこと。",
         "furigana": "{図書館|としょかん}の{本|ほん}に、{線|せん}を{引|ひ}かないこと。",
-        "en": "Do not draw lines in library books."
+        "en": "Do not draw lines in library books.",
+        "ko": "도서관의 책에, 선을 그리지 않는 것."
       },
       {
         "ja": "試験中は、スマホの電源を切っておくこと。",
         "furigana": "{試験|しけん}{中|ちゅう}は、スマホの{電源|でんげん}を{切|き}っておくこと。",
-        "en": "Keep your phone switched off during the exam."
+        "en": "Keep your phone switched off during the exam.",
+        "ko": "시험 중에는 스마트 폰의 전원을 끄십시오."
       }
     ],
     "tags": [
@@ -429,17 +468,20 @@
       {
         "ja": "医者に、お酒を飲みすぎないように言われた。",
         "furigana": "{医者|いしゃ}に、お{酒|さけ}を{飲|の}みすぎないように{言|い}われた。",
-        "en": "My doctor told me not to drink too much."
+        "en": "My doctor told me not to drink too much.",
+        "ko": "의사에게 술을 너무 많이 마시지 말라고 했다."
       },
       {
         "ja": "隣の部屋の人に、夜は音楽の音を小さくするように頼んだ。",
         "furigana": "{隣|となり}の{部屋|へや}の{人|ひと}に、{夜|よる}は{音楽|おんがく}の{音|おと}を{小|ちい}さくするように{頼|たの}んだ。",
-        "en": "I asked the person next door to turn their music down at night."
+        "en": "I asked the person next door to turn their music down at night.",
+        "ko": "옆 방에 있는 사람에게, 밤에는 음악의 소리를 작게 하도록 요구했다."
       },
       {
         "ja": "山下さんに、明日の会議に遅れないように伝えてください。",
         "furigana": "{山下|やました}さんに、{明日|あした}の{会議|かいぎ}に{遅|おく}れないように{伝|つた}えてください。",
-        "en": "Please tell Ms. Yamashita not to be late for tomorrow's meeting."
+        "en": "Please tell Ms. Yamashita not to be late for tomorrow's meeting.",
+        "ko": "야마시타 씨에게 내일 회의에 늦지 않도록 알려주십시오."
       }
     ],
     "tags": [
@@ -462,17 +504,20 @@
       {
         "ja": "ドアを開けようとしたが、鍵がかかっていて開かなかった。",
         "furigana": "ドアを{開|あ}けようとしたが、{鍵|かぎ}がかかっていて{開|あ}かなかった。",
-        "en": "I tried to open the door, but it was locked and wouldn't open."
+        "en": "I tried to open the door, but it was locked and wouldn't open.",
+        "ko": "문을 열려고 했는데 열쇠가 걸려서 열리지 않았다."
       },
       {
         "ja": "家を出ようとしたとき、急に雨が降り出した。",
         "furigana": "{家|いえ}を{出|で}ようとしたとき、{急|きゅう}に{雨|あめ}が{降|ふ}り{出|だ}した。",
-        "en": "Just as I was about to leave the house, it suddenly started to rain."
+        "en": "Just as I was about to leave the house, it suddenly started to rain.",
+        "ko": "집을 나가려고했을 때 갑자기 비가 내렸다."
       },
       {
         "ja": "弟は何度注意しても、部屋を片付けようとしない。",
         "furigana": "{弟|おとうと}は{何|なん}{度|ど}{注意|ちゅうい}しても、{部屋|へや}を{片付|かたづ}けようとしない。",
-        "en": "No matter how many times I tell him, my younger brother won't even try to tidy his room."
+        "en": "No matter how many times I tell him, my younger brother won't even try to tidy his room.",
+        "ko": "동생은 몇 번 주의해도 방을 정리하려고 하지 않는다."
       }
     ],
     "tags": [
@@ -494,17 +539,20 @@
       {
         "ja": "この雨は、夕方までやみそうにない。",
         "furigana": "この{雨|あめ}は、{夕方|ゆうがた}までやみそうにない。",
-        "en": "This rain doesn't look like it will stop before evening."
+        "en": "This rain doesn't look like it will stop before evening.",
+        "ko": "이 비는 저녁까지 그리워하지 않는다."
       },
       {
         "ja": "仕事が多すぎて、今日中には終わりそうもない。",
         "furigana": "{仕事|しごと}が{多|おお}すぎて、{今日中|きょうじゅう}には{終|お}わりそうもない。",
-        "en": "I have way too much work; it doesn't look like I'll finish today."
+        "en": "I have way too much work; it doesn't look like I'll finish today.",
+        "ko": "일이 너무 많아서 오늘은 끝날 것 같지 않다."
       },
       {
         "ja": "こんなにたくさんの料理、二人では食べきれそうにないね。",
         "furigana": "こんなにたくさんの{料理|りょうり}、{二人|ふたり}では{食|た}べきれそうにないね。",
-        "en": "It doesn't look like the two of us will be able to finish all this food."
+        "en": "It doesn't look like the two of us will be able to finish all this food.",
+        "ko": "이렇게 많은 요리, 둘이서는 먹을 수 있을 것 같지 않아."
       }
     ],
     "tags": [
@@ -528,17 +576,20 @@
       {
         "ja": "この町の人口は、減る一方だ。",
         "furigana": "この{町|まち}の{人口|じんこう}は、{減|へ}る{一方|いっぽう}だ。",
-        "en": "This town's population just keeps on shrinking."
+        "en": "This town's population just keeps on shrinking.",
+        "ko": "이 마을의 인구는 줄어드는 한편이다."
       },
       {
         "ja": "物価は上がる一方なのに、給料は全然上がらない。",
         "furigana": "{物価|ぶっか}は{上|あ}がる{一方|いっぽう}なのに、{給料|きゅうりょう}は{全然|ぜんぜん}{上|あ}がらない。",
-        "en": "Prices keep going up and up, yet my salary doesn't rise at all."
+        "en": "Prices keep going up and up, yet my salary doesn't rise at all.",
+        "ko": "물가는 오르는 반면, 급료는 전혀 오르지 않는다."
       },
       {
         "ja": "勉強をさぼっていたら、成績は下がる一方だった。",
         "furigana": "{勉強|べんきょう}をさぼっていたら、{成績|せいせき}は{下|さ}がる{一方|いっぽう}だった。",
-        "en": "Since I kept skipping my studies, my grades just kept dropping."
+        "en": "Since I kept skipping my studies, my grades just kept dropping.",
+        "ko": "공부를 거슬러 올라가면 성적은 떨어지는 한편이었다."
       }
     ],
     "tags": [
@@ -561,17 +612,20 @@
       {
         "ja": "インターネットは便利な一方で、危険な面もある。",
         "furigana": "インターネットは{便利|べんり}な{一方|いっぽう}で、{危険|きけん}な{面|めん}もある。",
-        "en": "The internet is convenient, but on the other hand it has its dangers."
+        "en": "The internet is convenient, but on the other hand it has its dangers.",
+        "ko": "인터넷은 편리하지만 위험한 면도 있다."
       },
       {
         "ja": "この会社は給料が高い一方で、休みがとても少ない。",
         "furigana": "この{会社|かいしゃ}は{給料|きゅうりょう}が{高|たか}い{一方|いっぽう}で、{休|やす}みがとても{少|すく}ない。",
-        "en": "This company pays well, but on the other hand there are very few days off."
+        "en": "This company pays well, but on the other hand there are very few days off.",
+        "ko": "이 회사는 월급이 높은 반면 휴가가 매우 적다."
       },
       {
         "ja": "彼女は会社で働く一方で、夜は大学院に通っている。",
         "furigana": "{彼女|かのじょ}は{会社|かいしゃ}で{働|はたら}く{一方|いっぽう}で、{夜|よる}は{大学院|だいがくいん}に{通|かよ}っている。",
-        "en": "While working at a company, she also attends graduate school in the evenings."
+        "en": "While working at a company, she also attends graduate school in the evenings.",
+        "ko": "그녀는 회사에서 일하는 반면에, 밤은 대학원에 다니고 있다."
       }
     ],
     "tags": [
@@ -594,17 +648,20 @@
       {
         "ja": "お客様に対して、そんな言い方をしてはいけない。",
         "furigana": "お{客様|きゃくさま}に{対|たい}して、そんな{言|い}い{方|かた}をしてはいけない。",
-        "en": "You mustn't speak like that to a customer."
+        "en": "You mustn't speak like that to a customer.",
+        "ko": "고객에게 그런 말을 하지 말라."
       },
       {
         "ja": "新しい税金に対する反対の声が高まっている。",
         "furigana": "{新|あたら}しい{税金|ぜいきん}に{対|たい}する{反対|はんたい}の{声|こえ}が{高|たか}まっている。",
-        "en": "Opposition to the new tax is growing."
+        "en": "Opposition to the new tax is growing.",
+        "ko": "새로운 세금에 대한 반대의 목소리가 높아지고 있다."
       },
       {
         "ja": "東京は晴れているのに対して、大阪は朝から大雨だ。",
         "furigana": "{東京|とうきょう}は{晴|は}れているのに{対|たい}して、{大阪|おおさか}は{朝|あさ}から{大雨|おおあめ}だ。",
-        "en": "Whereas it's sunny in Tokyo, it's been pouring in Osaka since morning."
+        "en": "Whereas it's sunny in Tokyo, it's been pouring in Osaka since morning.",
+        "ko": "도쿄는 맑은 반면 오사카는 아침부터 폭우다."
       }
     ],
     "tags": [
@@ -626,17 +683,20 @@
       {
         "ja": "今日の授業では、日本の食文化について話し合いました。",
         "furigana": "{今日|きょう}の{授業|じゅぎょう}では、{日本|にほん}の{食|しょく}{文化|ぶんか}について{話|はな}し{合|あ}いました。",
-        "en": "In today's class, we discussed Japanese food culture."
+        "en": "In today's class, we discussed Japanese food culture.",
+        "ko": "오늘의 수업에서는 일본의 식문화에 대해 토론했습니다."
       },
       {
         "ja": "新しい商品についての質問は、こちらのメールアドレスまでお送りください。",
         "furigana": "{新|あたら}しい{商品|しょうひん}についての{質問|しつもん}は、こちらのメールアドレスまでお{送|おく}りください。",
-        "en": "Please send any questions about the new product to this email address."
+        "en": "Please send any questions about the new product to this email address.",
+        "ko": "새로운 상품에 관한 질문은 이쪽의 이메일 주소로 보내주십시오."
       },
       {
         "ja": "その事件について、警察はまだ何も発表していない。",
         "furigana": "その{事件|じけん}について、{警察|けいさつ}はまだ{何|なに}も{発表|はっぴょう}していない。",
-        "en": "The police haven't announced anything about the incident yet."
+        "en": "The police haven't announced anything about the incident yet.",
+        "ko": "그 사건에 대해 경찰은 아직 아무것도 발표하지 않았다."
       }
     ],
     "tags": [
@@ -658,17 +718,20 @@
       {
         "ja": "この橋は、有名な建築家によって設計された。",
         "furigana": "この{橋|はし}は、{有名|ゆうめい}な{建築|けんちく}{家|か}によって{設計|せっけい}された。",
-        "en": "This bridge was designed by a famous architect."
+        "en": "This bridge was designed by a famous architect.",
+        "ko": "이 다리는 유명한 건축가에 의해 설계되었습니다."
       },
       {
         "ja": "台風による被害は、まだ正確には分かっていない。",
         "furigana": "{台風|たいふう}による{被害|ひがい}は、まだ{正確|せいかく}には{分|わ}かっていない。",
-        "en": "The full extent of the damage caused by the typhoon is still unknown."
+        "en": "The full extent of the damage caused by the typhoon is still unknown.",
+        "ko": "태풍에 의한 피해는 아직 정확하게는 알 수 없다."
       },
       {
         "ja": "国によって、食事のマナーはずいぶん違う。",
         "furigana": "{国|くに}によって、{食事|しょくじ}のマナーはずいぶん{違|ちが}う。",
-        "en": "Table manners differ quite a lot from country to country."
+        "en": "Table manners differ quite a lot from country to country.",
+        "ko": "나라에 따라 식사 매너는 상당히 다르다."
       }
     ],
     "tags": [
@@ -691,17 +754,20 @@
       {
         "ja": "天気予報によると、週末は大雪になるそうだ。",
         "furigana": "{天気|てんき}{予報|よほう}によると、{週末|しゅうまつ}は{大雪|おおゆき}になるそうだ。",
-        "en": "According to the weather forecast, there's going to be heavy snow this weekend."
+        "en": "According to the weather forecast, there's going to be heavy snow this weekend.",
+        "ko": "일기 예보에 따르면 주말은 폭설이 될 것 같다."
       },
       {
         "ja": "ニュースによれば、事故の原因はまだ分かっていないらしい。",
         "furigana": "ニュースによれば、{事故|じこ}の{原因|げんいん}はまだ{分|わ}かっていないらしい。",
-        "en": "According to the news, the cause of the accident still isn't known."
+        "en": "According to the news, the cause of the accident still isn't known.",
+        "ko": "뉴스에 따르면 사고의 원인은 아직 모르는 것 같다."
       },
       {
         "ja": "姉の話によると、あのレストランは予約がないと入れないということだ。",
         "furigana": "{姉|あね}の{話|はなし}によると、あのレストランは{予約|よやく}がないと{入|はい}れないということだ。",
-        "en": "According to my sister, you can't get into that restaurant without a reservation."
+        "en": "According to my sister, you can't get into that restaurant without a reservation.",
+        "ko": "누나의 이야기에 따르면, 그 레스토랑은 예약이 없으면 넣지 않는다는 것이다."
       }
     ],
     "tags": [
@@ -722,17 +788,20 @@
       {
         "ja": "この映画は子どもばかりでなく、大人も楽しめる。",
         "furigana": "この{映画|えいが}は{子|こ}どもばかりでなく、{大人|おとな}も{楽|たの}しめる。",
-        "en": "Not only children but adults too can enjoy this film."
+        "en": "Not only children but adults too can enjoy this film.",
+        "ko": "이 영화는 아이뿐 아니라 어른도 즐길 수 있다."
       },
       {
         "ja": "新しいスマホは画面が大きいばかりでなく、電池も長持ちする。",
         "furigana": "{新|あたら}しいスマホは{画面|がめん}が{大|おお}きいばかりでなく、{電池|でんち}も{長持|ながも}ちする。",
-        "en": "The new smartphone not only has a big screen, its battery lasts a long time too."
+        "en": "The new smartphone not only has a big screen, its battery lasts a long time too.",
+        "ko": "새로운 스마트 폰은 화면이 클뿐만 아니라 배터리도 오래갑니다."
       },
       {
         "ja": "運動は体にいいばかりでなく、ストレスを減らす効果もある。",
         "furigana": "{運動|うんどう}は{体|からだ}にいいばかりでなく、ストレスを{減|へ}らす{効果|こうか}もある。",
-        "en": "Exercise is not only good for your body, it also helps reduce stress."
+        "en": "Exercise is not only good for your body, it also helps reduce stress.",
+        "ko": "운동은 몸에 좋을 뿐 아니라 스트레스를 줄이는 효과도 있다."
       }
     ],
     "tags": [
@@ -753,17 +822,20 @@
       {
         "ja": "この店は料理がおいしいだけでなく、値段も安い。",
         "furigana": "この{店|みせ}は{料理|りょうり}がおいしいだけでなく、{値段|ねだん}も{安|やす}い。",
-        "en": "This restaurant not only has delicious food, it's cheap too."
+        "en": "This restaurant not only has delicious food, it's cheap too.",
+        "ko": "이 가게는 요리가 맛있을 뿐만 아니라 가격도 싸다."
       },
       {
         "ja": "地震の後、水だけでなく電気も止まってしまった。",
         "furigana": "{地震|じしん}の{後|あと}、{水|みず}だけでなく{電気|でんき}も{止|と}まってしまった。",
-        "en": "After the earthquake, not only the water but also the electricity was cut off."
+        "en": "After the earthquake, not only the water but also the electricity was cut off.",
+        "ko": "지진 후 물뿐만 아니라 전기도 멈췄다."
       },
       {
         "ja": "彼女は歌が上手なだけでなく、自分で曲も作っている。",
         "furigana": "{彼女|かのじょ}は{歌|うた}が{上手|じょうず}なだけでなく、{自分|じぶん}で{曲|きょく}も{作|つく}っている。",
-        "en": "She not only sings well but also writes her own songs."
+        "en": "She not only sings well but also writes her own songs.",
+        "ko": "그녀는 노래가 능숙할 뿐만 아니라 스스로 곡도 만들고 있다."
       }
     ],
     "tags": [
@@ -784,17 +856,20 @@
       {
         "ja": "彼女は歌も歌えば、ピアノも弾く。",
         "furigana": "{彼女|かのじょ}は{歌|うた}も{歌|うた}えば、ピアノも{弾|ひ}く。",
-        "en": "She both sings and plays the piano."
+        "en": "She both sings and plays the piano.",
+        "ko": "그녀는 노래도 노래하면 피아노도 연주한다."
       },
       {
         "ja": "この町には、海もあれば山もある。",
         "furigana": "この{町|まち}には、{海|うみ}もあれば{山|やま}もある。",
-        "en": "This town has both the sea and the mountains."
+        "en": "This town has both the sea and the mountains.",
+        "ko": "이 마을에는 바다도 있고 산도 있다."
       },
       {
         "ja": "人生には、いいときもあれば悪いときもある。",
         "furigana": "{人生|じんせい}には、いいときもあれば{悪|わる}いときもある。",
-        "en": "In life there are good times and there are bad times."
+        "en": "In life there are good times and there are bad times.",
+        "ko": "인생에는 좋은 때도 있고 나쁜 때도 있다."
       }
     ],
     "tags": [
@@ -815,17 +890,20 @@
       {
         "ja": "今日は春らしい暖かい一日だった。",
         "furigana": "{今日|きょう}は{春|はる}らしい{暖|あたた}かい{一|いち}{日|にち}だった。",
-        "en": "Today was a warm, truly spring-like day."
+        "en": "Today was a warm, truly spring-like day.",
+        "ko": "오늘은 봄같은 따뜻한 하루였다."
       },
       {
         "ja": "文句ばかり言うなんて、君らしくないね。",
         "furigana": "{文句|もんく}ばかり{言|い}うなんて、{君|きみ}らしくないね。",
-        "en": "Complaining all the time isn't like you."
+        "en": "Complaining all the time isn't like you.",
+        "ko": "불평만 말한다니, 너답지 않아."
       },
       {
         "ja": "もっと学生らしい服装で来てください。",
         "furigana": "もっと{学生|がくせい}らしい{服装|ふくそう}で{来|き}てください。",
-        "en": "Please come dressed in a way more appropriate for a student."
+        "en": "Please come dressed in a way more appropriate for a student.",
+        "ko": "더 학생다운 복장으로 오세요."
       }
     ],
     "tags": [
@@ -847,17 +925,20 @@
       {
         "ja": "この服はちょっと子どもっぽいから、別のにしよう。",
         "furigana": "この{服|ふく}はちょっと{子|こ}どもっぽいから、{別|べつ}のにしよう。",
-        "en": "This outfit is a bit childish, so let's go with a different one."
+        "en": "This outfit is a bit childish, so let's go with a different one.",
+        "ko": "이 옷은 조금 아이 같으니까, 별로 하자."
       },
       {
         "ja": "最近忘れっぽくなって、困っている。",
         "furigana": "{最近|さいきん}{忘|わす}れっぽくなって、{困|こま}っている。",
-        "en": "I've become forgetful lately, and it's a problem."
+        "en": "I've become forgetful lately, and it's a problem.",
+        "ko": "최근 잊어버려서 곤란하다."
       },
       {
         "ja": "あの白っぽいビルが、新しい市役所です。",
         "furigana": "あの{白|しろ}っぽいビルが、{新|あたら}しい{市役所|しやくしょ}です。",
-        "en": "That whitish building is the new city hall."
+        "en": "That whitish building is the new city hall.",
+        "ko": "그 흰 빌딩이 새로운 시청입니다."
       }
     ],
     "tags": [
@@ -881,17 +962,20 @@
       {
         "ja": "日本の伝統的な料理を食べてみたい。",
         "furigana": "{日本|にほん}の{伝統|でんとう}{的|てき}な{料理|りょうり}を{食|た}べてみたい。",
-        "en": "I'd like to try traditional Japanese food."
+        "en": "I'd like to try traditional Japanese food.",
+        "ko": "일본의 전통 요리를 먹고 싶다."
       },
       {
         "ja": "この問題は、経済的な理由で解決が難しい。",
         "furigana": "この{問題|もんだい}は、{経済|けいざい}{的|てき}な{理由|りゆう}で{解決|かいけつ}が{難|むずか}しい。",
-        "en": "This problem is hard to solve for economic reasons."
+        "en": "This problem is hard to solve for economic reasons.",
+        "ko": "이 문제는 경제적인 이유로 해결하기 어렵다."
       },
       {
         "ja": "個人的には、この案に賛成です。",
         "furigana": "{個人|こじん}{的|てき}には、この{案|あん}に{賛成|さんせい}です。",
-        "en": "Personally, I'm in favor of this plan."
+        "en": "Personally, I'm in favor of this plan.",
+        "ko": "개인적으로는, 이 안에 찬성입니다."
       }
     ],
     "tags": [
@@ -913,17 +997,20 @@
       {
         "ja": "私も、あなたのような優しい看護師になりたいです。",
         "furigana": "{私|わたし}も、あなたのような{優|やさ}しい{看護|かんご}{師|し}になりたいです。",
-        "en": "I want to become a kind nurse like you, too."
+        "en": "I want to become a kind nurse like you, too.",
+        "ko": "나도 너 같은 부드러운 간호사가되고 싶다."
       },
       {
         "ja": "先生が言ったように、この文法はテストによく出る。",
         "furigana": "{先生|せんせい}が{言|い}ったように、この{文法|ぶんぽう}はテストによく{出|で}る。",
-        "en": "As the teacher said, this grammar point often comes up on tests."
+        "en": "As the teacher said, this grammar point often comes up on tests.",
+        "ko": "박사가 말한 대로, 이 문법은 시험에 잘 나온다."
       },
       {
         "ja": "東京のような大きな都市では、家賃がとても高い。",
         "furigana": "{東京|とうきょう}のような{大|おお}きな{都市|とし}では、{家賃|やちん}がとても{高|たか}い。",
-        "en": "In big cities such as Tokyo, rent is very high."
+        "en": "In big cities such as Tokyo, rent is very high.",
+        "ko": "도쿄와 같은 큰 도시에서는 집세가 매우 높다."
       }
     ],
     "tags": [
@@ -946,17 +1033,20 @@
       {
         "ja": "この部屋は広くて明るくて、まるでホテルのようだ。",
         "furigana": "この{部屋|へや}は{広|ひろ}くて{明|あか}るくて、まるでホテルのようだ。",
-        "en": "This room is so big and bright, it's just like a hotel."
+        "en": "This room is so big and bright, it's just like a hotel.",
+        "ko": "이 방은 넓고 밝고 마치 호텔처럼 보입니다."
       },
       {
         "ja": "久しぶりに会った友達は、まるで別人のように変わっていた。",
         "furigana": "{久|ひさ}しぶりに{会|あ}った{友達|ともだち}は、まるで{別人|べつじん}のように{変|か}わっていた。",
-        "en": "My friend, whom I hadn't seen in ages, had changed so much she seemed like a different person."
+        "en": "My friend, whom I hadn't seen in ages, had changed so much she seemed like a different person.",
+        "ko": "오랜만에 만난 친구는 마치 다른 사람처럼 바뀌었다."
       },
       {
         "ja": "三月なのに、今日はまるで真夏のように暑い。",
         "furigana": "{三月|さんがつ}なのに、{今日|きょう}はまるで{真夏|まなつ}のように{暑|あつ}い。",
-        "en": "It's only March, but today it's as hot as midsummer."
+        "en": "It's only March, but today it's as hot as midsummer.",
+        "ko": "3월인데, 오늘은 마치 한여름처럼 뜨겁다."
       }
     ],
     "tags": [
@@ -979,17 +1069,20 @@
       {
         "ja": "隣の家は何日も電気が消えている。家族で旅行に出かけたに違いない。",
         "furigana": "{隣|となり}の{家|いえ}は{何|なん}{日|にち}も{電気|でんき}が{消|き}えている。{家族|かぞく}で{旅行|りょこう}に{出|で}かけたに{違|ちが}いない。",
-        "en": "The lights next door have been off for days. The family must have gone on a trip."
+        "en": "The lights next door have been off for days. The family must have gone on a trip.",
+        "ko": "옆집은 며칠 동안 전기가 사라지고 있다. 가족으로 여행을 떠났음에 틀림없다."
       },
       {
         "ja": "こんなに人が並んでいるんだから、この店のラーメンはおいしいに違いない。",
         "furigana": "こんなに{人|ひと}が{並|なら}んでいるんだから、この{店|みせ}のラーメンはおいしいに{違|ちが}いない。",
-        "en": "With this many people in line, the ramen here must be good."
+        "en": "With this many people in line, the ramen here must be good.",
+        "ko": "이렇게 사람이 줄지어 있기 때문에, 이 가게의 라면은 맛있음에 틀림없다."
       },
       {
         "ja": "この手紙の字は、父の字に違いない。",
         "furigana": "この{手紙|てがみ}の{字|じ}は、{父|ちち}の{字|じ}に{違|ちが}いない。",
-        "en": "The handwriting on this letter is surely my father's."
+        "en": "The handwriting on this letter is surely my father's.",
+        "ko": "이 편지의 글자는 아버지의 글자일 것입니다."
       }
     ],
     "tags": [
@@ -1012,17 +1105,20 @@
       {
         "ja": "練習もしないで試合に出たら、負けるに決まっている。",
         "furigana": "{練習|れんしゅう}もしないで{試合|しあい}に{出|で}たら、{負|ま}けるに{決|き}まっている。",
-        "en": "If you play the match without practicing, you're bound to lose."
+        "en": "If you play the match without practicing, you're bound to lose.",
+        "ko": "연습도 하지 않고 경기에 나오면 지는 것으로 정해져 있다."
       },
       {
         "ja": "一人で富士山に登るなんて、お母さんが心配するに決まってるでしょう。",
         "furigana": "{一人|ひとり}で{富士山|ふじさん}に{登|のぼ}るなんて、お{母|かあ}さんが{心配|しんぱい}するに{決|き}まってるでしょう。",
-        "en": "Climbing Mt. Fuji alone? Of course your mother's going to worry."
+        "en": "Climbing Mt. Fuji alone? Of course your mother's going to worry.",
+        "ko": "혼자서 후지산에 오르다니, 엄마가 걱정하기로 정해져 있겠지요."
       },
       {
         "ja": "そんなうまい話、うそに決まっているよ。",
         "furigana": "そんなうまい{話|はなし}、うそに{決|き}まっているよ。",
-        "en": "A deal that good? It's got to be a lie."
+        "en": "A deal that good? It's got to be a lie.",
+        "ko": "그런 좋은 이야기, 거짓말로 정해져 있어."
       }
     ],
     "tags": [
@@ -1046,17 +1142,20 @@
       {
         "ja": "この人とは、どこかで会ったことがある気がする。",
         "furigana": "この{人|ひと}とは、どこかで{会|あ}ったことがある{気|き}がする。",
-        "en": "I feel like I've met this person somewhere before."
+        "en": "I feel like I've met this person somewhere before.",
+        "ko": "이 사람은 어딘가에서 만난 적이 있다고 생각한다."
       },
       {
         "ja": "今日は何か、いいことがありそうな気がする。",
         "furigana": "{今日|きょう}は{何|なに}か、いいことがありそうな{気|き}がする。",
-        "en": "I have a feeling something good is going to happen today."
+        "en": "I have a feeling something good is going to happen today.",
+        "ko": "오늘은 뭔가 좋은 일이 있을 것 같다."
       },
       {
         "ja": "ドアの鍵をかけ忘れたような気がして、家に戻った。",
         "furigana": "ドアの{鍵|かぎ}をかけ{忘|わす}れたような{気|き}がして、{家|いえ}に{戻|もど}った。",
-        "en": "I had a feeling I'd forgotten to lock the door, so I went back home."
+        "en": "I had a feeling I'd forgotten to lock the door, so I went back home.",
+        "ko": "문 열쇠를 걸고 잊어버린 것 같아서 집으로 돌아왔다."
       }
     ],
     "tags": [
@@ -1078,17 +1177,20 @@
       {
         "ja": "けさは朝ご飯を食べずに家を出た。",
         "furigana": "けさは{朝|あさ}ご{飯|はん}を{食|た}べずに{家|いえ}を{出|で}た。",
-        "en": "This morning I left home without eating breakfast."
+        "en": "This morning I left home without eating breakfast.",
+        "ko": "케사는 아침밥을 먹지 않고 집을 나왔다."
       },
       {
         "ja": "辞書を使わずに、この新聞記事が読めますか。",
         "furigana": "{辞書|じしょ}を{使|つか}わずに、この{新聞|しんぶん}{記事|きじ}が{読|よ}めますか。",
-        "en": "Can you read this newspaper article without using a dictionary?"
+        "en": "Can you read this newspaper article without using a dictionary?",
+        "ko": "사전을 사용하지 않고이 신문 기사를 읽을 수 있습니까?"
       },
       {
         "ja": "彼は誰にも相談せずに、会社を辞めてしまった。",
         "furigana": "{彼|かれ}は{誰|だれ}にも{相談|そうだん}せずに、{会社|かいしゃ}を{辞|や}めてしまった。",
-        "en": "He quit the company without consulting anyone."
+        "en": "He quit the company without consulting anyone.",
+        "ko": "그는 아무도 상담하지 않고 회사를 그만두었다."
       }
     ],
     "tags": [
@@ -1111,17 +1213,20 @@
       {
         "ja": "エアコンをつけたまま寝てしまい、風邪をひいた。",
         "furigana": "エアコンをつけたまま{寝|ね}てしまい、{風邪|かぜ}をひいた。",
-        "en": "I fell asleep with the air conditioner on and caught a cold."
+        "en": "I fell asleep with the air conditioner on and caught a cold.",
+        "ko": "에어컨을 붙인 채 자고 버려 감기에 걸렸다."
       },
       {
         "ja": "この町は、私が子どもだったころのままだ。",
         "furigana": "この{町|まち}は、{私|わたし}が{子|こ}どもだったころのままだ。",
-        "en": "This town is just as it was when I was a child."
+        "en": "This town is just as it was when I was a child.",
+        "ko": "이 마을은, 내가 아이였던 무렵의 아직."
       },
       {
         "ja": "靴のまま部屋に入らないでください。",
         "furigana": "{靴|くつ}のまま{部屋|へや}に{入|はい}らないでください。",
-        "en": "Please don't come into the room with your shoes on."
+        "en": "Please don't come into the room with your shoes on.",
+        "ko": "신발을 그대로 방에 들어가지 마십시오."
       }
     ],
     "tags": [
@@ -1143,17 +1248,20 @@
       {
         "ja": "若いうちに、いろいろな国を旅行したほうがいい。",
         "furigana": "{若|わか}いうちに、いろいろな{国|くに}を{旅行|りょこう}したほうがいい。",
-        "en": "You should travel to lots of countries while you're young."
+        "en": "You should travel to lots of countries while you're young.",
+        "ko": "젊을 때 여러 나라를 여행하는 것이 좋습니다."
       },
       {
         "ja": "スープが冷めないうちに、どうぞ召し上がってください。",
         "furigana": "スープが{冷|さ}めないうちに、どうぞ{召|め}し{上|あ}がってください。",
-        "en": "Please have your soup before it gets cold."
+        "en": "Please have your soup before it gets cold.",
+        "ko": "국물이 식지 않는 동안 드세요."
       },
       {
         "ja": "音楽を聞いているうちに、いつの間にか眠ってしまった。",
         "furigana": "{音楽|おんがく}を{聞|き}いているうちに、いつの{間|ま}にか{眠|ねむ}ってしまった。",
-        "en": "While I was listening to music, I fell asleep before I knew it."
+        "en": "While I was listening to music, I fell asleep before I knew it.",
+        "ko": "음악을 듣고 있는 동안 어느새 잠들어 버렸다."
       }
     ],
     "tags": [
@@ -1175,17 +1283,20 @@
       {
         "ja": "出かけようとしているところに、友達から電話がかかってきた。",
         "furigana": "{出|で}かけようとしているところに、{友達|ともだち}から{電話|でんわ}がかかってきた。",
-        "en": "Just as I was about to go out, a friend called."
+        "en": "Just as I was about to go out, a friend called.",
+        "ko": "나가려고 하는 곳에 친구로부터 전화가 왔다."
       },
       {
         "ja": "みんなで君の話をしているところへ、ちょうど君が来た。",
         "furigana": "みんなで{君|きみ}の{話|はなし}をしているところへ、ちょうど{君|きみ}が{来|き}た。",
-        "en": "Just as we were all talking about you, you showed up."
+        "en": "Just as we were all talking about you, you showed up.",
+        "ko": "모두 너의 이야기를 하고 있는 곳에, 정확히 너가 왔다."
       },
       {
         "ja": "授業中にスマホを見ているところを、先生に見られてしまった。",
         "furigana": "{授業|じゅぎょう}{中|ちゅう}にスマホを{見|み}ているところを、{先生|せんせい}に{見|み}られてしまった。",
-        "en": "The teacher caught me looking at my phone during class."
+        "en": "The teacher caught me looking at my phone during class.",
+        "ko": "수업 중에 스마트폰을 보고 있는 곳을 선생님에게 보여 버렸다."
       }
     ],
     "tags": [
@@ -1206,17 +1317,20 @@
       {
         "ja": "日本語は、勉強すればするほど面白くなる。",
         "furigana": "{日本語|にほんご}は、{勉強|べんきょう}すればするほど{面白|おもしろ}くなる。",
-        "en": "The more you study Japanese, the more interesting it gets."
+        "en": "The more you study Japanese, the more interesting it gets.",
+        "ko": "일본어는 공부하면 할수록 재미있게 된다."
       },
       {
         "ja": "スマホの画面は大きければ大きいほど見やすいが、持ち歩くのは大変だ。",
         "furigana": "スマホの{画面|がめん}は{大|おお}きければ{大|おお}きいほど{見|み}やすいが、{持|も}ち{歩|ある}くのは{大変|たいへん}だ。",
-        "en": "The bigger a phone screen, the easier it is to see, but it's a pain to carry around."
+        "en": "The bigger a phone screen, the easier it is to see, but it's a pain to carry around.",
+        "ko": "스마트폰의 화면은 클수록 보기 쉽지만, 가지고 다니는 것은 힘들다."
       },
       {
         "ja": "部屋が静かなら静かなほど、よく眠れる。",
         "furigana": "{部屋|へや}が{静|しず}かなら{静|しず}かなほど、よく{眠|ねむ}れる。",
-        "en": "The quieter the room, the better I sleep."
+        "en": "The quieter the room, the better I sleep.",
+        "ko": "방이 조용하면 조용할수록 잘 잠을 잘 수 있다."
       }
     ],
     "tags": [
@@ -1239,17 +1353,20 @@
       {
         "ja": "昨日は、立っていられないほど疲れていた。",
         "furigana": "{昨日|きのう}は、{立|た}っていられないほど{疲|つか}れていた。",
-        "en": "Yesterday I was so tired I could hardly stand."
+        "en": "Yesterday I was so tired I could hardly stand.",
+        "ko": "어제는 서있을 수 없을 정도로 피곤했습니다."
       },
       {
         "ja": "試験に合格したと聞いて、涙が出るほどうれしかった。",
         "furigana": "{試験|しけん}に{合格|ごうかく}したと{聞|き}いて、{涙|なみだ}が{出|で}るほどうれしかった。",
-        "en": "When I heard I'd passed the exam, I was so happy I cried."
+        "en": "When I heard I'd passed the exam, I was so happy I cried.",
+        "ko": "시험에 합격했다고 듣고 눈물이 나올 정도로 기뻤다."
       },
       {
         "ja": "このあたりは、夜になると怖いほど静かだ。",
         "furigana": "このあたりは、{夜|よる}になると{怖|こわ}いほど{静|しず}かだ。",
-        "en": "At night this area gets so quiet it's scary."
+        "en": "At night this area gets so quiet it's scary.",
+        "ko": "이 근처는 밤이 되면 무서울 정도로 조용하다."
       }
     ],
     "tags": [
@@ -1270,17 +1387,20 @@
       {
         "ja": "おなかが痛くて、歩けないくらいだった。",
         "furigana": "おなかが{痛|いた}くて、{歩|ある}けないくらいだった。",
-        "en": "My stomach hurt so much I could barely walk."
+        "en": "My stomach hurt so much I could barely walk.",
+        "ko": "배가 아파서 걸을 수 없을 정도였다."
       },
       {
         "ja": "隣の部屋の音楽がうるさくて、自分の声も聞こえないぐらいだ。",
         "furigana": "{隣|となり}の{部屋|へや}の{音楽|おんがく}がうるさくて、{自分|じぶん}の{声|こえ}も{聞|き}こえないぐらいだ。",
-        "en": "The music next door is so loud I can't even hear my own voice."
+        "en": "The music next door is so loud I can't even hear my own voice.",
+        "ko": "옆방의 음악이 시끄럽고, 자신의 목소리도 들리지 않을 정도다."
       },
       {
         "ja": "自分の部屋ぐらい、自分で掃除しなさい。",
         "furigana": "{自分|じぶん}の{部屋|へや}ぐらい、{自分|じぶん}で{掃除|そうじ}しなさい。",
-        "en": "At least clean your own room yourself."
+        "en": "At least clean your own room yourself.",
+        "ko": "자신의 방 정도, 스스로 청소하십시오."
       }
     ],
     "tags": [
@@ -1302,17 +1422,20 @@
       {
         "ja": "忙しくて、昼ご飯を食べる時間さえなかった。",
         "furigana": "{忙|いそが}しくて、{昼|ひる}ご{飯|はん}を{食|た}べる{時間|じかん}さえなかった。",
-        "en": "I was so busy I didn't even have time to eat lunch."
+        "en": "I was so busy I didn't even have time to eat lunch.",
+        "ko": "바빠서 점심을 먹는 시간조차 없었다."
       },
       {
         "ja": "こんな簡単な問題は、小学生でさえ解ける。",
         "furigana": "こんな{簡単|かんたん}な{問題|もんだい}は、{小学生|しょうがくせい}でさえ{解|と}ける。",
-        "en": "Even an elementary school student could solve such an easy problem."
+        "en": "Even an elementary school student could solve such an easy problem.",
+        "ko": "이런 간단한 문제는 초등학생조차 풀 수 있다."
       },
       {
         "ja": "彼女は親友にさえ本当のことを話さなかった。",
         "furigana": "{彼女|かのじょ}は{親友|しんゆう}にさえ{本当|ほんとう}のことを{話|はな}さなかった。",
-        "en": "She didn't tell the truth even to her best friend."
+        "en": "She didn't tell the truth even to her best friend.",
+        "ko": "그녀는 가장 친한 친구조차도 진짜를 말하지 않았다."
       }
     ],
     "tags": [
@@ -1333,17 +1456,20 @@
       {
         "ja": "このアプリさえあれば、どこでも日本語の勉強ができる。",
         "furigana": "このアプリさえあれば、どこでも{日本語|にほんご}の{勉強|べんきょう}ができる。",
-        "en": "As long as you have this app, you can study Japanese anywhere."
+        "en": "As long as you have this app, you can study Japanese anywhere.",
+        "ko": "이 앱만 있으면 어디서나 일본어 공부를 할 수 있다."
       },
       {
         "ja": "時間さえあれば、もっと旅行に行きたいんですが。",
         "furigana": "{時間|じかん}さえあれば、もっと{旅行|りょこう}に{行|い}きたいんですが。",
-        "en": "If only I had the time, I'd love to travel more."
+        "en": "If only I had the time, I'd love to travel more.",
+        "ko": "시간만 있으면 더 여행을 가고 싶습니다."
       },
       {
         "ja": "薬を飲んで寝てさえいれば、すぐに治りますよ。",
         "furigana": "{薬|くすり}を{飲|の}んで{寝|ね}てさえいれば、すぐに{治|なお}りますよ。",
-        "en": "As long as you take your medicine and stay in bed, you'll be better in no time."
+        "en": "As long as you take your medicine and stay in bed, you'll be better in no time.",
+        "ko": "약을 마시고 자고만 있으면 곧 치료할 것입니다."
       }
     ],
     "tags": [
@@ -1364,17 +1490,21 @@
     "examples": [
       {
         "ja": "「いつもありがとう。」「いえ、こちらこそ。」",
-        "en": "'Thanks for everything.' 'No, thank you!'"
+        "en": "'Thanks for everything.' 'No, thank you!'",
+        "furigana": "「いつもありがとう。」「いえ、こちらこそ。」",
+        "ko": "「언제나 고마워.」 「아니, 이쪽이야말로.」"
       },
       {
         "ja": "今年こそ、たばこをやめるつもりだ。",
         "furigana": "{今年|ことし}こそ、たばこをやめるつもりだ。",
-        "en": "This year, for sure, I'm going to quit smoking."
+        "en": "This year, for sure, I'm going to quit smoking.",
+        "ko": "올해야 담배를 그만두겠다."
       },
       {
         "ja": "毎日の小さな努力こそが、大きな成功につながる。",
         "furigana": "{毎日|まいにち}の{小|ちい}さな{努力|どりょく}こそが、{大|おお}きな{成功|せいこう}につながる。",
-        "en": "It's precisely small daily efforts that lead to great success."
+        "en": "It's precisely small daily efforts that lead to great success.",
+        "ko": "매일의 작은 노력이야말로 큰 성공으로 이어진다."
       }
     ],
     "tags": [
@@ -1395,17 +1525,20 @@
       {
         "ja": "兄は、エンジニアとしてアメリカの会社で働いている。",
         "furigana": "{兄|あに}は、エンジニアとしてアメリカの{会社|かいしゃ}で{働|はたら}いている。",
-        "en": "My older brother works as an engineer at an American company."
+        "en": "My older brother works as an engineer at an American company.",
+        "ko": "형은 엔지니어로 미국 회사에서 일하고 있습니다."
       },
       {
         "ja": "この町は、温泉地として有名です。",
         "furigana": "この{町|まち}は、{温泉|おんせん}{地|ち}として{有名|ゆうめい}です。",
-        "en": "This town is famous as a hot-spring resort."
+        "en": "This town is famous as a hot-spring resort.",
+        "ko": "이 마을은 온천지로 유명합니다."
       },
       {
         "ja": "社会人としての責任を持って行動してください。",
         "furigana": "{社会|しゃかい}{人|じん}としての{責任|せきにん}を{持|も}って{行動|こうどう}してください。",
-        "en": "Please act with the responsibility expected of a working adult."
+        "en": "Please act with the responsibility expected of a working adult.",
+        "ko": "사회인으로서의 책임을 가지고 행동하십시오."
       }
     ],
     "tags": [
@@ -1427,17 +1560,20 @@
       {
         "ja": "私にとって、家族は何よりも大切なものです。",
         "furigana": "{私|わたし}にとって、{家族|かぞく}は{何|なに}よりも{大切|たいせつ}なものです。",
-        "en": "To me, family is more important than anything."
+        "en": "To me, family is more important than anything.",
+        "ko": "나를 위해, 가족은 무엇보다 중요한 것입니다."
       },
       {
         "ja": "このあたりの坂道は、お年寄りにとってはかなり大変だ。",
         "furigana": "このあたりの{坂道|さかみち}は、お{年寄|としよ}りにとってはかなり{大変|たいへん}だ。",
-        "en": "The slopes around here are quite tough for elderly people."
+        "en": "The slopes around here are quite tough for elderly people.",
+        "ko": "이 근처의 언덕길은 노인에게는 꽤 힘들다."
       },
       {
         "ja": "留学は、彼にとっていい経験になったようだ。",
         "furigana": "{留学|りゅうがく}は、{彼|かれ}にとっていい{経験|けいけん}になったようだ。",
-        "en": "Studying abroad seems to have been a good experience for him."
+        "en": "Studying abroad seems to have been a good experience for him.",
+        "ko": "유학은 그에게 좋은 경험이 된 것 같다."
       }
     ],
     "tags": [
@@ -1458,17 +1594,20 @@
       {
         "ja": "初めて作ったにしては、このケーキはよくできている。",
         "furigana": "{初|はじ}めて{作|つく}ったにしては、このケーキはよくできている。",
-        "en": "For a first attempt, this cake turned out really well."
+        "en": "For a first attempt, this cake turned out really well.",
+        "ko": "처음 만들었다면 이 케이크는 잘 되어 있다."
       },
       {
         "ja": "彼は小学生にしては、ずいぶん難しい言葉を知っている。",
         "furigana": "{彼|かれ}は{小学生|しょうがくせい}にしては、ずいぶん{難|むずか}しい{言葉|ことば}を{知|し}っている。",
-        "en": "For an elementary school kid, he knows some pretty difficult words."
+        "en": "For an elementary school kid, he knows some pretty difficult words.",
+        "ko": "그는 초등학생으로 꽤 어려운 단어를 알고 있습니다."
       },
       {
         "ja": "十月にしては、今日はずいぶん暑いね。",
         "furigana": "{十月|じゅうがつ}にしては、{今日|きょう}はずいぶん{暑|あつ}いね。",
-        "en": "It's pretty hot today for October."
+        "en": "It's pretty hot today for October.",
+        "ko": "10 월에 오늘은 매우 덥습니다."
       }
     ],
     "tags": [
@@ -1490,17 +1629,20 @@
       {
         "ja": "忙しかったにしても、電話一本ぐらいできたでしょう。",
         "furigana": "{忙|いそが}しかったにしても、{電話|でんわ}{一本|いっぽん}ぐらいできたでしょう。",
-        "en": "Even if you were busy, you could at least have made one phone call."
+        "en": "Even if you were busy, you could at least have made one phone call.",
+        "ko": "바빴다고 해도 전화 한 개 정도 되었을 것입니다."
       },
       {
         "ja": "冗談にしても、そんな言い方はひどいよ。",
         "furigana": "{冗談|じょうだん}にしても、そんな{言|い}い{方|かた}はひどいよ。",
-        "en": "Even if it was a joke, that was a terrible thing to say."
+        "en": "Even if it was a joke, that was a terrible thing to say.",
+        "ko": "농담으로 해도 그런 말은 끔찍해."
       },
       {
         "ja": "引っ越すにしても、来年の春以降になると思います。",
         "furigana": "{引|ひ}っ{越|こ}すにしても、{来年|らいねん}の{春|はる}{以降|いこう}になると{思|おも}います。",
-        "en": "Even if we do move, I think it'll be after next spring."
+        "en": "Even if we do move, I think it'll be after next spring.",
+        "ko": "이사하더라도 내년 봄 이후가 될 것입니다."
       }
     ],
     "tags": [
@@ -1522,17 +1664,20 @@
       {
         "ja": "新しいサービスに関してご質問がある方は、受付までどうぞ。",
         "furigana": "{新|あたら}しいサービスに{関|かん}してご{質問|しつもん}がある{方|かた}は、{受付|うけつけ}までどうぞ。",
-        "en": "Anyone with questions regarding the new service, please come to the reception desk."
+        "en": "Anyone with questions regarding the new service, please come to the reception desk.",
+        "ko": "새로운 서비스에 관해 질문이 있는 분은, 접수까지 부디."
       },
       {
         "ja": "彼は日本の歴史に関する本をたくさん持っている。",
         "furigana": "{彼|かれ}は{日本|にほん}の{歴史|れきし}に{関|かん}する{本|ほん}をたくさん{持|も}っている。",
-        "en": "He owns a lot of books on Japanese history."
+        "en": "He owns a lot of books on Japanese history.",
+        "ko": "그는 일본 역사에 관한 책을 많이 가지고 있다."
       },
       {
         "ja": "事故の原因に関しては、現在調査中です。",
         "furigana": "{事故|じこ}の{原因|げんいん}に{関|かん}しては、{現在|げんざい}{調査|ちょうさ}{中|ちゅう}です。",
-        "en": "The cause of the accident is currently under investigation."
+        "en": "The cause of the accident is currently under investigation.",
+        "ko": "사고의 원인에 관해서는 현재 조사 중입니다."
       }
     ],
     "tags": [
@@ -1555,17 +1700,20 @@
       {
         "ja": "今年の夏は、去年に比べてずいぶん涼しい。",
         "furigana": "{今年|ことし}の{夏|なつ}は、{去年|きょねん}に{比|くら}べてずいぶん{涼|すず}しい。",
-        "en": "This summer is much cooler compared to last year."
+        "en": "This summer is much cooler compared to last year.",
+        "ko": "올 여름은 작년에 비해 상당히 시원하다."
       },
       {
         "ja": "都会に比べて、田舎は家賃が安い。",
         "furigana": "{都会|とかい}に{比|くら}べて、{田舎|いなか}は{家賃|やちん}が{安|やす}い。",
-        "en": "Compared to the city, rent in the countryside is cheap."
+        "en": "Compared to the city, rent in the countryside is cheap.",
+        "ko": "도시에 비해 시골은 집세가 싸다."
       },
       {
         "ja": "電車で行くのに比べて、車で行くと三十分ほど長くかかる。",
         "furigana": "{電車|でんしゃ}で{行|い}くのに{比|くら}べて、{車|くるま}で{行|い}くと{三十分|さんじゅっぷん}ほど{長|なが}くかかる。",
-        "en": "Compared to going by train, driving takes about thirty minutes longer."
+        "en": "Compared to going by train, driving takes about thirty minutes longer.",
+        "ko": "기차로 가는 것에 비해 차로 가면 3분 정도 길게 걸린다."
       }
     ],
     "tags": [
@@ -1587,17 +1735,20 @@
       {
         "ja": "入院中の社長に代わって、副社長があいさつをした。",
         "furigana": "{入院|にゅういん}{中|ちゅう}の{社長|しゃちょう}に{代|か}わって、{副|ふく}{社長|しゃちょう}があいさつをした。",
-        "en": "The vice president gave the speech on behalf of the president, who is in hospital."
+        "en": "The vice president gave the speech on behalf of the president, who is in hospital.",
+        "ko": "입원중인 사장을 대신해 부사장이 인사를 했다."
       },
       {
         "ja": "最近は、紙の新聞に代わって、スマホでニュースを読む人が増えている。",
         "furigana": "{最近|さいきん}は、{紙|かみ}の{新聞|しんぶん}に{代|か}わって、スマホでニュースを{読|よ}む{人|ひと}が{増|ふ}えている。",
-        "en": "More and more people these days read the news on their phones instead of in paper newspapers."
+        "en": "More and more people these days read the news on their phones instead of in paper newspapers.",
+        "ko": "최근에는 종이신문을 대신해 스마트폰으로 뉴스를 읽는 사람이 늘고 있다."
       },
       {
         "ja": "父に代わって、私が町内会の会議に出席しました。",
         "furigana": "{父|ちち}に{代|か}わって、{私|わたし}が{町内|ちょうない}{会|かい}の{会議|かいぎ}に{出席|しゅっせき}しました。",
-        "en": "I attended the neighborhood association meeting in place of my father."
+        "en": "I attended the neighborhood association meeting in place of my father.",
+        "ko": "아버지를 대신하여 제가 동내회 회의에 참석했습니다."
       }
     ],
     "tags": [
@@ -1620,17 +1771,20 @@
       {
         "ja": "今日は外で食べる代わりに、家でカレーを作った。",
         "furigana": "{今日|きょう}は{外|そと}で{食|た}べる{代|か}わりに、{家|いえ}でカレーを{作|つく}った。",
-        "en": "Instead of eating out today, I made curry at home."
+        "en": "Instead of eating out today, I made curry at home.",
+        "ko": "오늘은 밖에서 먹는 대신 집에서 카레를 만들었다."
       },
       {
         "ja": "友達に英語を教える代わりに、ギターを教えてもらっている。",
         "furigana": "{友達|ともだち}に{英語|えいご}を{教|おし}える{代|か}わりに、ギターを{教|おし}えてもらっている。",
-        "en": "In exchange for teaching my friend English, I'm getting guitar lessons."
+        "en": "In exchange for teaching my friend English, I'm getting guitar lessons.",
+        "ko": "친구에게 영어를 가르치는 대신 기타를 가르쳐주고 있다."
       },
       {
         "ja": "このアパートは駅から遠い代わりに、家賃が安い。",
         "furigana": "このアパートは{駅|えき}から{遠|とお}い{代|か}わりに、{家賃|やちん}が{安|やす}い。",
-        "en": "This apartment is far from the station, but to make up for it, the rent is cheap."
+        "en": "This apartment is far from the station, but to make up for it, the rent is cheap.",
+        "ko": "이 아파트는 역에서 멀리 대신 집세가 싸다."
       }
     ],
     "tags": [
@@ -1653,17 +1807,20 @@
       {
         "ja": "係の人の指示に従って、落ち着いて避難してください。",
         "furigana": "{係|かかり}の{人|ひと}の{指示|しじ}に{従|したが}って、{落|お}ち{着|つ}いて{避難|ひなん}してください。",
-        "en": "Please evacuate calmly, following the staff's instructions."
+        "en": "Please evacuate calmly, following the staff's instructions.",
+        "ko": "담당자의 지시에 따라 진정하고 대피하십시오."
       },
       {
         "ja": "高く登るに従って、気温が下がっていった。",
         "furigana": "{高|たか}く{登|のぼ}るに{従|したが}って、{気温|きおん}が{下|さ}がっていった。",
-        "en": "The higher we climbed, the lower the temperature dropped."
+        "en": "The higher we climbed, the lower the temperature dropped.",
+        "ko": "높이 올라가면서 기온이 내려갔다."
       },
       {
         "ja": "町が大きくなるに従って、交通の問題も増えてきた。",
         "furigana": "{町|まち}が{大|おお}きくなるに{従|したが}って、{交通|こうつう}の{問題|もんだい}も{増|ふ}えてきた。",
-        "en": "As the town grew, traffic problems increased too."
+        "en": "As the town grew, traffic problems increased too.",
+        "ko": "마을이 커짐에 따라 교통 문제도 늘어났다."
       }
     ],
     "tags": [
@@ -1685,17 +1842,20 @@
       {
         "ja": "年をとるにつれて、朝早く目が覚めるようになった。",
         "furigana": "{年|とし}をとるにつれて、{朝|あさ}{早|はや}く{目|め}が{覚|さ}めるようになった。",
-        "en": "As I've gotten older, I've started waking up early in the morning."
+        "en": "As I've gotten older, I've started waking up early in the morning.",
+        "ko": "나이가 들면서 아침 일찍 일어나게 되었다."
       },
       {
         "ja": "日本での生活に慣れるにつれて、友達も増えていった。",
         "furigana": "{日本|にほん}での{生活|せいかつ}に{慣|な}れるにつれて、{友達|ともだち}も{増|ふ}えていった。",
-        "en": "As I got used to life in Japan, I made more and more friends."
+        "en": "As I got used to life in Japan, I made more and more friends.",
+        "ko": "일본에서의 생활에 익숙해지면서 친구도 늘어나갔다."
       },
       {
         "ja": "時間がたつにつれて、その事故のことは忘れられていった。",
         "furigana": "{時間|じかん}がたつにつれて、その{事故|じこ}のことは{忘|わす}れられていった。",
-        "en": "As time passed, the accident was gradually forgotten."
+        "en": "As time passed, the accident was gradually forgotten.",
+        "ko": "시간이 지남에 따라 그 사고는 잊혀졌습니다."
       }
     ],
     "tags": [
@@ -1717,17 +1877,20 @@
       {
         "ja": "社長は、社員とともに新しい工場の完成を喜んだ。",
         "furigana": "{社長|しゃちょう}は、{社員|しゃいん}とともに{新|あたら}しい{工場|こうじょう}の{完成|かんせい}を{喜|よろこ}んだ。",
-        "en": "The company president celebrated the completion of the new factory together with the staff."
+        "en": "The company president celebrated the completion of the new factory together with the staff.",
+        "ko": "사장은 사원과 함께 새로운 공장의 완성을 기뻐했다."
       },
       {
         "ja": "経済の発展とともに、人々の生活も大きく変わった。",
         "furigana": "{経済|けいざい}の{発展|はってん}とともに、{人々|ひとびと}の{生活|せいかつ}も{大|おお}きく{変|か}わった。",
-        "en": "Along with economic development, people's lives changed greatly too."
+        "en": "Along with economic development, people's lives changed greatly too.",
+        "ko": "경제 발전과 함께 사람들의 삶도 크게 바뀌었다."
       },
       {
         "ja": "ベルが鳴るとともに、学生たちは教室を飛び出した。",
         "furigana": "ベルが{鳴|な}るとともに、{学生|がくせい}たちは{教室|きょうしつ}を{飛|と}び{出|だ}した。",
-        "en": "The moment the bell rang, the students rushed out of the classroom."
+        "en": "The moment the bell rang, the students rushed out of the classroom.",
+        "ko": "벨이 울리면서 학생들은 교실을 뛰쳐나왔다."
       }
     ],
     "tags": [
@@ -1750,17 +1913,20 @@
       {
         "ja": "この写真を見るたびに、大学時代を思い出す。",
         "furigana": "この{写真|しゃしん}を{見|み}るたびに、{大学|だいがく}{時代|じだい}を{思|おも}い{出|だ}す。",
-        "en": "Every time I look at this photo, I remember my university days."
+        "en": "Every time I look at this photo, I remember my university days.",
+        "ko": "이 사진을 볼 때마다 대학 시대를 기억합니다."
       },
       {
         "ja": "姉は出張のたびに、お土産を買ってきてくれる。",
         "furigana": "{姉|あね}は{出張|しゅっちょう}のたびに、お{土産|みやげ}を{買|か}ってきてくれる。",
-        "en": "My older sister brings me a souvenir every time she goes on a business trip."
+        "en": "My older sister brings me a souvenir every time she goes on a business trip.",
+        "ko": "누나는 출장 때마다 기념품을 사 준다."
       },
       {
         "ja": "この川は、大雨が降るたびにあふれて、道が通れなくなる。",
         "furigana": "この{川|かわ}は、{大雨|おおあめ}が{降|ふ}るたびにあふれて、{道|みち}が{通|とお}れなくなる。",
-        "en": "Every time there's heavy rain, this river overflows and the road becomes impassable."
+        "en": "Every time there's heavy rain, this river overflows and the road becomes impassable.",
+        "ko": "이 강은 폭우가 내릴 때마다 넘쳐 길을 통과 할 수 없습니다."
       }
     ],
     "tags": [
@@ -1782,17 +1948,20 @@
       {
         "ja": "このバスは十五分ごとに出ています。",
         "furigana": "このバスは{十|じゅう}{五|ご}{分|ふん}ごとに{出|で}ています。",
-        "en": "This bus leaves every fifteen minutes."
+        "en": "This bus leaves every fifteen minutes.",
+        "ko": "이 버스는 15분마다 나옵니다."
       },
       {
         "ja": "季節ごとに、店の飾りが変わる。",
         "furigana": "{季節|きせつ}ごとに、{店|みせ}の{飾|かざ}りが{変|か}わる。",
-        "en": "The shop's decorations change with each season."
+        "en": "The shop's decorations change with each season.",
+        "ko": "계절마다 가게의 장식이 바뀐다."
       },
       {
         "ja": "一回使うごとにポイントがたまるカードです。",
         "furigana": "{一回|いっかい}{使|つか}うごとにポイントがたまるカードです。",
-        "en": "It's a card that earns you points every time you use it."
+        "en": "It's a card that earns you points every time you use it.",
+        "ko": "한 번 사용할 때마다 포인트가 쌓이는 카드입니다."
       }
     ],
     "tags": [
@@ -1815,17 +1984,20 @@
       {
         "ja": "大事な会議の最中に、携帯電話が鳴ってしまった。",
         "furigana": "{大事|だいじ}な{会議|かいぎ}の{最中|さいちゅう}に、{携帯|けいたい}{電話|でんわ}が{鳴|な}ってしまった。",
-        "en": "My cell phone went off right in the middle of an important meeting."
+        "en": "My cell phone went off right in the middle of an important meeting.",
+        "ko": "소중한 회의 중에 휴대폰이 울렸다."
       },
       {
         "ja": "料理をしている最中に、停電になった。",
         "furigana": "{料理|りょうり}をしている{最中|さいちゅう}に、{停電|ていでん}になった。",
-        "en": "The power went out right in the middle of my cooking."
+        "en": "The power went out right in the middle of my cooking.",
+        "ko": "요리를 하는 동안 정전이 되었다."
       },
       {
         "ja": "今、試験の最中だから、廊下では静かにしてください。",
         "furigana": "{今|いま}、{試験|しけん}の{最中|さいちゅう}だから、{廊下|ろうか}では{静|しず}かにしてください。",
-        "en": "An exam is in progress right now, so please be quiet in the hallway."
+        "en": "An exam is in progress right now, so please be quiet in the hallway.",
+        "ko": "지금 시험 중이기 때문에 복도에서 조용히하십시오."
       }
     ],
     "tags": [
@@ -1847,17 +2019,20 @@
       {
         "ja": "郵便局へ行くついでに、この手紙も出してきてくれる？",
         "furigana": "{郵便|ゆうびん}{局|きょく}へ{行|い}くついでに、この{手紙|てがみ}も{出|だ}してきてくれる？",
-        "en": "Since you're going to the post office, could you mail this letter too?"
+        "en": "Since you're going to the post office, could you mail this letter too?",
+        "ko": "우체국에 가면서, 이 편지도 나와 준다?"
       },
       {
         "ja": "京都へ出張したついでに、昔の友達に会ってきた。",
         "furigana": "{京都|きょうと}へ{出張|しゅっちょう}したついでに、{昔|むかし}の{友達|ともだち}に{会|あ}ってきた。",
-        "en": "While I was on a business trip to Kyoto, I took the chance to see an old friend."
+        "en": "While I was on a business trip to Kyoto, I took the chance to see an old friend.",
+        "ko": "교토에 출장한 김에 옛 친구를 만났다."
       },
       {
         "ja": "買い物のついでに、図書館に本を返した。",
         "furigana": "{買|か}い{物|もの}のついでに、{図書館|としょかん}に{本|ほん}を{返|かえ}した。",
-        "en": "I returned some books to the library while I was out shopping."
+        "en": "I returned some books to the library while I was out shopping.",
+        "ko": "쇼핑한 뒤에 도서관에 책을 돌려주었다."
       }
     ],
     "tags": [
@@ -1879,17 +2054,20 @@
       {
         "ja": "先輩が手伝ってくれたおかげで、仕事が早く終わった。",
         "furigana": "{先輩|せんぱい}が{手伝|てつだ}ってくれたおかげで、{仕事|しごと}が{早|はや}く{終|お}わった。",
-        "en": "Thanks to my senior colleague's help, the work was finished early."
+        "en": "Thanks to my senior colleague's help, the work was finished early.",
+        "ko": "선배가 도와준 덕분에 일이 빨리 끝났다."
       },
       {
         "ja": "薬が効いたおかげで、熱が下がった。",
         "furigana": "{薬|くすり}が{効|き}いたおかげで、{熱|ねつ}が{下|さ}がった。",
-        "en": "Thanks to the medicine, my fever went down."
+        "en": "Thanks to the medicine, my fever went down.",
+        "ko": "약이 효과가 있었기 때문에 열이 떨어졌습니다."
       },
       {
         "ja": "駅が近いおかげで、雨の日も楽に通勤できる。",
         "furigana": "{駅|えき}が{近|ちか}いおかげで、{雨|あめ}の{日|ひ}も{楽|らく}に{通勤|つうきん}できる。",
-        "en": "Because the station is close by, commuting is easy even on rainy days."
+        "en": "Because the station is close by, commuting is easy even on rainy days.",
+        "ko": "역이 가까운 덕분에 비오는 날도 편하게 통근할 수 있다."
       }
     ],
     "tags": [
@@ -1912,17 +2090,20 @@
       {
         "ja": "電車が遅れたせいで、面接に遅刻してしまった。",
         "furigana": "{電車|でんしゃ}が{遅|おく}れたせいで、{面接|めんせつ}に{遅刻|ちこく}してしまった。",
-        "en": "Because the train was delayed, I was late for my interview."
+        "en": "Because the train was delayed, I was late for my interview.",
+        "ko": "전철이 늦었기 때문에, 면접에 지각해 버렸다."
       },
       {
         "ja": "夜中に犬がうるさかったせいで、ほとんど眠れなかった。",
         "furigana": "{夜中|よなか}に{犬|いぬ}がうるさかったせいで、ほとんど{眠|ねむ}れなかった。",
-        "en": "Because the dog was so noisy in the middle of the night, I could barely sleep."
+        "en": "Because the dog was so noisy in the middle of the night, I could barely sleep.",
+        "ko": "한밤중에 개가 시끄러웠기 때문에 거의 잠들 수 없었다."
       },
       {
         "ja": "私が道を間違えたせいで、みんなを待たせてしまった。",
         "furigana": "{私|わたし}が{道|みち}を{間違|まちが}えたせいで、みんなを{待|ま}たせてしまった。",
-        "en": "Because I took a wrong turn, I kept everyone waiting."
+        "en": "Because I took a wrong turn, I kept everyone waiting.",
+        "ko": "내가 길을 잘못했기 때문에 모두를 기다리게 했다."
       }
     ],
     "tags": [
@@ -1945,17 +2126,20 @@
       {
         "ja": "立ち上がったとたんに、めまいがした。",
         "furigana": "{立|た}ち{上|あ}がったとたんに、めまいがした。",
-        "en": "The moment I stood up, I felt dizzy."
+        "en": "The moment I stood up, I felt dizzy.",
+        "ko": "일어서자 어지러웠다."
       },
       {
         "ja": "家を出たとたん、雨が降り出した。",
         "furigana": "{家|いえ}を{出|で}たとたん、{雨|あめ}が{降|ふ}り{出|だ}した。",
-        "en": "Just as I stepped out of the house, it started to rain."
+        "en": "Just as I stepped out of the house, it started to rain.",
+        "ko": "집을 떠나자마자 비가 내렸다."
       },
       {
         "ja": "その歌手がステージに現れたとたん、会場から大きな拍手が起こった。",
         "furigana": "その{歌手|かしゅ}がステージに{現|あらわ}れたとたん、{会場|かいじょう}から{大|おお}きな{拍手|はくしゅ}が{起|お}こった。",
-        "en": "The moment the singer appeared on stage, the audience burst into applause."
+        "en": "The moment the singer appeared on stage, the audience burst into applause.",
+        "ko": "그 가수가 무대에 나타났을 때, 회장에서 큰 박수가 일어났다."
       }
     ],
     "tags": [
@@ -1978,17 +2162,20 @@
       {
         "ja": "窓を開けたら、外は一面の雪だった。",
         "furigana": "{窓|まど}を{開|あ}けたら、{外|そと}は{一|いち}{面|めん}の{雪|ゆき}だった。",
-        "en": "When I opened the window, everything outside was covered in snow."
+        "en": "When I opened the window, everything outside was covered in snow.",
+        "ko": "창문을 열면 밖은 일면의 눈이었다."
       },
       {
         "ja": "久しぶりに実家に帰ったら、近所に大きなマンションが建っていた。",
         "furigana": "{久|ひさ}しぶりに{実家|じっか}に{帰|かえ}ったら、{近所|きんじょ}に{大|おお}きなマンションが{建|た}っていた。",
-        "en": "When I went back to my parents' place for the first time in ages, I found a big apartment building had gone up nearby."
+        "en": "When I went back to my parents' place for the first time in ages, I found a big apartment building had gone up nearby.",
+        "ko": "오랜만에 친가로 돌아가자 이웃에 큰 아파트가 세워져 있었다."
       },
       {
         "ja": "かばんの中を探してみたら、なくしたと思っていた鍵が出てきた。",
         "furigana": "かばんの{中|なか}を{探|さが}してみたら、なくしたと{思|おも}っていた{鍵|かぎ}が{出|で}てきた。",
-        "en": "When I searched my bag, the key I thought I'd lost turned up."
+        "en": "When I searched my bag, the key I thought I'd lost turned up.",
+        "ko": "가방 속을 찾아보니, 잃었다고 생각했던 열쇠가 나왔다."
       }
     ],
     "tags": [
@@ -2011,17 +2198,20 @@
       {
         "ja": "今から急いだって、もう間に合わないよ。",
         "furigana": "{今|いま}から{急|いそ}いだって、もう{間|ま}に{合|あ}わないよ。",
-        "en": "Even if you hurry now, you won't make it."
+        "en": "Even if you hurry now, you won't make it.",
+        "ko": "지금부터 서둘러도 곧 맞지 않아."
       },
       {
         "ja": "高くたって、欲しいものは欲しい。",
         "furigana": "{高|たか}くたって、{欲|ほ}しいものは{欲|ほ}しい。",
-        "en": "Even if it's expensive, I want what I want."
+        "en": "Even if it's expensive, I want what I want.",
+        "ko": "높아서, 원하는 것은 원한다."
       },
       {
         "ja": "いくら便利だって、使い方が分からなければ意味がない。",
         "furigana": "いくら{便利|べんり}だって、{使|つか}い{方|かた}が{分|わ}からなければ{意味|いみ}がない。",
-        "en": "No matter how convenient it is, it's pointless if you don't know how to use it."
+        "en": "No matter how convenient it is, it's pointless if you don't know how to use it.",
+        "ko": "아무리 편리해도 사용법을 모르면 의미가 없다."
       }
     ],
     "tags": [
@@ -2043,17 +2233,20 @@
       {
         "ja": "辛い料理は食べられないことはないけど、あまり好きじゃない。",
         "furigana": "{辛|から}い{料理|りょうり}は{食|た}べられないことはないけど、あまり{好|す}きじゃない。",
-        "en": "It's not that I can't eat spicy food, but I don't really like it."
+        "en": "It's not that I can't eat spicy food, but I don't really like it.",
+        "ko": "매운 음식은 먹을 수 없지만 별로 좋아하지 않는다."
       },
       {
         "ja": "今から急げば、間に合わないことはないと思う。",
         "furigana": "{今|いま}から{急|いそ}げば、{間|ま}に{合|あ}わないことはないと{思|おも}う。",
-        "en": "If we hurry now, I think we can just about make it."
+        "en": "If we hurry now, I think we can just about make it.",
+        "ko": "지금부터 서두르면, 사이에 맞지 않는 것은 없다고 생각한다."
       },
       {
         "ja": "この服、少し派手だけど、似合わないことはないよ。",
         "furigana": "この{服|ふく}、{少|すこ}し{派手|はで}だけど、{似合|にあ}わないことはないよ。",
-        "en": "This outfit is a bit flashy, but it's not as if it doesn't suit you."
+        "en": "This outfit is a bit flashy, but it's not as if it doesn't suit you.",
+        "ko": "이 옷, 조금 화려하지만, 어울리지 않는다."
       }
     ],
     "tags": [
@@ -2075,17 +2268,20 @@
       {
         "ja": "昨日あまり寝ていないので、眠くてしょうがない。",
         "furigana": "{昨日|きのう}あまり{寝|ね}ていないので、{眠|ねむ}くてしょうがない。",
-        "en": "I barely slept last night, so I'm terribly sleepy."
+        "en": "I barely slept last night, so I'm terribly sleepy.",
+        "ko": "어제 별로 자지 않았기 때문에 졸려서 어쩔 수 없다."
       },
       {
         "ja": "来週の旅行が楽しみでしかたがない。",
         "furigana": "{来週|らいしゅう}の{旅行|りょこう}が{楽|たの}しみでしかたがない。",
-        "en": "I'm so excited about next week's trip I can hardly wait."
+        "en": "I'm so excited about next week's trip I can hardly wait.",
+        "ko": "다음 주 여행을 기대할 수 없다."
       },
       {
         "ja": "一人暮らしを始めたばかりのころは、家族のことが気になってしかたがなかった。",
         "furigana": "{一人暮|ひとりぐ}らしを{始|はじ}めたばかりのころは、{家族|かぞく}のことが{気|き}になってしかたがなかった。",
-        "en": "When I'd just started living alone, I couldn't stop worrying about my family."
+        "en": "When I'd just started living alone, I couldn't stop worrying about my family.",
+        "ko": "혼자 생활을 시작한 지 얼마 되지 않아, 가족에 대해 신경 쓰는 방법이 없었다."
       }
     ],
     "tags": [
@@ -2107,17 +2303,20 @@
       {
         "ja": "この部屋はエアコンがなくて、暑くてたまらない。",
         "furigana": "この{部屋|へや}はエアコンがなくて、{暑|あつ}くてたまらない。",
-        "en": "This room has no air conditioning; it's unbearably hot."
+        "en": "This room has no air conditioning; it's unbearably hot.",
+        "ko": "이 객실은 에어컨이 없어 뜨겁고 견딜 수 없습니다."
       },
       {
         "ja": "三年ぶりに国の家族に会えるので、うれしくてたまらない。",
         "furigana": "{三|さん}{年|ねん}ぶりに{国|くに}の{家族|かぞく}に{会|あ}えるので、うれしくてたまらない。",
-        "en": "I'm going to see my family back home for the first time in three years, and I'm overjoyed."
+        "en": "I'm going to see my family back home for the first time in three years, and I'm overjoyed.",
+        "ko": "3년 만에 나라의 가족을 만날 수 있기 때문에 기쁘고 견딜 수 없다."
       },
       {
         "ja": "試合に負けたのが悔しくてたまらなかった。",
         "furigana": "{試合|しあい}に{負|ま}けたのが{悔|くや}しくてたまらなかった。",
-        "en": "I was terribly frustrated that we lost the match."
+        "en": "I was terribly frustrated that we lost the match.",
+        "ko": "경기에 패한 것이 억울했고 견딜 수 없었다."
       }
     ],
     "tags": [
@@ -2139,17 +2338,20 @@
       {
         "ja": "病気になってはじめて、健康のありがたさが分かった。",
         "furigana": "{病気|びょうき}になってはじめて、{健康|けんこう}のありがたさが{分|わ}かった。",
-        "en": "It was only after I got sick that I appreciated how precious good health is."
+        "en": "It was only after I got sick that I appreciated how precious good health is.",
+        "ko": "아프고 처음으로 건강의 고마움을 알 수 있었다."
       },
       {
         "ja": "一人で暮らしてはじめて、親の苦労が分かった。",
         "furigana": "{一人|ひとり}で{暮|く}らしてはじめて、{親|おや}の{苦労|くろう}が{分|わ}かった。",
-        "en": "Only after living alone did I understand how hard my parents had worked."
+        "en": "Only after living alone did I understand how hard my parents had worked.",
+        "ko": "혼자 살고 처음으로 부모의 고생을 알았다."
       },
       {
         "ja": "実際に使ってみてはじめて、この機械の便利さに気づいた。",
         "furigana": "{実際|じっさい}に{使|つか}ってみてはじめて、この{機械|きかい}の{便利|べんり}さに{気|き}づいた。",
-        "en": "It wasn't until I actually tried it that I realized how handy this machine is."
+        "en": "It wasn't until I actually tried it that I realized how handy this machine is.",
+        "ko": "실제로 사용해 보고 처음으로, 이 기계의 편리함을 깨달았다."
       }
     ],
     "tags": [
@@ -2171,17 +2373,20 @@
       {
         "ja": "弟は休みの日、ゲームをしてばかりいる。",
         "furigana": "{弟|おとうと}は{休|やす}みの{日|ひ}、ゲームをしてばかりいる。",
-        "en": "On his days off, my younger brother does nothing but play games."
+        "en": "On his days off, my younger brother does nothing but play games.",
+        "ko": "남동생은 휴일, 게임을하고 있습니다."
       },
       {
         "ja": "泣いてばかりいないで、どうしたのか話してごらん。",
         "furigana": "{泣|な}いてばかりいないで、どうしたのか{話|はな}してごらん。",
-        "en": "Stop crying and tell me what happened."
+        "en": "Stop crying and tell me what happened.",
+        "ko": "울고 있을 뿐 아니라, 무슨 일인지 말해봐."
       },
       {
         "ja": "休みの間、寝てばかりいたら、かえって疲れてしまった。",
         "furigana": "{休|やす}みの{間|あいだ}、{寝|ね}てばかりいたら、かえって{疲|つか}れてしまった。",
-        "en": "I did nothing but sleep during the break, and it actually made me more tired."
+        "en": "I did nothing but sleep during the break, and it actually made me more tired.",
+        "ko": "쉬는 동안 잠을 자면 오히려 피곤해 버렸다."
       }
     ],
     "tags": [
@@ -2204,17 +2409,20 @@
       {
         "ja": "「この書類、どこに出せばいいですか。」「二階の受付に出してください。」",
         "furigana": "「この{書類|しょるい}、どこに{出|だ}せばいいですか。」「{二|に}{階|かい}の{受付|うけつけ}に{出|だ}してください。」",
-        "en": "'Where should I hand in this form?' 'Please take it to the reception desk on the second floor.'"
+        "en": "'Where should I hand in this form?' 'Please take it to the reception desk on the second floor.'",
+        "ko": "「이 서류, 어디에 내면 좋습니까.」 「2층의 접수에 내 주세요.」"
       },
       {
         "ja": "分からないことがあったら、遠慮しないで私に聞けばいいよ。",
         "furigana": "{分|わ}からないことがあったら、{遠慮|えんりょ}しないで{私|わたし}に{聞|き}けばいいよ。",
-        "en": "If there's anything you don't understand, just ask me. Don't be shy."
+        "en": "If there's anything you don't understand, just ask me. Don't be shy.",
+        "ko": "모르는 일이 있다면 삼가하지 말고 나에게 물어봐야합니다."
       },
       {
         "ja": "明日、雨が降らなければいいんだけど。",
         "furigana": "{明日|あした}、{雨|あめ}が{降|ふ}らなければいいんだけど。",
-        "en": "I hope it doesn't rain tomorrow."
+        "en": "I hope it doesn't rain tomorrow.",
+        "ko": "내일 비가 오지 않으면 좋지만."
       }
     ],
     "tags": [
@@ -2238,17 +2446,20 @@
       {
         "ja": "雨の場合は、試合は中止になります。",
         "furigana": "{雨|あめ}の{場合|ばあい}は、{試合|しあい}は{中止|ちゅうし}になります。",
-        "en": "In case of rain, the game will be canceled."
+        "en": "In case of rain, the game will be canceled.",
+        "ko": "비의 경우, 경기는 중단됩니다."
       },
       {
         "ja": "カードをなくした場合は、すぐに銀行に連絡してください。",
         "furigana": "カードをなくした{場合|ばあい}は、すぐに{銀行|ぎんこう}に{連絡|れんらく}してください。",
-        "en": "If you lose your card, contact the bank immediately."
+        "en": "If you lose your card, contact the bank immediately.",
+        "ko": "카드를 잃어버린 경우 즉시 은행에 문의하십시오."
       },
       {
         "ja": "予約の時間に遅れる場合は、お電話でお知らせください。",
         "furigana": "{予約|よやく}の{時間|じかん}に{遅|おく}れる{場合|ばあい}は、お{電話|でんわ}でお{知|し}らせください。",
-        "en": "If you are going to be late for your appointment, please let us know by phone."
+        "en": "If you are going to be late for your appointment, please let us know by phone.",
+        "ko": "예약 시간이 지연되면 전화로 알려주시기 바랍니다."
       }
     ],
     "tags": [
@@ -2270,17 +2481,20 @@
       {
         "ja": "もし宝くじで一億円当たったとしたら、何に使いますか。",
         "furigana": "もし{宝|たから}くじで{一|いち}{億|おく}{円|えん}{当|あ}たったとしたら、{何|なに}に{使|つか}いますか。",
-        "en": "If you won 100 million yen in the lottery, what would you spend it on?"
+        "en": "If you won 100 million yen in the lottery, what would you spend it on?",
+        "ko": "복권으로 1억엔 당했다면 무엇에 사용합니까?"
       },
       {
         "ja": "今から出発するとすれば、向こうに着くのは夜の九時ごろになる。",
         "furigana": "{今|いま}から{出発|しゅっぱつ}するとすれば、{向|む}こうに{着|つ}くのは{夜|よる}の{九時|くじ}ごろになる。",
-        "en": "If we set off now, we'll get there at around nine at night."
+        "en": "If we set off now, we'll get there at around nine at night.",
+        "ko": "지금부터 출발한다면 저편에 도착하는 것은 밤 9시쯤이 된다."
       },
       {
         "ja": "彼の話が本当だとしたら、大変なことになる。",
         "furigana": "{彼|かれ}の{話|はなし}が{本当|ほんとう}だとしたら、{大変|たいへん}なことになる。",
-        "en": "If what he says is true, we're in serious trouble."
+        "en": "If what he says is true, we're in serious trouble.",
+        "ko": "그의 이야기가 사실이라고 하면 힘들게 된다."
       }
     ],
     "tags": [
@@ -2302,17 +2516,20 @@
       {
         "ja": "親に反対されたとしても、私は留学するつもりだ。",
         "furigana": "{親|おや}に{反対|はんたい}されたとしても、{私|わたし}は{留学|りゅうがく}するつもりだ。",
-        "en": "Even if my parents are against it, I intend to study abroad."
+        "en": "Even if my parents are against it, I intend to study abroad.",
+        "ko": "부모에게 반대되었다고 해도, 나는 유학할 생각이다."
       },
       {
         "ja": "今からタクシーに乗ったとしても、九時の飛行機には間に合わないだろう。",
         "furigana": "{今|いま}からタクシーに{乗|の}ったとしても、{九時|くじ}の{飛行機|ひこうき}には{間|ま}に{合|あ}わないだろう。",
-        "en": "Even if we took a taxi now, we probably wouldn't make the nine o'clock flight."
+        "en": "Even if we took a taxi now, we probably wouldn't make the nine o'clock flight.",
+        "ko": "지금부터 택시를 타고도 9시의 비행기에는 늦지 않을 것이다."
       },
       {
         "ja": "それが本当だとしても、ほかの人に話すべきではない。",
         "furigana": "それが{本当|ほんとう}だとしても、ほかの{人|ひと}に{話|はな}すべきではない。",
-        "en": "Even if that's true, you shouldn't tell anyone else."
+        "en": "Even if that's true, you shouldn't tell anyone else.",
+        "ko": "그것이 사실이라도 다른 사람들에게 말해서는 안됩니다."
       }
     ],
     "tags": [
@@ -2334,17 +2551,20 @@
       {
         "ja": "駅前の本屋、今月で閉店するとか。寂しくなりますね。",
         "furigana": "{駅前|えきまえ}の{本屋|ほんや}、{今月|こんげつ}で{閉店|へいてん}するとか。{寂|さび}しくなりますね。",
-        "en": "I hear the bookstore by the station is closing at the end of this month. It'll be sad to see it go."
+        "en": "I hear the bookstore by the station is closing at the end of this month. It'll be sad to see it go.",
+        "ko": "역 앞의 서점, 이달에 폐점한다든가. 외롭네요."
       },
       {
         "ja": "今年の冬は、例年より寒くなるとかいう話だよ。",
         "furigana": "{今年|ことし}の{冬|ふゆ}は、{例年|れいねん}より{寒|さむ}くなるとかいう{話|はなし}だよ。",
-        "en": "Word is that this winter is going to be colder than usual."
+        "en": "Word is that this winter is going to be colder than usual.",
+        "ko": "올해의 겨울은, 예년보다 추워진다고 하는 이야기야."
       },
       {
         "ja": "部長は今日、熱があるとかで休んでいます。",
         "furigana": "{部長|ぶちょう}は{今日|きょう}、{熱|ねつ}があるとかで{休|やす}んでいます。",
-        "en": "The department manager is off today; something about having a fever."
+        "en": "The department manager is off today; something about having a fever.",
+        "ko": "부장은 오늘 열이 있거나 쉬고 ​​있습니다."
       }
     ],
     "tags": [
@@ -2366,17 +2586,20 @@
       {
         "ja": "彼女、今日は来られないって。",
         "furigana": "{彼女|かのじょ}、{今日|きょう}は{来|こ}られないって。",
-        "en": "She says she can't come today."
+        "en": "She says she can't come today.",
+        "ko": "그녀, 오늘은 올 수 없다고."
       },
       {
         "ja": "駅前に新しいカフェができたんだって。行ってみない？",
         "furigana": "{駅前|えきまえ}に{新|あたら}しいカフェができたんだって。{行|い}ってみない？",
-        "en": "Apparently a new café opened by the station. Want to go check it out?"
+        "en": "Apparently a new café opened by the station. Want to go check it out?",
+        "ko": "역 앞에 새로운 카페가 생겼다고. 가보지 않아?"
       },
       {
         "ja": "「ふろしき」って何ですか。",
         "furigana": "「ふろしき」って{何|なん}ですか。",
-        "en": "What's a furoshiki?"
+        "en": "What's a furoshiki?",
+        "ko": "\"후로시키\"는 무엇입니까?"
       }
     ],
     "tags": [
@@ -2399,17 +2622,20 @@
       {
         "ja": "駅員さんの話では、事故のため電車は一時間ほど止まるということです。",
         "furigana": "{駅員|えきいん}さんの{話|はなし}では、{事故|じこ}のため{電車|でんしゃ}は{一|いち}{時間|じかん}ほど{止|と}まるということです。",
-        "en": "According to the station attendant, trains will be stopped for about an hour because of an accident."
+        "en": "According to the station attendant, trains will be stopped for about an hour because of an accident.",
+        "ko": "역원씨의 이야기에서는, 사고 때문에 전철은 1시간 정도 멈춘다고 하는 것입니다."
       },
       {
         "ja": "「申し込みは明日までです。」「じゃあ、今日中に書類を準備しなければならないということですね。」",
         "furigana": "「{申|もう}し{込|こ}みは{明日|あした}までです。」「じゃあ、{今日中|きょうじゅう}に{書類|しょるい}を{準備|じゅんび}しなければならないということですね。」",
-        "en": "'Applications close tomorrow.' 'So that means I have to get my documents ready today, right?'"
+        "en": "'Applications close tomorrow.' 'So that means I have to get my documents ready today, right?'",
+        "ko": "「신청은 내일까지입니다.」 「그럼, 오늘 중에 서류를 준비해야 한다는 것입니다.」"
       },
       {
         "ja": "全員が賛成したということは、この計画で進めてもいいということだ。",
         "furigana": "{全員|ぜんいん}が{賛成|さんせい}したということは、この{計画|けいかく}で{進|すす}めてもいいということだ。",
-        "en": "Everyone agreeing means we can go ahead with this plan."
+        "en": "Everyone agreeing means we can go ahead with this plan.",
+        "ko": "전원이 찬성했다는 것은 이 계획으로 진행해도 된다는 것이다."
       }
     ],
     "tags": [
@@ -2431,17 +2657,20 @@
       {
         "ja": "「割り勘」というのは、食事代などをみんなで同じ金額ずつ払うことです。",
         "furigana": "「{割|わ}り{勘|かん}」というのは、{食事|しょくじ}{代|だい}などをみんなで{同|おな}じ{金額|きんがく}ずつ{払|はら}うことです。",
-        "en": "'Warikan' means everyone paying the same share of a meal or other bill."
+        "en": "'Warikan' means everyone paying the same share of a meal or other bill.",
+        "ko": "「할당 감」이라고 하는 것은, 식사대등을 모두 같은 금액씩 지불하는 것입니다."
       },
       {
         "ja": "一人で海外に住むというのは、思ったより大変なことだ。",
         "furigana": "{一人|ひとり}で{海外|かいがい}に{住|す}むというのは、{思|おも}ったより{大変|たいへん}なことだ。",
-        "en": "Living abroad on your own is harder than you'd think."
+        "en": "Living abroad on your own is harder than you'd think.",
+        "ko": "혼자 해외에 사는 것은 생각보다 힘든 일이다."
       },
       {
         "ja": "来週の旅行には行けなくなった。というのは、急に出張が入ったからだ。",
         "furigana": "{来週|らいしゅう}の{旅行|りょこう}には{行|い}けなくなった。というのは、{急|きゅう}に{出張|しゅっちょう}が{入|はい}ったからだ。",
-        "en": "I can't go on next week's trip after all. That's because a business trip suddenly came up."
+        "en": "I can't go on next week's trip after all. That's because a business trip suddenly came up.",
+        "ko": "다음 주 여행에는 갈 수 없게 되었다. 왜냐하면 갑자기 출장이 들어왔기 때문이다."
       }
     ],
     "tags": [
@@ -2463,17 +2692,20 @@
       {
         "ja": "今日は涼しいというより、寒いくらいだ。",
         "furigana": "{今日|きょう}は{涼|すず}しいというより、{寒|さむ}いくらいだ。",
-        "en": "Today it's not so much cool as almost cold."
+        "en": "Today it's not so much cool as almost cold.",
+        "ko": "오늘은 시원하다고 하기보다 추울 정도다."
       },
       {
         "ja": "彼女は友達というより、家族のような存在だ。",
         "furigana": "{彼女|かのじょ}は{友達|ともだち}というより、{家族|かぞく}のような{存在|そんざい}だ。",
-        "en": "She's less a friend than something like family to me."
+        "en": "She's less a friend than something like family to me.",
+        "ko": "그녀는 친구라기보다 가족 같은 존재다."
       },
       {
         "ja": "それは意見というより、ただの文句だよ。",
         "furigana": "それは{意見|いけん}というより、ただの{文句|もんく}だよ。",
-        "en": "That's not so much an opinion as just a complaint."
+        "en": "That's not so much an opinion as just a complaint.",
+        "ko": "그것은 의견이라기 보다는 단지 불평이야."
       }
     ],
     "tags": [
@@ -2494,17 +2726,20 @@
       {
         "ja": "この店は値段のわりに、量が多くておいしい。",
         "furigana": "この{店|みせ}は{値段|ねだん}のわりに、{量|りょう}が{多|おお}くておいしい。",
-        "en": "For the price, this restaurant gives you big, tasty portions."
+        "en": "For the price, this restaurant gives you big, tasty portions.",
+        "ko": "이 가게는 가격에 비해 양이 많아 맛있다."
       },
       {
         "ja": "兄はよく食べるわりには、全然太らない。",
         "furigana": "{兄|あに}はよく{食|た}べるわりには、{全然|ぜんぜん}{太|ふと}らない。",
-        "en": "Considering how much he eats, my older brother never gains weight."
+        "en": "Considering how much he eats, my older brother never gains weight.",
+        "ko": "형은 잘 먹기보다는 전혀 뚱뚱하지 않다."
       },
       {
         "ja": "このホテルは駅から近いわりに、静かでよく眠れた。",
         "furigana": "このホテルは{駅|えき}から{近|ちか}いわりに、{静|しず}かでよく{眠|ねむ}れた。",
-        "en": "Considering how close it is to the station, the hotel was quiet and I slept well."
+        "en": "Considering how close it is to the station, the hotel was quiet and I slept well.",
+        "ko": "이 호텔은 역에서 가까이에 조용하고 잘 잠들었다."
       }
     ],
     "tags": [
@@ -2526,17 +2761,20 @@
       {
         "ja": "自分では何もしないくせに、人の仕事には文句ばかり言う。",
         "furigana": "{自分|じぶん}では{何|なに}もしないくせに、{人|ひと}の{仕事|しごと}には{文句|もんく}ばかり{言|い}う。",
-        "en": "He never does anything himself, yet he's always complaining about other people's work."
+        "en": "He never does anything himself, yet he's always complaining about other people's work.",
+        "ko": "스스로는 아무것도 하지 않는 주제에, 사람의 일에는 불평만 말한다."
       },
       {
         "ja": "知っているくせに、どうして教えてくれなかったの？",
         "furigana": "{知|し}っているくせに、どうして{教|おし}えてくれなかったの？",
-        "en": "You knew all along, so why didn't you tell me?"
+        "en": "You knew all along, so why didn't you tell me?",
+        "ko": "아는 주제에 왜 가르쳐 주지 않았습니까?"
       },
       {
         "ja": "弟は体が大きいくせに、小さな虫をこわがる。",
         "furigana": "{弟|おとうと}は{体|からだ}が{大|おお}きいくせに、{小|ちい}さな{虫|むし}をこわがる。",
-        "en": "My younger brother is so big, and yet he's scared of tiny bugs."
+        "en": "My younger brother is so big, and yet he's scared of tiny bugs.",
+        "ko": "남동생은 몸이 큰 주제에 작은 벌레를 부러 뜨린다."
       }
     ],
     "tags": [
@@ -2558,17 +2796,20 @@
       {
         "ja": "今夜から明日の朝にかけて、強い雨が降るでしょう。",
         "furigana": "{今夜|こんや}から{明日|あした}の{朝|あさ}にかけて、{強|つよ}い{雨|あめ}が{降|ふ}るでしょう。",
-        "en": "Heavy rain is expected from tonight through tomorrow morning."
+        "en": "Heavy rain is expected from tonight through tomorrow morning.",
+        "ko": "오늘 밤부터 내일 아침에 강한 비가 내릴 것입니다."
       },
       {
         "ja": "関東から東北にかけての広い地域で、強い揺れが観測された。",
         "furigana": "{関東|かんとう}から{東北|とうほく}にかけての{広|ひろ}い{地域|ちいき}で、{強|つよ}い{揺|ゆ}れが{観測|かんそく}された。",
-        "en": "Strong shaking was recorded over a wide area from Kanto to Tohoku."
+        "en": "Strong shaking was recorded over a wide area from Kanto to Tohoku.",
+        "ko": "관동에서 동북에 이르는 넓은 지역에서 강한 흔들림이 관측되었다."
       },
       {
         "ja": "この花は、三月から四月にかけてきれいに咲く。",
         "furigana": "この{花|はな}は、{三月|さんがつ}から{四月|しがつ}にかけてきれいに{咲|さ}く。",
-        "en": "This flower blooms beautifully from March through April."
+        "en": "This flower blooms beautifully from March through April.",
+        "ko": "이 꽃은 3월부터 4월에 걸쳐 예쁘게 피어난다."
       }
     ],
     "tags": [
@@ -2590,17 +2831,20 @@
       {
         "ja": "五年ぶりに高校の友達に会って、話が止まらなかった。",
         "furigana": "{五|ご}{年|ねん}ぶりに{高校|こうこう}の{友達|ともだち}に{会|あ}って、{話|はなし}が{止|と}まらなかった。",
-        "en": "I saw my high school friends for the first time in five years, and we couldn't stop talking."
+        "en": "I saw my high school friends for the first time in five years, and we couldn't stop talking.",
+        "ko": "5년 만에 고등학교 친구를 만나 이야기가 멈추지 않았다."
       },
       {
         "ja": "久しぶりですね。お元気でしたか。",
         "furigana": "{久|ひさ}しぶりですね。お{元気|げんき}でしたか。",
-        "en": "It's been a long time. How have you been?"
+        "en": "It's been a long time. How have you been?",
+        "ko": "오랜만입니다. 잘 지냈니?"
       },
       {
         "ja": "新入社員の仕事ぶりを見て、部長は安心したようだ。",
         "furigana": "{新入|しんにゅう}{社員|しゃいん}の{仕事|しごと}ぶりを{見|み}て、{部長|ぶちょう}は{安心|あんしん}したようだ。",
-        "en": "The manager seemed relieved after seeing how the new employee works."
+        "en": "The manager seemed relieved after seeing how the new employee works.",
+        "ko": "신입사원의 일만을 보고, 부장은 안심한 것 같다."
       }
     ],
     "tags": [
@@ -2622,17 +2866,20 @@
       {
         "ja": "あれ、会議って何時からだっけ？",
         "furigana": "あれ、{会議|かいぎ}って{何|なん}{時|じ}からだっけ？",
-        "en": "Wait, what time does the meeting start again?"
+        "en": "Wait, what time does the meeting start again?",
+        "ko": "어라, 회의는 몇시부터인가?"
       },
       {
         "ja": "すみません、お名前、何とおっしゃいましたっけ。",
         "furigana": "すみません、お{名前|なまえ}、{何|なん}とおっしゃいましたっけ。",
-        "en": "I'm sorry, what did you say your name was?"
+        "en": "I'm sorry, what did you say your name was?",
+        "ko": "죄송합니다, 이름, 뭐라고 말했어요."
       },
       {
         "ja": "子どものころ、よくこの公園で遊んだっけ。",
         "furigana": "{子|こ}どものころ、よくこの{公園|こうえん}で{遊|あそ}んだっけ。",
-        "en": "I used to play in this park a lot as a kid, didn't I."
+        "en": "I used to play in this park a lot as a kid, didn't I.",
+        "ko": "어렸을 때, 이 공원에서 자주 놀았습니다."
       }
     ],
     "tags": [
@@ -2655,17 +2902,20 @@
       {
         "ja": "試験に合格できますように。",
         "furigana": "{試験|しけん}に{合格|ごうかく}できますように。",
-        "en": "I hope I pass the exam."
+        "en": "I hope I pass the exam.",
+        "ko": "시험을 통과할 수 있도록."
       },
       {
         "ja": "明日の遠足、雨が降りませんように。",
         "furigana": "{明日|あした}の{遠足|えんそく}、{雨|あめ}が{降|ふ}りませんように。",
-        "en": "Please don't let it rain on tomorrow's school outing."
+        "en": "Please don't let it rain on tomorrow's school outing.",
+        "ko": "내일 소풍, 비가 내리지 않도록."
       },
       {
         "ja": "家族みんなが元気で過ごせますように。",
         "furigana": "{家族|かぞく}みんなが{元気|げんき}で{過|す}ごせますように。",
-        "en": "May everyone in my family stay healthy."
+        "en": "May everyone in my family stay healthy.",
+        "ko": "가족 모두가 건강하게 보낼 수 있도록."
       }
     ],
     "tags": [
@@ -2686,17 +2936,20 @@
       {
         "ja": "母に呼ばれたが、聞こえないふりをしてゲームを続けた。",
         "furigana": "{母|はは}に{呼|よ}ばれたが、{聞|き}こえないふりをしてゲームを{続|つづ}けた。",
-        "en": "My mother called me, but I pretended not to hear and kept playing my game."
+        "en": "My mother called me, but I pretended not to hear and kept playing my game.",
+        "ko": "어머니에게 불렸지만 들리지 않는 척하고 게임을 계속했다."
       },
       {
         "ja": "彼は本当は知っているのに、知らないふりをしている。",
         "furigana": "{彼|かれ}は{本当|ほんとう}は{知|し}っているのに、{知|し}らないふりをしている。",
-        "en": "He actually knows, but he's pretending not to."
+        "en": "He actually knows, but he's pretending not to.",
+        "ko": "그는 진짜는 알고 있는데, 모르는 척하고 있다."
       },
       {
         "ja": "電車の中で、寝たふりをして席を譲らない人がいる。",
         "furigana": "{電車|でんしゃ}の{中|なか}で、{寝|ね}たふりをして{席|せき}を{譲|ゆず}らない{人|ひと}がいる。",
-        "en": "Some people on the train pretend to be asleep so they don't have to give up their seats."
+        "en": "Some people on the train pretend to be asleep so they don't have to give up their seats.",
+        "ko": "기차 안에서 잠을 자고 자리를 양보하지 않는 사람이 있다."
       }
     ],
     "tags": [
@@ -2719,17 +2972,20 @@
       {
         "ja": "この料理は作り方が簡単なので、初心者向きだ。",
         "furigana": "この{料理|りょうり}は{作|つく}り{方|かた}が{簡単|かんたん}なので、{初心者|しょしんしゃ}{向|む}きだ。",
-        "en": "This dish is easy to make, so it's well suited to beginners."
+        "en": "This dish is easy to make, so it's well suited to beginners.",
+        "ko": "이 요리는 만드는 방법이 간단하기 때문에 초보자 방향이다."
       },
       {
         "ja": "この雑誌は、若い女性向けに作られている。",
         "furigana": "この{雑誌|ざっし}は、{若|わか}い{女性|じょせい}{向|む}けに{作|つく}られている。",
-        "en": "This magazine is made for young women."
+        "en": "This magazine is made for young women.",
+        "ko": "이 잡지는 젊은 여성을 위해 만들어졌습니다."
       },
       {
         "ja": "子ども向けの番組だが、大人が見ても十分楽しめる。",
         "furigana": "{子|こ}ども{向|む}けの{番組|ばんぐみ}だが、{大人|おとな}が{見|み}ても{十分|じゅうぶん}{楽|たの}しめる。",
-        "en": "It's a program aimed at children, but adults can enjoy it too."
+        "en": "It's a program aimed at children, but adults can enjoy it too.",
+        "ko": "어린이용 프로그램이지만, 어른이 봐도 충분히 즐길 수 있다."
       }
     ],
     "tags": [
@@ -2751,17 +3007,20 @@
       {
         "ja": "冬になると、つい家にこもりがちになる。",
         "furigana": "{冬|ふゆ}になると、つい{家|いえ}にこもりがちになる。",
-        "en": "When winter comes, I tend to stay cooped up at home."
+        "en": "When winter comes, I tend to stay cooped up at home.",
+        "ko": "겨울이 되면 마침내 집에 들어가기 쉽다."
       },
       {
         "ja": "娘は小さいころ病気がちだったが、今はとても元気だ。",
         "furigana": "{娘|むすめ}は{小|ちい}さいころ{病気|びょうき}がちだったが、{今|いま}はとても{元気|げんき}だ。",
-        "en": "My daughter was often sick when she was little, but now she's very healthy."
+        "en": "My daughter was often sick when she was little, but now she's very healthy.",
+        "ko": "딸은 어렸을 때 병이 들었지만, 지금은 매우 건강하다."
       },
       {
         "ja": "一人暮らしだと、野菜が不足しがちです。",
         "furigana": "{一人暮|ひとりぐ}らしだと、{野菜|やさい}が{不足|ふそく}しがちです。",
-        "en": "When you live alone, you tend not to get enough vegetables."
+        "en": "When you live alone, you tend not to get enough vegetables.",
+        "ko": "혼자 살면 야채가 부족하기 쉽습니다."
       }
     ],
     "tags": [
@@ -2783,17 +3042,20 @@
       {
         "ja": "少し風邪気味なので、今日は早めに帰ります。",
         "furigana": "{少|すこ}し{風邪|かぜ}{気味|ぎみ}なので、{今日|きょう}は{早|はや}めに{帰|かえ}ります。",
-        "en": "I have a bit of a cold, so I'll head home early today."
+        "en": "I have a bit of a cold, so I'll head home early today.",
+        "ko": "조금 감기기 때문에 오늘은 빨리 돌아갑니다."
       },
       {
         "ja": "最近、仕事が忙しくて疲れ気味だ。",
         "furigana": "{最近|さいきん}、{仕事|しごと}が{忙|いそが}しくて{疲|つか}れ{気味|ぎみ}だ。",
-        "en": "Work has been busy lately, and I'm feeling a little worn out."
+        "en": "Work has been busy lately, and I'm feeling a little worn out.",
+        "ko": "최근 일이 바빠서 피곤하다."
       },
       {
         "ja": "人手が足りず、工事は予定より遅れ気味だ。",
         "furigana": "{人手|ひとで}が{足|た}りず、{工事|こうじ}は{予定|よてい}より{遅|おく}れ{気味|ぎみ}だ。",
-        "en": "They're short-handed, so the construction is running a little behind schedule."
+        "en": "They're short-handed, so the construction is running a little behind schedule.",
+        "ko": "인력이 부족해 공사는 예정보다 뒤처진다."
       }
     ],
     "tags": [
@@ -2816,17 +3078,20 @@
       {
         "ja": "子どもたちは、泥だらけになって帰ってきた。",
         "furigana": "{子|こ}どもたちは、{泥|どろ}だらけになって{帰|かえ}ってきた。",
-        "en": "The children came home covered in mud."
+        "en": "The children came home covered in mud.",
+        "ko": "아이들은 진흙 투성이가 되어 돌아왔다."
       },
       {
         "ja": "急いで書いたレポートは、間違いだらけだった。",
         "furigana": "{急|いそ}いで{書|か}いたレポートは、{間違|まちが}いだらけだった。",
-        "en": "The report I wrote in a hurry was full of mistakes."
+        "en": "The report I wrote in a hurry was full of mistakes.",
+        "ko": "서둘러 쓴 보고서는 실수로 가득했다."
       },
       {
         "ja": "引っ越したばかりで、部屋はまだ段ボールだらけだ。",
         "furigana": "{引|ひ}っ{越|こ}したばかりで、{部屋|へや}はまだ{段|だん}ボールだらけだ。",
-        "en": "I've just moved, so my place is still full of cardboard boxes."
+        "en": "I've just moved, so my place is still full of cardboard boxes.",
+        "ko": "이사했을 뿐 방은 아직 골판지 투성이다."
       }
     ],
     "tags": [
@@ -2849,17 +3114,20 @@
       {
         "ja": "三時間かけて、長い小説を最後まで読み切った。",
         "furigana": "{三|さん}{時間|じかん}かけて、{長|なが}い{小説|しょうせつ}を{最後|さいご}まで{読|よ}み{切|き}った。",
-        "en": "It took three hours, but I read the long novel right to the end."
+        "en": "It took three hours, but I read the long novel right to the end.",
+        "ko": "3시간에 걸쳐 긴 소설을 끝까지 읽었다."
       },
       {
         "ja": "注文しすぎて、料理を食べ切れなかった。",
         "furigana": "{注文|ちゅうもん}しすぎて、{料理|りょうり}を{食|た}べ{切|き}れなかった。",
-        "en": "We ordered too much and couldn't finish all the food."
+        "en": "We ordered too much and couldn't finish all the food.",
+        "ko": "너무 주문해서 요리를 먹을 수 없었다."
       },
       {
         "ja": "山の上では、数え切れないほどの星が見えた。",
         "furigana": "{山|やま}の{上|うえ}では、{数|かぞ}え{切|き}れないほどの{星|ほし}が{見|み}えた。",
-        "en": "From the mountaintop we could see more stars than we could count."
+        "en": "From the mountaintop we could see more stars than we could count.",
+        "ko": "산 위에서는 무수한 별이 보였다."
       }
     ],
     "tags": [
@@ -2881,17 +3149,20 @@
       {
         "ja": "読みかけの本が、机の上に置いてある。",
         "furigana": "{読|よ}みかけの{本|ほん}が、{机|つくえ}の{上|うえ}に{置|お}いてある。",
-        "en": "There's a half-read book on the desk."
+        "en": "There's a half-read book on the desk.",
+        "ko": "읽는 책이 책상 위에 놓여 있다."
       },
       {
         "ja": "彼女は何か言いかけたが、そのまま黙ってしまった。",
         "furigana": "{彼女|かのじょ}は{何|なに}か{言|い}いかけたが、そのまま{黙|だま}ってしまった。",
-        "en": "She started to say something, but then fell silent."
+        "en": "She started to say something, but then fell silent.",
+        "ko": "그녀는 뭔가 말했지만, 그대로 침묵했다."
       },
       {
         "ja": "この花は枯れかけていたが、水をやったら元気になった。",
         "furigana": "この{花|はな}は{枯|か}れかけていたが、{水|みず}をやったら{元気|げんき}になった。",
-        "en": "This flower was starting to wilt, but it perked up after I watered it."
+        "en": "This flower was starting to wilt, but it perked up after I watered it.",
+        "ko": "이 꽃은 시들고 있었지만, 물을 먹으면 건강해졌다."
       }
     ],
     "tags": [
@@ -2914,17 +3185,20 @@
       {
         "ja": "困ったときは、お互いに助け合いましょう。",
         "furigana": "{困|こま}ったときは、お{互|たが}いに{助|たす}け{合|あ}いましょう。",
-        "en": "Let's help each other out when things get tough."
+        "en": "Let's help each other out when things get tough.",
+        "ko": "어려움을 겪었을 때 서로 도와주세요."
       },
       {
         "ja": "旅行の計画について、家族で話し合った。",
         "furigana": "{旅行|りょこう}の{計画|けいかく}について、{家族|かぞく}で{話|はな}し{合|あ}った。",
-        "en": "We talked over the travel plans as a family."
+        "en": "We talked over the travel plans as a family.",
+        "ko": "여행 계획에 대해 가족과 토론했다."
       },
       {
         "ja": "優勝が決まると、選手たちは抱き合って喜んだ。",
         "furigana": "{優勝|ゆうしょう}が{決|き}まると、{選手|せんしゅ}たちは{抱|だ}き{合|あ}って{喜|よろこ}んだ。",
-        "en": "When their victory was confirmed, the players hugged each other in joy."
+        "en": "When their victory was confirmed, the players hugged each other in joy.",
+        "ko": "우승이 정해지자 선수들은 껴안고 기뻐했다."
       }
     ],
     "tags": [
@@ -2947,17 +3221,20 @@
       {
         "ja": "名前を間違えたので、書類を書き直した。",
         "furigana": "{名前|なまえ}を{間違|まちが}えたので、{書類|しょるい}を{書|か}き{直|なお}した。",
-        "en": "I got the name wrong, so I rewrote the document."
+        "en": "I got the name wrong, so I rewrote the document.",
+        "ko": "이름을 잘못해서 서류를 다시 썼다."
       },
       {
         "ja": "すみません、電波が悪いので、あとでかけ直します。",
         "furigana": "すみません、{電波|でんぱ}が{悪|わる}いので、あとでかけ{直|なお}します。",
-        "en": "Sorry, the signal's bad, so I'll call you back later."
+        "en": "Sorry, the signal's bad, so I'll call you back later.",
+        "ko": "죄송합니다. 전파가 나빠서 나중에 다시 걸어요."
       },
       {
         "ja": "一度はあきらめた夢だが、もう一度考え直してみることにした。",
         "furigana": "{一|いち}{度|ど}はあきらめた{夢|ゆめ}だが、もう{一度|いちど}{考|かんが}え{直|なお}してみることにした。",
-        "en": "It's a dream I once gave up on, but I've decided to reconsider it."
+        "en": "It's a dream I once gave up on, but I've decided to reconsider it.",
+        "ko": "한 번은 포기한 꿈이지만, 다시 한번 생각해 보기로 했다."
       }
     ],
     "tags": [
@@ -2979,17 +3256,20 @@
       {
         "ja": "この靴は少し小さくて、歩きづらい。",
         "furigana": "この{靴|くつ}は{少|すこ}し{小|ちい}さくて、{歩|ある}きづらい。",
-        "en": "These shoes are a bit small, so they're hard to walk in."
+        "en": "These shoes are a bit small, so they're hard to walk in.",
+        "ko": "이 신발은 조금 작고 걷기 어렵습니다."
       },
       {
         "ja": "先輩にお金を貸してほしいとは、ちょっと言いづらい。",
         "furigana": "{先輩|せんぱい}にお{金|かね}を{貸|か}してほしいとは、ちょっと{言|い}いづらい。",
-        "en": "It's a bit awkward to ask a senior colleague to lend me money."
+        "en": "It's a bit awkward to ask a senior colleague to lend me money.",
+        "ko": "선배에게 돈을 빌려주길 바란다고는, 조금 말하기 힘들다."
       },
       {
         "ja": "字が小さくて読みづらいので、もう少し大きくしてもらえますか。",
         "furigana": "{字|じ}が{小|ちい}さくて{読|よ}みづらいので、もう{少|すこ}し{大|おお}きくしてもらえますか。",
-        "en": "The text is too small to read comfortably. Could you make it a bit bigger?"
+        "en": "The text is too small to read comfortably. Could you make it a bit bigger?",
+        "ko": "글자가 작아서 읽기가 어려우므로 좀 더 크게 받을 수 있습니까?"
       }
     ],
     "tags": [
@@ -3011,17 +3291,20 @@
       {
         "ja": "自分が悪いと思ったら、すぐに謝るべきだ。",
         "furigana": "{自分|じぶん}が{悪|わる}いと{思|おも}ったら、すぐに{謝|あやま}るべきだ。",
-        "en": "If you think you were in the wrong, you should apologize right away."
+        "en": "If you think you were in the wrong, you should apologize right away.",
+        "ko": "자신이 나쁘다고 생각하면 곧 사과해야 한다."
       },
       {
         "ja": "環境のために、私たちはもっとエネルギーを大切に使うべきだ。",
         "furigana": "{環境|かんきょう}のために、{私|わたし}たちはもっとエネルギーを{大切|たいせつ}に{使|つか}うべきだ。",
-        "en": "For the sake of the environment, we should use energy more carefully."
+        "en": "For the sake of the environment, we should use energy more carefully.",
+        "ko": "환경을 위해 우리는 더 많은 에너지를 소중히 사용해야합니다."
       },
       {
         "ja": "病院の中では、大きな声で話すべきではない。",
         "furigana": "{病院|びょういん}の{中|なか}では、{大|おお}きな{声|こえ}で{話|はな}すべきではない。",
-        "en": "You shouldn't talk loudly inside a hospital."
+        "en": "You shouldn't talk loudly inside a hospital.",
+        "ko": "병원 안에서는 큰 목소리로 말해서는 안된다."
       }
     ],
     "tags": [
@@ -3043,17 +3326,20 @@
       {
         "ja": "仕事の後に飲む冷たいビールほどおいしいものはない。",
         "furigana": "{仕事|しごと}の{後|あと}に{飲|の}む{冷|つめ}たいビールほどおいしいものはない。",
-        "en": "Nothing tastes as good as an ice-cold beer after work."
+        "en": "Nothing tastes as good as an ice-cold beer after work.",
+        "ko": "일 후에 마시는 차가운 맥주만큼 맛있는 것은 없다."
       },
       {
         "ja": "この町で、あの店ほど安くておいしいラーメン屋はない。",
         "furigana": "この{町|まち}で、あの{店|みせ}ほど{安|やす}くておいしいラーメン{屋|や}はない。",
-        "en": "There's no ramen shop in this town as cheap and tasty as that one."
+        "en": "There's no ramen shop in this town as cheap and tasty as that one.",
+        "ko": "이 마을에서 그 가게만큼 싸고 맛있는 라면집은 없다."
       },
       {
         "ja": "健康ほど大切なものはないと、病気になって気づいた。",
         "furigana": "{健康|けんこう}ほど{大切|たいせつ}なものはないと、{病気|びょうき}になって{気|き}づいた。",
-        "en": "When I got sick, I realized that nothing is as important as good health."
+        "en": "When I got sick, I realized that nothing is as important as good health.",
+        "ko": "건강만큼 소중한 것은 없으면 병이 되어 눈치챘다."
       }
     ],
     "tags": [
@@ -3075,17 +3361,20 @@
       {
         "ja": "終電に乗り遅れたから、タクシーで帰るしかない。",
         "furigana": "{終電|しゅうでん}に{乗|の}り{遅|おく}れたから、タクシーで{帰|かえ}るしかない。",
-        "en": "I missed the last train, so I have no choice but to take a taxi home."
+        "en": "I missed the last train, so I have no choice but to take a taxi home.",
+        "ko": "종전에 늦었기 때문에 택시로 돌아갈 수밖에 없다."
       },
       {
         "ja": "誰も手伝ってくれないなら、一人でやるしかない。",
         "furigana": "{誰|だれ}も{手伝|てつだ}ってくれないなら、{一人|ひとり}でやるしかない。",
-        "en": "If nobody will help me, I'll just have to do it myself."
+        "en": "If nobody will help me, I'll just have to do it myself.",
+        "ko": "아무도 도와주지 않으면 혼자 할 수밖에 없다."
       },
       {
         "ja": "ここまで来たら、もう最後まで頑張るしかないね。",
         "furigana": "ここまで{来|き}たら、もう{最後|さいご}まで{頑張|がんば}るしかないね。",
-        "en": "Now that we've come this far, all we can do is give it our all to the end."
+        "en": "Now that we've come this far, all we can do is give it our all to the end.",
+        "ko": "여기까지 오면 이제 끝까지 열심히 할 수밖에 없네."
       }
     ],
     "tags": [
@@ -3107,17 +3396,20 @@
       {
         "ja": "最近は、小学生までスマホを持っている。",
         "furigana": "{最近|さいきん}は、{小学生|しょうがくせい}までスマホを{持|も}っている。",
-        "en": "These days even elementary school kids have smartphones."
+        "en": "These days even elementary school kids have smartphones.",
+        "ko": "최근에는 초등학생까지 스마트폰을 가지고 있다."
       },
       {
         "ja": "親友にまでうそをつかれて、とてもショックだった。",
         "furigana": "{親友|しんゆう}にまでうそをつかれて、とてもショックだった。",
-        "en": "I was really shocked that even my best friend lied to me."
+        "en": "I was really shocked that even my best friend lied to me.",
+        "ko": "가장 친한 친구에게까지 거짓말을 해서 매우 충격이었다."
       },
       {
         "ja": "雨だけでなく、風まで強くなってきた。",
         "furigana": "{雨|あめ}だけでなく、{風|かぜ}まで{強|つよ}くなってきた。",
-        "en": "It's not just the rain; now even the wind is getting stronger."
+        "en": "It's not just the rain; now even the wind is getting stronger.",
+        "ko": "비뿐만 아니라 바람까지 강해져 왔다."
       }
     ],
     "tags": [
@@ -3139,17 +3431,20 @@
       {
         "ja": "考え事をしていて、もう少しで車にひかれるところだった。",
         "furigana": "{考|かんが}え{事|ごと}をしていて、もう{少|すこ}しで{車|くるま}にひかれるところだった。",
-        "en": "I was lost in thought and nearly got hit by a car."
+        "en": "I was lost in thought and nearly got hit by a car.",
+        "ko": "생각을 하고 있어 조금 더 차에 끌리는 곳이었다."
       },
       {
         "ja": "目覚ましが鳴らなくて、危うく飛行機に乗り遅れるところだった。",
         "furigana": "{目覚|めざ}ましが{鳴|な}らなくて、{危|あや}うく{飛行機|ひこうき}に{乗|の}り{遅|おく}れるところだった。",
-        "en": "My alarm didn't go off, and I very nearly missed my flight."
+        "en": "My alarm didn't go off, and I very nearly missed my flight.",
+        "ko": "알람이 울리지 않고, 위험하게 비행기에 뒤쳐지는 곳이었다."
       },
       {
         "ja": "君が教えてくれなかったら、大事な書類を出し忘れるところだったよ。",
         "furigana": "{君|きみ}が{教|おし}えてくれなかったら、{大事|だいじ}な{書類|しょるい}を{出|だ}し{忘|わす}れるところだったよ。",
-        "en": "If you hadn't reminded me, I would have forgotten to hand in the important documents."
+        "en": "If you hadn't reminded me, I would have forgotten to hand in the important documents.",
+        "ko": "네가 가르쳐주지 않았다면 소중한 서류를 내고 잊을 곳이었어."
       }
     ],
     "tags": [
@@ -3171,17 +3466,20 @@
       {
         "ja": "日本人だからといって、みんなが敬語を正しく使えるわけではない。",
         "furigana": "{日本人|にほんじん}だからといって、みんなが{敬語|けいご}を{正|ただ}しく{使|つか}えるわけではない。",
-        "en": "Just because someone is Japanese doesn't mean they can use keigo correctly."
+        "en": "Just because someone is Japanese doesn't mean they can use keigo correctly.",
+        "ko": "일본인이라고 해도, 모두가 경어를 올바르게 사용할 수 있는 것은 아니다."
       },
       {
         "ja": "忙しいからといって、朝ご飯を食べないのは体によくない。",
         "furigana": "{忙|いそが}しいからといって、{朝|あさ}ご{飯|はん}を{食|た}べないのは{体|からだ}によくない。",
-        "en": "Skipping breakfast just because you're busy isn't good for you."
+        "en": "Skipping breakfast just because you're busy isn't good for you.",
+        "ko": "바쁘다고 해서 아침밥을 먹지 않는 것은 몸에 좋지 않다."
       },
       {
         "ja": "一回負けたからといって、あきらめる必要はない。",
         "furigana": "{一回|いっかい}{負|ま}けたからといって、あきらめる{必要|ひつよう}はない。",
-        "en": "There's no need to give up just because you lost once."
+        "en": "There's no need to give up just because you lost once.",
+        "ko": "한 번 졌다고 해서 포기할 필요는 없다."
       }
     ],
     "tags": [
@@ -3203,17 +3501,20 @@
       {
         "ja": "説明書に書いてあるとおりに組み立てたのに、うまく動かない。",
         "furigana": "{説明|せつめい}{書|しょ}に{書|か}いてあるとおりに{組|く}み{立|た}てたのに、うまく{動|うご}かない。",
-        "en": "I put it together exactly as the manual says, but it doesn't work properly."
+        "en": "I put it together exactly as the manual says, but it doesn't work properly.",
+        "ko": "설명서에 적힌 대로 조립했는데 잘 움직이지 않는다."
       },
       {
         "ja": "先生が言ったとおり、試験には去年と似た問題が出た。",
         "furigana": "{先生|せんせい}が{言|い}ったとおり、{試験|しけん}には{去年|きょねん}と{似|に}た{問題|もんだい}が{出|で}た。",
-        "en": "Just as the teacher said, questions similar to last year's came up on the exam."
+        "en": "Just as the teacher said, questions similar to last year's came up on the exam.",
+        "ko": "선생님이 말했듯이 시험에는 작년과 비슷한 문제가 나왔다."
       },
       {
         "ja": "工事は予定どおりに進んでいる。",
         "furigana": "{工事|こうじ}は{予定|よてい}どおりに{進|すす}んでいる。",
-        "en": "The construction is going according to schedule."
+        "en": "The construction is going according to schedule.",
+        "ko": "공사는 예정대로 진행되고 있다."
       }
     ],
     "tags": [
@@ -3234,17 +3535,20 @@
       {
         "ja": "私なんか、まだまだ初心者です。",
         "furigana": "{私|わたし}なんか、まだまだ{初心者|しょしんしゃ}です。",
-        "en": "Someone like me is still just a beginner."
+        "en": "Someone like me is still just a beginner.",
+        "ko": "나 뭔가 아직 초보자입니다."
       },
       {
         "ja": "幽霊なんて、いるわけがないよ。",
         "furigana": "{幽霊|ゆうれい}なんて、いるわけがないよ。",
-        "en": "Ghosts? There's no way they exist."
+        "en": "Ghosts? There's no way they exist.",
+        "ko": "유령은 있을 리가 없어."
       },
       {
         "ja": "あの二人が結婚するなんて、びっくりした。",
         "furigana": "あの{二人|ふたり}が{結婚|けっこん}するなんて、びっくりした。",
-        "en": "Those two are getting married? I was so surprised!"
+        "en": "Those two are getting married? I was so surprised!",
+        "ko": "그 두 사람이 결혼한다니 깜짝 놀랐다."
       }
     ],
     "tags": [
