@@ -181,8 +181,8 @@ export default function LandingPage() {
           </h1>
           <p className="ondo-rise mt-2.5 text-[14px] text-zinc-500 sm:mt-3.5 sm:text-[15px]" style={{ "--ondo-rise-delay": "180ms" } as React.CSSProperties}>
             {isJa
-              ? "毎晩21時、希望条件に合う他大学の学生を1対1でご紹介します。"
-              : "매일 밤 9시, 조건이 맞는 다른 학교 학생을 1:1로 소개해 드려요."}
+              ? "毎晩21時、写真評価なしで価値観と会話の温度が合うたった一人を1対1でおつなぎします。"
+              : "매일 밤 9시, 사진 품평 없이 가치관과 대화 온도가 통하는 단 한 사람을 1:1로 이어 드려요."}
           </p>
 
           {/* 커플 그림: 대화를 나눌수록 온도가 올라가 36.5°에서 카톡 공개 */}
@@ -246,13 +246,13 @@ export default function LandingPage() {
             {(isJa
               ? [
                   { emoji: "🪪", title: "学生認証＆プロフィール", desc: "学校メールまたは学生証で認証" },
-                  { emoji: "💌", title: "毎晩21時に紹介到着", desc: "条件の合うお相手を1:1で紹介" },
+                  { emoji: "💌", title: "毎晩21時に紹介到着", desc: "価値観の合うお相手を1:1で紹介" },
                   { emoji: "💬", title: "アプリ内でまず会話", desc: "お互いOKならブラインド会話" },
                   { emoji: "☕", title: "カカオ交換＆出会い", desc: "5往復話したらカカオID公開" },
                 ]
               : [
                   { emoji: "🪪", title: "학생 인증 & 프로필", desc: "웹메일·학생증 인증 후 프로필 작성" },
-                  { emoji: "💌", title: "매일 밤 9시 도착", desc: "조건 맞는 상대를 1:1로 소개" },
+                  { emoji: "💌", title: "매일 밤 9시 도착", desc: "결 맞는 상대를 1:1로 소개" },
                   { emoji: "💬", title: "앱 안에서 먼저 대화", desc: "둘 다 수락하면 블라인드 대화" },
                   { emoji: "☕", title: "카톡 교환 후 만남", desc: "5마디 이상 통하면 카톡 ID 공개" },
                 ]
