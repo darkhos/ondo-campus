@@ -195,11 +195,21 @@ export function CoupleHero({ isJa }: { isJa: boolean }) {
         </g>
 
         {/* ── 가운데 온도 하트 ── */}
-        <g key={done ? "heart-done" : "heart"} className={done ? "ondo-svg-pop" : undefined}>
+        {done && (
+          <path
+            key={`ring-${runId}`}
+            d="M180 140 C150 118 146 96 160 86 C170 79 178 84 180 92 C182 84 190 79 200 86 C214 96 210 118 180 140 Z"
+            fill="none"
+            stroke="#f43f5e"
+            strokeWidth="2.5"
+            className="ondo-heart-ring"
+          />
+        )}
+        <g key={done ? "heart-done" : `heart-${shown}`} className={shown > 0 ? "ondo-svg-pop" : undefined}>
           <path
             d="M180 140 C150 118 146 96 160 86 C170 79 178 84 180 92 C182 84 190 79 200 86 C214 96 210 118 180 140 Z"
             fill="#fff"
-            stroke="#fda4af"
+            stroke={done ? "#e11d48" : "#fda4af"}
             strokeWidth="2"
           />
           <g clipPath="url(#ondo-heart-clip)">
@@ -221,7 +231,7 @@ export function CoupleHero({ isJa }: { isJa: boolean }) {
             textAnchor="middle"
             fontSize="13"
             fontWeight="900"
-            fill={done ? "#e11d48" : "#71717a"}
+            fill={done ? "#be123c" : "#52525b"}
             style={{
               fontFamily: "inherit",
               fontVariantNumeric: "tabular-nums",
@@ -234,16 +244,23 @@ export function CoupleHero({ isJa }: { isJa: boolean }) {
 
         {/* 대화 진행 점 (5개) */}
         <g>
-          {[0, 1, 2, 3, 4].map((i) => (
-            <circle
-              key={i}
-              cx={164 + i * 8}
-              cy={172}
-              r="2.4"
-              fill={i < shown ? "#f43f5e" : "#e7e5e4"}
-              style={{ transition: "fill 0.3s" }}
-            />
-          ))}
+          {[0, 1, 2, 3, 4].map((i) => {
+            const active = i < shown;
+            return (
+              <circle
+                key={i}
+                cx={164 + i * 8}
+                cy={172}
+                r="2.5"
+                fill={active ? "#e11d48" : "#e7e5e4"}
+                style={{
+                  transform: active ? "scale(1.22)" : "scale(1)",
+                  transformOrigin: `${164 + i * 8}px 172px`,
+                  transition: "transform 200ms var(--ease-out), fill 200ms ease",
+                }}
+              />
+            );
+          })}
         </g>
 
         {/* 카톡 공개 순간 */}

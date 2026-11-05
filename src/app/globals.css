@@ -601,6 +601,54 @@ h3 {
   animation: ondo-svg-sparkle 1.4s ease-out both;
 }
 
+/* Emil Kowalski Blur-Crossfade: 뷰/프로필 전환 시 두 상태가 겹쳐 보이지 않도록 미세 블러와 함께 부드럽게 전환 */
+@keyframes ondo-view-swap {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+.ondo-view-swap {
+  animation: ondo-view-swap 240ms var(--ease-out) both;
+}
+
+/* 소개팅 4단계 카드 하단 진행 바: 현재 단계에서 다음 단계로 넘어가는 리듬을 시각화 */
+@keyframes ondo-step-progress {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+.ondo-step-progress {
+  transform-origin: left center;
+  animation: ondo-step-progress 2.8s linear forwards;
+}
+
+/* 36.5° 달성 순간 하트에서 퍼져 나가는 파동 링 */
+@keyframes ondo-heart-ring {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+.ondo-heart-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ondo-heart-ring 0.85s var(--ease-out) both;
+}
+
 /* 휴대폰에서 "동작 줄이기"를 켠 사람에게는 위치 이동·회전 모션만 줄이고 색상·투명도 전환은 부드럽게 유지 */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -617,6 +665,9 @@ h3 {
   .ondo-radar-ring-1,
   .ondo-radar-ring-2,
   .ondo-step-emoji-bounce,
+  .ondo-step-progress,
+  .ondo-heart-ring,
+  .ondo-view-swap,
   .ondo-attention-ring,
   .ondo-breathe {
     animation: none !important;

@@ -407,32 +407,81 @@ export function MatchCard({
   const [locale] = useAppLocale();
   const isJa = locale === "ja";
 
-  const isDemoPartner = partner.uid === "partner-01";
+  const isDemoPartner = partner.uid.startsWith("partner-");
+  const demoJaMap: Record<
+    string,
+    {
+      nickname: string;
+      school: string;
+      dept: string;
+      loc: string;
+      intro: string;
+      bio: string;
+      kakaoId: string;
+    }
+  > = {
+    "partner-01": {
+      nickname: "蘆原区ジェジェイヤ",
+      school: "光云大学",
+      dept: "経営学科",
+      loc: "ソウル特別市 蘆原区",
+      intro:
+        "こんにちは！光云大で経営学を専攻しています。週末は静かなカフェや展示会に行くのが好きです。よろしくお願いします！",
+      bio: "平日は学校の近くで運動して、週末は美味しいデザートカフェや展示会を巡るのが好きです。一緒に歩きながら、何気ない日常の話ができる方と出会いたいです。",
+      kakaoId: "anam_jwe24",
+    },
+    "partner-02": {
+      nickname: "冠岳山夜散歩ラー",
+      school: "ソウル大学",
+      dept: "経済学部",
+      loc: "ソウル特別市 麻浦区",
+      intro:
+        "こんにちは、LP音楽と散歩が好きなソウル大経済学部の学生です。会話のテンポが心地よい方だと嬉しいです。",
+      bio: "静かな独立書店やLPバーが好きな経済学徒です。リアクションが良いとよく言われます。礼儀正しくて優しい恋愛をしたいです。",
+      kakaoId: "snu_lp_walk",
+    },
+    "partner-03": {
+      nickname: "漢陽大聖水ラバー",
+      school: "漢陽大学",
+      dept: "情報システム学科",
+      loc: "ソウル特別市 城東区",
+      intro: "はじめまして！聖水洞のグルメ巡りとドライブが好きな漢陽大生です。",
+      bio: "聖水洞のグルメマップを自作するほど美味しいものが好きです。ユーモアのツボが合って一緒に成長できる方と出会いたいです！",
+      kakaoId: "seongsu_hyu25",
+    },
+    "partner-04": {
+      nickname: "新村洞ハルカ",
+      school: "延世大学 韓国語学堂",
+      dept: "🌏 韓国語4級 · 東京留学生",
+      loc: "ソウル特別市 西大門区",
+      intro:
+        "こんにちは！延世大の韓国語学堂に通っています。新村や延南洞のおしゃれなカフェに一緒に行きましょう！",
+      bio: "東京から来た延世大語学堂の学生です！韓国のカフェや散歩が大好きなので、韓国の大学生の友達と温かくお話ししたいです。",
+      kakaoId: "shinchon_haruka",
+    },
+  };
+  const demoMeta = demoJaMap[partner.uid];
+  const demoKakaoId = demoMeta?.kakaoId || "anam_jwe24";
   const displayNickname =
-    isJa && isDemoPartner ? "蘆原区ジェジェイヤ" : partner.nickname;
+    isJa && demoMeta ? demoMeta.nickname : partner.nickname;
   const displaySchool = isJa
-    ? isDemoPartner
-      ? "光云大学"
+    ? demoMeta
+      ? demoMeta.school
       : schoolLabelJa(partner.school)
     : partner.school;
   const displayDept = isJa
-    ? isDemoPartner
-      ? "経営学科"
+    ? demoMeta
+      ? demoMeta.dept
       : departmentLabelJa(partner.department)
     : partner.department;
   const displayLoc = isJa
-    ? isDemoPartner
-      ? "ソウル特別市 蘆原区"
+    ? demoMeta
+      ? demoMeta.loc
       : locationLabelJa(partner.locationLabel || "")
     : partner.locationLabel || "";
   const displayVoiceIntro =
-    isJa && isDemoPartner
-      ? "こんにちは！光云大で経営学を専攻しています。週末は静かなカフェや展示会に行くのが好きです。よろしくお願いします！"
-      : partner.voiceIntroText;
-  const displayBio =
-    isJa && isDemoPartner
-      ? "平日は学校の近くで運動して、週末は美味しいデザートカフェや展示会を巡るのが好きです。一緒に歩きながら、何気ない日常の話ができる方と出会いたいです。"
-      : partner.bio;
+    isJa && demoMeta ? demoMeta.intro : partner.voiceIntroText;
+  const displayBio = isJa && demoMeta ? demoMeta.bio : partner.bio;
 
   const [showTranslated, setShowTranslated] = useState(false);
   const [translating, setTranslating] = useState(false);
@@ -746,7 +795,10 @@ export function MatchCard({
           >
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-[12px] font-extrabold text-rose-700 sm:text-[12.5px]">
+                <p
+                  key={`status-${demoChatStep}`}
+                  className="ondo-view-swap text-[12px] font-extrabold text-rose-700 sm:text-[12.5px]"
+                >
                   {demoChatStep === 0
                     ? isJa
                       ? "🔒 会話5回達成までブラインド保護中"
@@ -761,7 +813,7 @@ export function MatchCard({
                 </p>
                 <p
                   className={cn(
-                    "mt-1 font-mono text-[13.5px] font-black tracking-tight text-zinc-900 transition-all duration-500 select-none sm:text-[14px]",
+                    "mt-1 font-mono text-[13.5px] font-black tracking-tight text-zinc-900 transition-[filter,color] duration-250 ease-[var(--ease-out)] select-none sm:text-[14px]",
                     shownCount <= 1
                       ? "blur-[5px]"
                       : shownCount < 5
@@ -770,13 +822,13 @@ export function MatchCard({
                   )}
                 >
                   <span key={shownCount === 5 ? "open" : "closed"} className={shownCount === 5 ? "ondo-pop" : undefined}>
-                    kakao_id: anam_jwe24
+                    kakao_id: {demoKakaoId}
                   </span>
                 </p>
               </div>
               <span
                 className={cn(
-                  "shrink-0 rounded-xl px-2.5 py-1 text-[11.5px] font-extrabold tabular-nums text-white transition-colors",
+                  "shrink-0 rounded-xl px-2.5 py-1 text-[11.5px] font-extrabold tabular-nums text-white transition-colors duration-200 ease-[var(--ease-out)]",
                   shownCount === 5 ? "bg-emerald-700" : "bg-rose-700"
                 )}
               >
@@ -785,14 +837,14 @@ export function MatchCard({
               </span>
             </div>
 
-            {/* 대화가 쌓이는 모습: 점 5개 + 진행 막대 */}
+            {/* 대화가 쌓이는 모습: 점 5개 + GPU transform 진행 막대 */}
             <div className="mt-2.5 flex items-center gap-2" aria-hidden>
               <div className="flex gap-1">
                 {[0, 1, 2, 3, 4].map((i) => (
                   <span
                     key={i}
                     className={cn(
-                      "h-2 w-2 rounded-full transition-all duration-300",
+                      "h-2 w-2 rounded-full transition-[transform,background-color] duration-200 ease-[var(--ease-out)]",
                       i < shownCount
                         ? shownCount === 5
                           ? "scale-110 bg-emerald-600"
@@ -805,23 +857,35 @@ export function MatchCard({
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-stone-200/80">
                 <div
                   className={cn(
-                    "h-full rounded-full transition-[width] duration-300 ease-out",
+                    "h-full w-full origin-left rounded-full transition-[transform,background-color] duration-250 ease-[var(--ease-out)]",
                     shownCount === 5 ? "bg-emerald-600" : "bg-rose-600"
                   )}
-                  style={{ width: `${(shownCount / 5) * 100}%` }}
+                  style={{ transform: `scaleX(${shownCount / 5})` }}
                 />
               </div>
             </div>
 
-            <div className="mt-2.5 grid grid-cols-3 gap-1.5">
+            {/* Emil Kowalski Sliding Pill Segmented Control (3단계 체험 스위처) */}
+            <div className="relative mt-2.5 grid grid-cols-3 items-center rounded-2xl bg-stone-100 p-1">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/3)] rounded-xl shadow-xs transition-[transform,background-color] duration-220 ease-[var(--ease-out)]",
+                  demoChatStep === 0
+                    ? "translate-x-0 bg-rose-700"
+                    : demoChatStep === 3
+                    ? "translate-x-full bg-rose-700"
+                    : "translate-x-[200%] bg-emerald-700"
+                )}
+              />
               <button
                 type="button"
                 onClick={() => pickDemoStep(0)}
                 className={cn(
-                  "rounded-xl border px-2 py-2 text-[11.5px] font-extrabold transition-all duration-300 sm:text-[12px]",
+                  "relative z-10 rounded-xl px-2 py-1.5 text-[11.5px] font-extrabold transition-colors duration-200 ease-[var(--ease-out)] sm:text-[12px]",
                   demoChatStep === 0
-                    ? "-translate-y-0.5 border-rose-700 bg-rose-700 text-white shadow-[0_6px_16px_rgba(190,18,60,0.28)] ring-2 ring-rose-300/60"
-                    : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
+                    ? "text-white"
+                    : "text-zinc-700 hover:text-zinc-900"
                 )}
               >
                 {isJa ? "1段階: 直後" : "1단계: 매칭 직후"}
@@ -830,10 +894,10 @@ export function MatchCard({
                 type="button"
                 onClick={() => pickDemoStep(3)}
                 className={cn(
-                  "rounded-xl border px-2 py-2 text-[11.5px] font-extrabold transition-all duration-300 sm:text-[12px]",
+                  "relative z-10 rounded-xl px-2 py-1.5 text-[11.5px] font-extrabold transition-colors duration-200 ease-[var(--ease-out)] sm:text-[12px]",
                   demoChatStep === 3
-                    ? "-translate-y-0.5 border-rose-700 bg-rose-700 text-white shadow-[0_6px_16px_rgba(190,18,60,0.28)] ring-2 ring-rose-300/60"
-                    : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
+                    ? "text-white"
+                    : "text-zinc-700 hover:text-zinc-900"
                 )}
               >
                 {isJa ? "2段階: 会話3回" : "2단계: 대화 3회"}
@@ -842,10 +906,10 @@ export function MatchCard({
                 type="button"
                 onClick={() => pickDemoStep(5)}
                 className={cn(
-                  "rounded-xl border px-2 py-2 text-[11.5px] font-extrabold transition-all duration-300 sm:text-[12px]",
+                  "relative z-10 rounded-xl px-2 py-1.5 text-[11.5px] font-extrabold transition-colors duration-200 ease-[var(--ease-out)] sm:text-[12px]",
                   demoChatStep === 5
-                    ? "-translate-y-0.5 border-emerald-700 bg-emerald-700 text-white shadow-[0_6px_16px_rgba(4,120,87,0.28)] ring-2 ring-emerald-300/60"
-                    : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
+                    ? "text-white"
+                    : "text-zinc-700 hover:text-zinc-900"
                 )}
               >
                 {isJa ? "3段階: カカオ公開!" : "3단계: 카톡 공개!"}

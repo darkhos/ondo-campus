@@ -56,10 +56,40 @@ export default function LandingPage() {
 
   const [quickLoading, setQuickLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const [stepsPaused, setStepsPaused] = useState(false);
   const [stepsRef, stepsSeen] = useInViewOnce<HTMLOListElement>();
+  const [sampleIdx, setSampleIdx] = useState<0 | 1 | 2>(0);
+  const samplePartners = [
+    DEMO_PARTNERS[0], // 광운대 경영
+    DEMO_PARTNERS[3] ?? DEMO_PARTNERS[0], // 연세대 어학당 🇯🇵
+    DEMO_PARTNERS[1] ?? DEMO_PARTNERS[0], // 서울대 경제
+  ];
+  const selectedSamplePartner = samplePartners[sampleIdx] ?? DEMO_PARTNERS[0];
+  const [countdownText, setCountdownText] = useState("21:00:00");
   const reviews = isJa ? REVIEWS_JA : REVIEWS_KO;
   const reviewsRef = useRef<HTMLElement | null>(null);
   const [reviewIdx, setReviewIdx] = useState(0);
+
+  // 오늘 밤 9시(KST 21:00)까지 남은 시간 실시간 카운트다운 (tabular-nums 전광판)
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+      const target = new Date(kstNow);
+      target.setUTCHours(21, 0, 0, 0);
+      if (kstNow.getTime() >= target.getTime()) {
+        target.setUTCDate(target.getUTCDate() + 1);
+      }
+      const diffSec = Math.max(0, Math.floor((target.getTime() - kstNow.getTime()) / 1000));
+      const hh = String(Math.floor(diffSec / 3600)).padStart(2, "0");
+      const mm = String(Math.floor((diffSec % 3600) / 60)).padStart(2, "0");
+      const ss = String(diffSec % 60).padStart(2, "0");
+      setCountdownText(`${hh}:${mm}:${ss}`);
+    };
+    updateCountdown();
+    const timer = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   // 첫 화면의 가입 버튼이 위로 지나가면 휴대폰 화면 아래에 가입 버튼을 띄움
   const heroCtaRef = useRef<HTMLDivElement | null>(null);
@@ -75,11 +105,12 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
+    if (stepsPaused) return;
     const id = window.setInterval(() => {
       setActiveStep((prev) => (prev + 1) % 4);
-    }, 2200);
+    }, 2800);
     return () => window.clearInterval(id);
-  }, []);
+  }, [stepsPaused]);
 
   const handleKakaoLogin = async () => {
     setQuickLoading(true);
@@ -185,8 +216,25 @@ export default function LandingPage() {
               : "매일 밤 9시, 얼굴보다 대화가 먼저 통하는 36.5°의 인연을 1:1로 찾아드려요."}
           </p>
 
+          {/* 실시간 오늘 밤 9시 매칭 카운트다운 전광판 */}
+          <div
+            className="ondo-rise mt-3 inline-flex items-center gap-2 rounded-full border border-rose-200/90 bg-rose-50/70 px-3.5 py-1 text-[12px] font-bold text-rose-700"
+            style={{ "--ondo-rise-delay": "130ms" } as React.CSSProperties}
+          >
+            <span className="relative flex h-2 w-2 shrink-0 items-center justify-center">
+              <span className="ondo-radar-ring-1 absolute inline-flex h-full w-full rounded-full bg-rose-500" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-600" />
+            </span>
+            <span>
+              {isJa ? "今夜21時の1:1紹介まで" : "오늘 밤 9시 1:1 소개 도착까지"}
+            </span>
+            <span className="font-mono text-[12.5px] font-black tracking-tight tabular-nums text-zinc-900">
+              {countdownText}
+            </span>
+          </div>
+
           {/* 커플 그림: 대화를 나눌수록 온도가 올라가 36.5°에서 카톡 공개 */}
-          <div className="ondo-rise mt-3 sm:mt-4" style={{ "--ondo-rise-delay": "150ms" } as React.CSSProperties}>
+          <div className="ondo-rise mt-3 sm:mt-4" style={{ "--ondo-rise-delay": "160ms" } as React.CSSProperties}>
             <CoupleHero isJa={isJa} />
           </div>
 
@@ -235,7 +283,11 @@ export default function LandingPage() {
         </section>
 
         {/* 소개팅 진행 순서 — 짧고 직관적인 4단계 */}
-        <section className="mt-8 sm:mt-10">
+        <section
+          className="mt-8 sm:mt-10"
+          onMouseEnter={() => setStepsPaused(true)}
+          onMouseLeave={() => setStepsPaused(false)}
+        >
           <h2 className="text-center text-[18px] font-black tracking-tight text-zinc-900 sm:text-[22px]">
             {isJa ? "紹介の流れ" : "소개팅 진행 순서"}
           </h2>
@@ -269,8 +321,8 @@ export default function LandingPage() {
                   onMouseEnter={() => setActiveStep(idx)}
                   className={
                     isActive
-                      ? "h-full cursor-pointer rounded-2xl border-2 border-rose-600 bg-rose-50/40 p-3.5 shadow-[0_10px_24px_rgba(225,29,72,0.12)] transition-[transform,border-color,background-color,box-shadow] duration-200 ease-[var(--ease-out)] -translate-y-1 active:scale-[0.98] sm:rounded-3xl sm:p-5"
-                      : "h-full cursor-pointer rounded-2xl border border-stone-200/90 bg-white p-3.5 transition-[transform,border-color,background-color,box-shadow] duration-200 ease-[var(--ease-out)] hover:border-rose-200 active:scale-[0.98] sm:rounded-3xl sm:p-5"
+                      ? "relative h-full cursor-pointer overflow-hidden rounded-2xl border-2 border-rose-600 bg-rose-50/40 p-3.5 shadow-[0_10px_24px_rgba(225,29,72,0.12)] transition-[transform,border-color,background-color,box-shadow] duration-200 ease-[var(--ease-out)] -translate-y-1 active:scale-[0.98] sm:rounded-3xl sm:p-5"
+                      : "relative h-full cursor-pointer overflow-hidden rounded-2xl border border-stone-200/90 bg-white p-3.5 transition-[transform,border-color,background-color,box-shadow] duration-200 ease-[var(--ease-out)] hover:border-rose-200 active:scale-[0.98] sm:rounded-3xl sm:p-5"
                   }
                 >
                   <div className="flex items-center gap-1.5 sm:gap-2">
@@ -287,8 +339,8 @@ export default function LandingPage() {
                     <span
                       className={
                         isActive
-                          ? "rounded-full bg-rose-700 px-2 py-0.5 text-[11px] font-extrabold text-white transition-colors sm:text-[11.5px]"
-                          : "text-[11.5px] font-extrabold text-rose-700 transition-colors sm:text-[12px]"
+                          ? "rounded-full bg-rose-700 px-2 py-0.5 text-[11px] font-extrabold tabular-nums text-white transition-colors sm:text-[11.5px]"
+                          : "text-[11.5px] font-extrabold tabular-nums text-rose-700 transition-colors sm:text-[12px]"
                       }
                     >
                       STEP {idx + 1}
@@ -300,6 +352,13 @@ export default function LandingPage() {
                   <p className="mt-1 text-[12.5px] leading-relaxed text-zinc-600 sm:text-[13.5px]">
                     {step.desc}
                   </p>
+                  {isActive && !stepsPaused && (
+                    <span
+                      key={`prog-${activeStep}`}
+                      aria-hidden="true"
+                      className="ondo-step-progress pointer-events-none absolute right-0 bottom-0 left-0 h-1 bg-rose-600"
+                    />
+                  )}
                 </div>
                 </li>
               );
@@ -310,17 +369,63 @@ export default function LandingPage() {
         {/* Interactive Live Preview + Core Trust Pills */}
         <section className="mx-auto mt-10 max-w-2xl sm:mt-12">
           <Reveal>
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-[14px] font-extrabold text-zinc-900 sm:text-[16px]">
-                {isJa
-                  ? "こんなプロフィールが届きます（例）"
-                  : "이런 소개팅 프로필이 도착해요 (예시)"}
-              </span>
-              <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[11.5px] font-extrabold text-rose-700">
-                {isJa ? "サンプル" : "SAMPLE"}
-              </span>
+            <div className="mb-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[14px] font-extrabold text-zinc-900 sm:text-[16px]">
+                  {isJa
+                    ? "こんなプロフィールが届きます（例）"
+                    : "이런 소개팅 프로필이 도착해요 (예시)"}
+                </span>
+                <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[11.5px] font-extrabold text-rose-700 sm:hidden">
+                  {isJa ? "サンプル" : "SAMPLE"}
+                </span>
+              </div>
+
+              {/* Emil Kowalski Sliding Pill Sample Switcher (3명의 예시 프로필 실시간 전환) */}
+              <div
+                role="tablist"
+                aria-label={isJa ? "サンプルプロフィール選択" : "예시 프로필 선택"}
+                className="relative grid grid-cols-3 items-center rounded-full border border-stone-200/90 bg-white p-0.5 text-[11.5px] font-extrabold select-none sm:w-auto"
+              >
+                <span
+                  aria-hidden="true"
+                  className={
+                    sampleIdx === 0
+                      ? "pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc((100%-4px)/3)] translate-x-0 rounded-full bg-zinc-900 transition-transform duration-200 ease-[var(--ease-out)]"
+                      : sampleIdx === 1
+                      ? "pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc((100%-4px)/3)] translate-x-full rounded-full bg-rose-700 transition-transform duration-200 ease-[var(--ease-out)]"
+                      : "pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc((100%-4px)/3)] translate-x-[200%] rounded-full bg-zinc-900 transition-transform duration-200 ease-[var(--ease-out)]"
+                  }
+                />
+                {[
+                  { labelKo: "🇰🇷 광운·경영", labelJa: "🇰🇷 光云·経営" },
+                  { labelKo: "🇯🇵 연세·어학당", labelJa: "🇯🇵 延世·語学堂" },
+                  { labelKo: "🇰🇷 서울·경제", labelJa: "🇰🇷 ソウル·経済" },
+                ].map((tab, i) => {
+                  const active = sampleIdx === i;
+                  return (
+                    <button
+                      key={tab.labelKo}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => setSampleIdx(i as 0 | 1 | 2)}
+                      className={
+                        active
+                          ? "relative z-10 rounded-full px-2.5 py-1 text-center text-[11.5px] text-white transition-colors duration-200 ease-[var(--ease-out)] sm:px-3"
+                          : "relative z-10 rounded-full px-2.5 py-1 text-center text-[11.5px] text-zinc-700 transition-colors duration-200 ease-[var(--ease-out)] hover:text-zinc-900 sm:px-3"
+                      }
+                    >
+                      {isJa ? tab.labelJa : tab.labelKo}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <MatchCard partner={DEMO_PARTNERS[0]} />
+
+            <div key={selectedSamplePartner.uid} className="ondo-view-swap">
+              <MatchCard partner={selectedSamplePartner} />
+            </div>
 
             {/* 3가지 핵심 안심 배지 한 줄 요약 */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
