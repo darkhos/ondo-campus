@@ -181,8 +181,8 @@ export default function LandingPage() {
           </h1>
           <p className="ondo-rise mt-2.5 text-[14px] text-zinc-500 sm:mt-3.5 sm:text-[15px]" style={{ "--ondo-rise-delay": "180ms" } as React.CSSProperties}>
             {isJa
-              ? "毎晩21時、写真評価なしで価値観と会話の温度が合うたった一人を1対1でおつなぎします。"
-              : "매일 밤 9시, 사진 품평 없이 가치관과 대화 온도가 통하는 단 한 사람을 1:1로 이어 드려요."}
+              ? "毎晩21時、顔よりまず会話が通じる36.5°のご縁を1対1でお探しします。"
+              : "매일 밤 9시, 얼굴보다 대화가 먼저 통하는 36.5°의 인연을 1:1로 찾아드려요."}
           </p>
 
           {/* 커플 그림: 대화를 나눌수록 온도가 올라가 36.5°에서 카톡 공개 */}
