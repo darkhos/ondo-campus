@@ -20,8 +20,8 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "建国大学",
     subKo: "서울 광진구 · 학생 인증",
     subJa: "ソウル広津区 · 認証対応",
-    accent: "from-emerald-500/15 via-white to-emerald-50/90",
-    badge: "🎓 CAMPUS",
+    accent: "from-emerald-500/10 via-white to-emerald-50/60",
+    badge: "🎓 건국·광진",
   },
   {
     id: "kyunghee",
@@ -29,8 +29,8 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "慶熙大学",
     subKo: "서울 동대문구 · 학생 인증",
     subJa: "ソウル東大門区 · 認証対応",
-    accent: "from-rose-500/15 via-white to-rose-50/90",
-    badge: "🎓 CAMPUS",
+    accent: "from-rose-500/10 via-white to-rose-50/60",
+    badge: "🎓 경희·회기",
   },
   {
     id: "korea",
@@ -38,8 +38,8 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "高麗大学",
     subKo: "서울 성북구 · 학생 인증",
     subJa: "ソウル城北区 · 認証対応",
-    accent: "from-red-500/15 via-white to-rose-50/90",
-    badge: "🎓 CAMPUS",
+    accent: "from-red-500/10 via-white to-rose-50/60",
+    badge: "🎓 고려·안암",
   },
   {
     id: "kwangwoon",
@@ -47,8 +47,8 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "光云大学",
     subKo: "서울 노원구 · 학생 인증",
     subJa: "ソウル芦原区 · 認証対応",
-    accent: "from-rose-500/15 via-white to-amber-50/90",
-    badge: "🎓 CAMPUS",
+    accent: "from-rose-500/10 via-white to-amber-50/60",
+    badge: "🎓 광운·월계",
   },
   {
     id: "sogang",
@@ -56,17 +56,17 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "西江大学",
     subKo: "서울 마포구 · 학생 인증",
     subJa: "ソウル麻浦区 · 認証対応",
-    accent: "from-rose-500/15 via-white to-orange-50/90",
-    badge: "🎓 CAMPUS",
+    accent: "from-rose-500/10 via-white to-orange-50/60",
+    badge: "🎓 서강·신촌",
   },
   {
     id: "snu",
     nameKo: "서울대학교",
     nameJa: "ソウル大学",
     subKo: "서울 관악구 · 학생 인증",
-    subJa: "ソウル冠岳区 · 認証対応",
-    accent: "from-indigo-500/15 via-white to-sky-50/90",
-    badge: "🎓 CAMPUS",
+    subJa: "ソウル冠악区 · 認証対応",
+    accent: "from-indigo-500/10 via-white to-sky-50/60",
+    badge: "🎓 서울·관악",
   },
   {
     id: "skku",
@@ -74,8 +74,8 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "成均館大学",
     subKo: "서울·수원 · 학생 인증",
     subJa: "ソウル・水原 · 認証対応",
-    accent: "from-emerald-500/15 via-white to-amber-50/90",
-    badge: "🎓 CAMPUS",
+    accent: "from-emerald-500/10 via-white to-amber-50/60",
+    badge: "🎓 성균관·혜화",
   },
   {
     id: "yonsei",
@@ -83,8 +83,8 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "延世大学",
     subKo: "서울 서대문구 · 학생 인증",
     subJa: "ソウル西大門区 · 認証対応",
-    accent: "from-sky-500/15 via-white to-indigo-50/90",
-    badge: "🎓 CAMPUS",
+    accent: "from-sky-500/10 via-white to-indigo-50/60",
+    badge: "🎓 연세·신촌",
   },
   {
     id: "ewha",
@@ -92,8 +92,8 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "梨花女子大学",
     subKo: "서울 서대문구 · 학생 인증",
     subJa: "ソウル西大門区 · 認証対応",
-    accent: "from-emerald-500/15 via-white to-teal-50/90",
-    badge: "🌸 CAMPUS",
+    accent: "from-emerald-500/10 via-white to-teal-50/60",
+    badge: "🌸 이화·신촌",
   },
   {
     id: "chungang",
@@ -101,8 +101,8 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "中央大学",
     subKo: "서울 동작구 · 학생 인증",
     subJa: "ソウル銅雀区 · 認証対応",
-    accent: "from-indigo-500/15 via-white to-rose-50/90",
-    badge: "🎓 CAMPUS",
+    accent: "from-indigo-500/10 via-white to-rose-50/60",
+    badge: "🎓 중앙·흑석",
   },
   {
     id: "hufs",
@@ -110,8 +110,8 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "韓国外国語大学",
     subKo: "서울 동대문구 · 학생 인증",
     subJa: "ソウル東大門区 · 認証対応",
-    accent: "from-teal-500/15 via-white to-sky-50/90",
-    badge: "🌏 CAMPUS",
+    accent: "from-teal-500/10 via-white to-sky-50/60",
+    badge: "🌏 외대·이문",
   },
   {
     id: "hanyang",
@@ -119,8 +119,8 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "漢陽大学",
     subKo: "서울 성동구 · 학생 인증",
     subJa: "ソウル城東区 · 認証対応",
-    accent: "from-sky-500/15 via-white to-amber-50/90",
-    badge: "🎓 CAMPUS",
+    accent: "from-sky-500/10 via-white to-amber-50/60",
+    badge: "🎓 한양·왕십리",
   },
   {
     id: "hongik",
@@ -128,8 +128,8 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "弘益大学",
     subKo: "서울 마포구 · 학생 인증",
     subJa: "ソウル麻浦区 · 認証対応",
-    accent: "from-rose-500/15 via-white to-indigo-50/90",
-    badge: "🎨 CAMPUS",
+    accent: "from-rose-500/10 via-white to-indigo-50/60",
+    badge: "🎨 홍익·홍대",
   },
   {
     id: "jp_track",
@@ -137,7 +137,7 @@ const UNIV_RING_ITEMS: UnivCardItem[] = [
     nameJa: "日本語学堂・留学生",
     subKo: "수도권 62개 어학당·대학",
     subJa: "首都圏62語学堂・大学対応",
-    accent: "from-rose-500/25 via-rose-50 to-amber-50",
+    accent: "from-rose-500/15 via-white to-amber-50/60",
     badge: "🇯🇵 GLOBAL",
     isJp: true,
   },
@@ -413,15 +413,15 @@ export function UniversityCircularCarousel({
               <div className="flex h-full w-full flex-col justify-between transition-opacity duration-150">
                 <div className="flex w-full items-center justify-between gap-1">
                   <span
-                    className={`rounded-full px-2 py-0.5 text-[9.5px] font-extrabold tracking-tight ${
+                    className={`rounded-full px-2 py-0.5 text-[11px] font-extrabold tracking-tight ${
                       item.isJp
-                        ? "bg-rose-600 text-white"
-                        : "bg-zinc-900/90 text-white"
+                        ? "bg-rose-700 text-white"
+                        : "bg-zinc-900 text-white"
                     }`}
                   >
                     {item.badge}
                   </span>
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-rose-500/80" />
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-rose-600" />
                 </div>
 
                 <div className="w-full">
@@ -434,7 +434,7 @@ export function UniversityCircularCarousel({
                   >
                     {isJa ? item.nameJa : item.nameKo}
                   </p>
-                  <p className="mt-0.5 truncate text-[10px] font-semibold tracking-tight text-zinc-500 leading-snug sm:text-[10.5px]">
+                  <p className="mt-0.5 truncate text-[11px] font-semibold tracking-tight text-zinc-700 leading-snug sm:text-[11.5px]">
                     {isJa ? item.subJa : item.subKo}
                   </p>
                 </div>
@@ -445,11 +445,11 @@ export function UniversityCircularCarousel({
       </div>
 
       {/* 하단 현재 포커스된 대학 캡션 & 드래그 힌트 */}
-      <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11.5px] font-bold text-zinc-500">
-        <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-extrabold text-rose-600">
+      <div className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[12px] font-bold text-zinc-600">
+        <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[11.5px] font-extrabold text-rose-700">
           ✨ {isJa ? activeItem.nameJa : activeItem.nameKo}
         </span>
-        <span className="text-[11px] text-zinc-400">
+        <span className="text-[12px] text-zinc-600">
           {isJa
             ? "· 左右にドラッグまたはクリックして回転"
             : "· 좌우로 밀거나 카드를 눌러 3D로 돌려보세요"}

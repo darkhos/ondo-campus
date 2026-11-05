@@ -147,7 +147,7 @@ export function LanguageToggle({ className }: { className?: string }) {
         onClick={() => setLocale("ko")}
         className={cn(
           "relative z-10 rounded-full px-2 py-1 text-center text-[11px] transition-colors duration-300 sm:px-2.5 sm:py-1.5 sm:text-[12px]",
-          !isJa ? "text-white" : "text-zinc-500 hover:text-zinc-800"
+          !isJa ? "text-white" : "text-zinc-600 hover:text-zinc-900"
         )}
       >
         <span className="sm:hidden">KR</span>
@@ -158,7 +158,7 @@ export function LanguageToggle({ className }: { className?: string }) {
         onClick={() => setLocale("ja")}
         className={cn(
           "relative z-10 rounded-full px-2 py-1 text-center text-[11px] transition-colors duration-300 sm:px-2.5 sm:py-1.5 sm:text-[12px]",
-          isJa ? "text-white" : "text-zinc-500 hover:text-zinc-800"
+          isJa ? "text-white" : "text-zinc-600 hover:text-zinc-900"
         )}
       >
         <span className="sm:hidden">JP</span>
@@ -604,8 +604,8 @@ export function MatchCard({
           </div>
 
           {/* 실제 매칭이 반영하는 조건만 표시 */}
-          <div className="self-start shrink-0 rounded-full bg-white/90 px-3 py-1 text-left shadow-2xs backdrop-blur-xs sm:text-right">
-            <div className="flex items-center gap-1 text-[11.5px] font-extrabold text-rose-600 sm:justify-end sm:text-[12px]">
+          <div className="self-start shrink-0 rounded-full bg-white/95 px-3 py-1 text-left shadow-2xs backdrop-blur-xs sm:text-right">
+            <div className="flex items-center gap-1 text-[11.5px] font-extrabold text-rose-700 sm:justify-end sm:text-[12px]">
               <Flame className="h-3.5 w-3.5 shrink-0" fill="currentColor" />
               <span>{isJa ? "希望条件クリア" : "선호 조건 충족"}</span>
             </div>
@@ -613,14 +613,14 @@ export function MatchCard({
         </div>
       </div>
 
-      <div className="space-y-3.5 p-4 sm:space-y-4 sm:p-5">
+      <div className="space-y-4 p-4 sm:space-y-5 sm:p-6">
         {canTranslateCard && (
           <div className="flex justify-end">
             <button
               type="button"
               disabled={translating}
               onClick={handleToggleCardTranslate}
-              className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50/70 px-3 py-1 text-[11px] font-extrabold text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-60"
+              className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50/70 px-3 py-1 text-[11.5px] font-extrabold text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-60"
             >
               <Languages className="h-3.5 w-3.5" />
               <span>
@@ -642,19 +642,19 @@ export function MatchCard({
 
         {/* Value & First-Impression One-Line Note */}
         {displayVoiceIntro && (
-          <div className="rounded-2xl border border-rose-100/90 bg-rose-50/40 p-3.5">
+          <div className="border-b border-stone-200/80 pb-3.5">
             <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-rose-600">
+              <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-rose-700">
                 <Sparkles className="h-3.5 w-3.5" />
                 {isJa ? "一行紹介" : "한 줄 소개"}
               </span>
             </div>
-            <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-zinc-800">
+            <p className="mt-1.5 text-[13.5px] font-medium leading-relaxed text-zinc-800">
               &ldquo;{displayVoiceIntro}&rdquo;
             </p>
             {showTranslated && translatedIntro && (
               <p className="mt-2 border-t border-rose-100 pt-2 text-[13px] font-medium leading-relaxed text-rose-700">
-                <span className="mr-1.5 rounded bg-white px-1.5 py-0.5 text-[10px] font-extrabold text-rose-600 ring-1 ring-rose-200">
+                <span className="mr-1.5 rounded bg-white px-1.5 py-0.5 text-[11px] font-extrabold text-rose-700 ring-1 ring-rose-200">
                   {isJa ? "日本語訳" : "한국어 번역"}
                 </span>
                 &ldquo;{translatedIntro}&rdquo;
@@ -666,15 +666,15 @@ export function MatchCard({
         {/* Story / Bio */}
         {displayBio && (
           <div>
-            <p className="text-[11.5px] font-bold text-zinc-400">
+            <p className="text-[12px] font-bold text-zinc-600">
               {isJa ? "自己紹介" : "자기소개"}
             </p>
             <p className="mt-1 text-[13.5px] leading-relaxed text-zinc-700">
               {displayBio}
             </p>
             {showTranslated && translatedBio && (
-              <div className="mt-2 rounded-2xl border border-rose-100 bg-rose-50/30 px-3.5 py-2.5 text-[13px] leading-relaxed text-zinc-800">
-                <span className="mr-1.5 inline-flex items-center gap-1 rounded bg-white px-1.5 py-0.5 text-[10px] font-extrabold text-rose-600 ring-1 ring-rose-200">
+              <div className="mt-2 border-t border-stone-200/80 pt-2.5 text-[13px] leading-relaxed text-zinc-800">
+                <span className="mr-1.5 inline-flex items-center gap-1 rounded bg-rose-50 px-1.5 py-0.5 text-[11px] font-extrabold text-rose-700">
                   <Languages className="h-2.5 w-2.5" />
                   {isJa ? "自己紹介の日本語訳" : "자기소개 한국어 번역"}
                 </span>
@@ -686,21 +686,21 @@ export function MatchCard({
 
         {/* 본인이 입력한 성향 정보만 표시 (없으면 숨김) */}
         {(partner.mbti || smokingLabel) && (
-          <div className="grid grid-cols-2 gap-2 rounded-2xl bg-[#F3F1ED]/70 p-3.5">
+          <div className="grid grid-cols-2 gap-2 border-t border-stone-200/80 pt-3.5">
             {partner.mbti && (
               <div>
-                <span className="text-[11px] font-semibold text-zinc-400">MBTI</span>
-                <p className="mt-0.5 text-[12px] font-bold text-zinc-800">
+                <span className="text-[12px] font-semibold text-zinc-600">MBTI</span>
+                <p className="mt-0.5 text-[13px] font-bold text-zinc-800">
                   {partner.mbti}
                 </p>
               </div>
             )}
             {smokingLabel && (
               <div>
-                <span className="text-[11px] font-semibold text-zinc-400">
+                <span className="text-[12px] font-semibold text-zinc-600">
                   {isJa ? "喫煙" : "흡연"}
                 </span>
-                <p className="mt-0.5 text-[12px] font-bold text-zinc-800">
+                <p className="mt-0.5 text-[13px] font-bold text-zinc-800">
                   {smokingLabel}
                 </p>
               </div>
@@ -731,7 +731,7 @@ export function MatchCard({
           {partner.hobbies.map((hobby) => (
             <span
               key={hobby}
-              className="rounded-full border border-stone-200 bg-white px-3 py-1 text-[12px] text-zinc-600"
+              className="rounded-full border border-stone-200 bg-white px-3 py-1 text-[12px] text-zinc-700"
             >
               {isJa ? HOBBY_LABEL_JA[hobby] || hobby : hobby}
             </span>
@@ -742,11 +742,11 @@ export function MatchCard({
         {isDemoPartner && (
           <div
             ref={demoRef}
-            className="mt-2 rounded-2xl border border-rose-200/90 bg-gradient-to-br from-rose-50/70 via-white to-amber-50/50 p-3.5 sm:p-4"
+            className="mt-2 border-t border-stone-200/90 pt-4"
           >
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-[11.5px] font-extrabold text-rose-600 sm:text-[12px]">
+                <p className="text-[12px] font-extrabold text-rose-700 sm:text-[12.5px]">
                   {demoChatStep === 0
                     ? isJa
                       ? "🔒 会話5回達成までブラインド保護中"
@@ -766,7 +766,7 @@ export function MatchCard({
                       ? "blur-[5px]"
                       : shownCount < 5
                       ? "blur-[2px]"
-                      : "blur-none text-rose-600"
+                      : "blur-none text-rose-700"
                   )}
                 >
                   <span key={shownCount === 5 ? "open" : "closed"} className={shownCount === 5 ? "ondo-pop" : undefined}>
@@ -776,8 +776,8 @@ export function MatchCard({
               </div>
               <span
                 className={cn(
-                  "shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-extrabold tabular-nums text-white transition-colors",
-                  shownCount === 5 ? "bg-emerald-600" : "bg-rose-600"
+                  "shrink-0 rounded-xl px-2.5 py-1 text-[11.5px] font-extrabold tabular-nums text-white transition-colors",
+                  shownCount === 5 ? "bg-emerald-700" : "bg-rose-700"
                 )}
               >
                 {isJa ? `会話 ${shownCount}/5` : `대화 ${shownCount}/5`}
@@ -795,8 +795,8 @@ export function MatchCard({
                       "h-2 w-2 rounded-full transition-all duration-300",
                       i < shownCount
                         ? shownCount === 5
-                          ? "scale-110 bg-emerald-500"
-                          : "scale-110 bg-rose-500"
+                          ? "scale-110 bg-emerald-600"
+                          : "scale-110 bg-rose-600"
                         : "bg-stone-200"
                     )}
                   />
@@ -806,7 +806,7 @@ export function MatchCard({
                 <div
                   className={cn(
                     "h-full rounded-full transition-[width] duration-300 ease-out",
-                    shownCount === 5 ? "bg-emerald-500" : "bg-rose-500"
+                    shownCount === 5 ? "bg-emerald-600" : "bg-rose-600"
                   )}
                   style={{ width: `${(shownCount / 5) * 100}%` }}
                 />
@@ -818,9 +818,9 @@ export function MatchCard({
                 type="button"
                 onClick={() => pickDemoStep(0)}
                 className={cn(
-                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all duration-300 sm:text-[11.5px]",
+                  "rounded-xl border px-2 py-2 text-[11.5px] font-extrabold transition-all duration-300 sm:text-[12px]",
                   demoChatStep === 0
-                    ? "-translate-y-0.5 border-rose-600 bg-rose-600 text-white shadow-[0_6px_16px_rgba(225,29,72,0.28)] ring-2 ring-rose-300/60"
+                    ? "-translate-y-0.5 border-rose-700 bg-rose-700 text-white shadow-[0_6px_16px_rgba(190,18,60,0.28)] ring-2 ring-rose-300/60"
                     : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
                 )}
               >
@@ -830,9 +830,9 @@ export function MatchCard({
                 type="button"
                 onClick={() => pickDemoStep(3)}
                 className={cn(
-                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all duration-300 sm:text-[11.5px]",
+                  "rounded-xl border px-2 py-2 text-[11.5px] font-extrabold transition-all duration-300 sm:text-[12px]",
                   demoChatStep === 3
-                    ? "-translate-y-0.5 border-rose-600 bg-rose-600 text-white shadow-[0_6px_16px_rgba(225,29,72,0.28)] ring-2 ring-rose-300/60"
+                    ? "-translate-y-0.5 border-rose-700 bg-rose-700 text-white shadow-[0_6px_16px_rgba(190,18,60,0.28)] ring-2 ring-rose-300/60"
                     : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
                 )}
               >
@@ -842,9 +842,9 @@ export function MatchCard({
                 type="button"
                 onClick={() => pickDemoStep(5)}
                 className={cn(
-                  "rounded-xl border px-2 py-2 text-[11px] font-extrabold transition-all duration-300 sm:text-[11.5px]",
+                  "rounded-xl border px-2 py-2 text-[11.5px] font-extrabold transition-all duration-300 sm:text-[12px]",
                   demoChatStep === 5
-                    ? "-translate-y-0.5 border-emerald-600 bg-emerald-600 text-white shadow-[0_6px_16px_rgba(5,150,105,0.28)] ring-2 ring-emerald-300/60"
+                    ? "-translate-y-0.5 border-emerald-700 bg-emerald-700 text-white shadow-[0_6px_16px_rgba(4,120,87,0.28)] ring-2 ring-emerald-300/60"
                     : "border-stone-200 bg-white text-zinc-700 hover:border-rose-300"
                 )}
               >
@@ -1396,7 +1396,7 @@ export function MatchingToggleCard({
       >
         <span
           className={cn(
-            "flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+            "flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
             isOn ? "translate-x-5" : "translate-x-0"
           )}
         >

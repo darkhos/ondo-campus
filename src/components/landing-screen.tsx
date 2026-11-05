@@ -132,7 +132,7 @@ export default function LandingPage() {
               <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="currentColor" />
             </div>
             <span className="whitespace-nowrap text-[14px] font-black tracking-tight text-zinc-900 sm:text-[17px]">
-              ONDO <span className="text-rose-600">36.5°</span>
+              ONDO <span className="text-rose-700">36.5°</span>
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap sm:gap-2">
@@ -169,17 +169,17 @@ export default function LandingPage() {
               <>
                 友達の紹介みたいに、
                 <br />
-                <span className="ondo-underline-draw text-rose-600">ちょうどいい人とつながる</span>
+                <span className="ondo-underline-draw text-rose-700">ちょうどいい人とつながる</span>
               </>
             ) : (
               <>
                 친구가 주선해 주듯,
                 <br />
-                <span className="ondo-underline-draw text-rose-600">결 맞는 사람과 소개팅</span>
+                <span className="ondo-underline-draw text-rose-700">결 맞는 사람과 소개팅</span>
               </>
             )}
           </h1>
-          <p className="ondo-rise mt-2.5 text-[14px] text-zinc-500 sm:mt-3.5 sm:text-[15px]" style={{ "--ondo-rise-delay": "180ms" } as React.CSSProperties}>
+          <p className="ondo-rise mt-2.5 text-[14px] text-zinc-600 sm:mt-3.5 sm:text-[15px]" style={{ "--ondo-rise-delay": "180ms" } as React.CSSProperties}>
             {isJa
               ? "毎晩21時、顔よりまず会話が通じる36.5°のご縁を1対1でお探しします。"
               : "매일 밤 9시, 얼굴보다 대화가 먼저 통하는 36.5°의 인연을 1:1로 찾아드려요."}
@@ -208,7 +208,7 @@ export default function LandingPage() {
                 : "💬 카카오로 3초 만에 시작하기"}
             </Button>
 
-            <p className="mt-2.5 text-center text-[12px] text-zinc-500">
+            <p className="mt-2.5 text-center text-[12px] text-zinc-600">
               {isJa
                 ? "🔒 お互い5往復会話するまでカカオIDは公開されません"
                 : "🔒 서로 5마디 이상 대화하기 전까지 카톡 ID는 공개되지 않아요"}
@@ -217,13 +217,13 @@ export default function LandingPage() {
         </section>
 
         {/* University Eligibility & 3D Circular Carousel */}
-        <section className="mt-7 overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-4 text-center shadow-2xs sm:mt-9 sm:p-6">
-          <h3 className="text-[15px] font-black tracking-tight text-zinc-900 sm:text-[18px]">
+        <section className="mt-8 overflow-hidden border-y border-stone-200/80 py-6 text-center sm:mt-10 sm:py-8">
+          <h2 className="text-[16px] font-black tracking-tight text-zinc-900 sm:text-[19px]">
             {isJa
               ? "🎓 ソウル・京畿・仁川の全大学＆語学堂が参加中"
               : "🎓 서울 · 경기 · 인천 전 대학 & 어학당 참여 중"}
-          </h3>
-          <p className="mt-1 text-[12px] text-zinc-500 sm:text-[13px]">
+          </h2>
+          <p className="mt-1.5 text-[12.5px] text-zinc-600 sm:text-[13.5px]">
             {isJa
               ? "在学生・休学生・語学堂生・留学生・韓国ワーキングホリデー学生なら誰でも登録できます"
               : "재학생 · 휴학생 · 어학당생 · 유학생 · 워킹홀리데이 일본 학생 누구나 가입할 수 있어요"}
@@ -269,7 +269,7 @@ export default function LandingPage() {
                   onMouseEnter={() => setActiveStep(idx)}
                   className={
                     isActive
-                      ? "h-full cursor-pointer rounded-2xl border-2 border-rose-500 bg-rose-50/40 p-3.5 shadow-[0_10px_24px_rgba(225,29,72,0.12)] transition-all duration-300 -translate-y-1 sm:rounded-3xl sm:p-5"
+                      ? "h-full cursor-pointer rounded-2xl border-2 border-rose-600 bg-rose-50/40 p-3.5 shadow-[0_10px_24px_rgba(225,29,72,0.12)] transition-all duration-300 -translate-y-1 sm:rounded-3xl sm:p-5"
                       : "h-full cursor-pointer rounded-2xl border border-stone-200/90 bg-white p-3.5 transition-all duration-300 hover:border-rose-200 sm:rounded-3xl sm:p-5"
                   }
                 >
@@ -287,8 +287,8 @@ export default function LandingPage() {
                     <span
                       className={
                         isActive
-                          ? "rounded-full bg-rose-600 px-2 py-0.5 text-[10.5px] font-extrabold text-white transition-colors sm:text-[11px]"
-                          : "text-[11px] font-extrabold text-rose-600 transition-colors sm:text-[12px]"
+                          ? "rounded-full bg-rose-700 px-2 py-0.5 text-[11px] font-extrabold text-white transition-colors sm:text-[11.5px]"
+                          : "text-[11.5px] font-extrabold text-rose-700 transition-colors sm:text-[12px]"
                       }
                     >
                       STEP {idx + 1}
@@ -297,7 +297,7 @@ export default function LandingPage() {
                   <h3 className="mt-1.5 text-[13.5px] font-extrabold text-zinc-900 sm:mt-2 sm:text-[15px]">
                     {step.title}
                   </h3>
-                  <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-500 sm:text-[13px]">
+                  <p className="mt-1 text-[12.5px] leading-relaxed text-zinc-600 sm:text-[13.5px]">
                     {step.desc}
                   </p>
                 </div>
@@ -316,7 +316,7 @@ export default function LandingPage() {
                   ? "こんなプロフィールが届きます（例）"
                   : "이런 소개팅 프로필이 도착해요 (예시)"}
               </span>
-              <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-extrabold text-rose-600">
+              <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[11.5px] font-extrabold text-rose-700">
                 {isJa ? "サンプル" : "SAMPLE"}
               </span>
             </div>
@@ -338,7 +338,7 @@ export default function LandingPage() {
               ).map((badge) => (
                 <span
                   key={badge}
-                  className="rounded-full border border-stone-200/90 bg-white px-3.5 py-1.5 text-[11.5px] font-bold text-zinc-700 shadow-2xs sm:text-[12px]"
+                  className="rounded-full border border-stone-200/90 bg-white px-3.5 py-1.5 text-[12px] font-bold text-zinc-700 shadow-2xs sm:text-[12.5px]"
                 >
                   {badge}
                 </span>
@@ -353,11 +353,11 @@ export default function LandingPage() {
             <h2 className="text-[16px] font-black tracking-tight text-zinc-900 sm:text-[18px]">
               {isJa ? "こんなふうに出会えます" : "이렇게 만나요"}
             </h2>
-            <span className="text-[11px] font-semibold text-zinc-400 sm:hidden">
+            <span className="text-[12px] font-semibold text-zinc-600 sm:hidden">
               {isJa ? "横にスワイプ →" : "옆으로 넘겨 보세요 →"}
             </span>
           </div>
-          <p className="mt-1 text-[11.5px] font-semibold text-zinc-400">
+          <p className="mt-1 text-[12px] font-semibold text-zinc-600">
             {isJa
               ? "※ 想定利用シーンの例であり、実際の利用者のレビューではありません。"
               : "※ 이용 장면을 보여 주는 예시이며, 실제 이용자 후기가 아니에요."}
@@ -379,7 +379,7 @@ export default function LandingPage() {
                 delay={i * 120}
                 className="w-[86%] shrink-0 snap-start rounded-3xl border border-stone-200/90 bg-white p-5 sm:w-auto sm:p-6"
               >
-                <span className="text-[12px] font-bold text-rose-600">{r.meta}</span>
+                <span className="text-[12px] font-bold text-rose-700">{r.meta}</span>
                 <p className="mt-2 text-[13.5px] leading-relaxed text-zinc-700 sm:text-[14px]">
                   &ldquo;{r.body}&rdquo;
                 </p>
@@ -403,7 +403,7 @@ export default function LandingPage() {
                 }}
                 className={
                   reviewIdx === i
-                    ? "h-1.5 w-5 rounded-full bg-rose-500 transition-all duration-300"
+                    ? "h-1.5 w-5 rounded-full bg-rose-600 transition-all duration-300"
                     : "h-1.5 w-1.5 rounded-full bg-stone-300 transition-all duration-300"
                 }
               />
@@ -411,31 +411,31 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <footer className="mt-10 border-t border-stone-200/80 pt-6 text-center text-[12px] text-zinc-400">
-          <p className="font-bold text-zinc-600">
+        <footer className="mt-10 border-t border-stone-200/80 pt-6 text-center text-[12px] text-zinc-600">
+          <p className="font-bold text-zinc-700">
             {isJa
               ? "ONDO 36.5° · 日韓大学生のための 1:1 ブラインド紹介"
               : "ONDO 36.5° · 대학생 1:1 블라인드 소개팅"}
           </p>
           <div className="mt-2 flex flex-wrap justify-center gap-4">
-            <Link href={ROUTES.FAQ} className="font-semibold text-zinc-600 hover:underline">
+            <Link href={ROUTES.FAQ} className="font-semibold text-zinc-700 hover:underline">
               {isJa ? "よくある質問 (FAQ)" : "자주 묻는 질문 (FAQ)"}
             </Link>
             <a
               href={KAKAO_OPENCHAT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-rose-600 hover:underline"
+              className="font-semibold text-rose-700 hover:underline"
             >
               {isJa ? "💬 1:1 カカオ相談室" : "💬 1:1 카카오톡 고객센터"}
             </a>
-            <Link href={ROUTES.TERMS} className="hover:underline">
+            <Link href={ROUTES.TERMS} className="text-zinc-600 hover:underline">
               {isJa ? "利用規約" : "이용약관"}
             </Link>
-            <Link href={ROUTES.PRIVACY} className="hover:underline">
+            <Link href={ROUTES.PRIVACY} className="text-zinc-600 hover:underline">
               {isJa ? "プライバシーポリシー" : "개인정보 처리방침"}
             </Link>
-            <Link href={ROUTES.SAFETY} className="hover:underline">
+            <Link href={ROUTES.SAFETY} className="text-zinc-600 hover:underline">
               {isJa ? "安心・安全ガイド" : "안전 가이드"}
             </Link>
           </div>

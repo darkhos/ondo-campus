@@ -60,7 +60,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#FAF9F6] shadow-sm">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#FAF9F6]">
       <PageHeader
         title={isJa ? "ONDO 36.5° 1秒かんたんログイン" : "ONDO 36.5° 1초 간편 로그인"}
         back
@@ -90,16 +90,16 @@ export default function LoginPage() {
                 </>
               )}
             </h2>
-            <p className="mt-1.5 text-[13px] text-zinc-500">
+            <p className="mt-1.5 text-[13.5px] text-zinc-600">
               {isJa
                 ? "カカオログインで本人だけが自分のアカウントに入れます。"
                 : "카카오 로그인을 해야만 내 계정에 들어갈 수 있어요. 다른 사람은 내 정보를 볼 수 없어요."}
             </p>
           </div>
 
-          <div className="space-y-3 rounded-3xl border border-stone-200 bg-white p-4 shadow-2xs">
+          <div className="space-y-3 rounded-3xl border border-stone-200 bg-white p-4">
             {errorMsg && (
-              <p className="text-[12px] font-semibold text-rose-600">
+              <p className="text-[12px] font-semibold text-rose-700">
                 {errorMsg}
               </p>
             )}
@@ -123,7 +123,7 @@ export default function LoginPage() {
             fullWidth
             onClick={() => router.push(ROUTES.JOIN)}
           >
-            <Sparkles className="h-4 w-4 text-rose-600" />
+            <Sparkles className="h-4 w-4 text-rose-700" />
             {isJa
               ? "初めての方はこちら（30秒かんたん新規登録）"
               : "처음 오셨나요? 30초 만에 간편 가입하기"}

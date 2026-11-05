@@ -107,7 +107,7 @@ export default function FaqPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#FAF9F6] shadow-sm">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#FAF9F6]">
       <PageHeader
         title={
           isJa
@@ -119,23 +119,23 @@ export default function FaqPage() {
 
       <div className="flex-1 space-y-6 px-5 py-6">
         {/* Official KakaoTalk 1:1 Open Chat Banner */}
-        <section className="rounded-3xl border border-rose-200 bg-white p-5 shadow-2xs">
+        <section className="rounded-3xl border border-rose-200 bg-white p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FEE500] text-zinc-900 shadow-2xs">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FEE500] text-zinc-900">
               <MessageCircle className="h-5 w-5" fill="currentColor" />
             </div>
             <div>
-              <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-extrabold text-rose-600">
+              <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-extrabold text-rose-700">
                 OFFICIAL SUPPORT
               </span>
-              <h2 className="mt-0.5 text-[16px] font-black text-zinc-900">
+              <h2 className="mt-0.5 text-[20px] font-black leading-snug text-zinc-900">
                 {isJa
-                  ? "ONDO 36.5° 公式カカオ1:1相談室"
-                  : "ONDO 36.5° 캠퍼스 공식 카카오톡 고객센터"}
+                  ? "ONDO 36.5° 公式カカオ相談室"
+                  : "ONDO 36.5° 공식 카카오톡 고객센터"}
               </h2>
             </div>
           </div>
-          <p className="mt-2.5 text-[12px] leading-relaxed text-zinc-600">
+          <p className="mt-2.5 text-[13px] leading-relaxed text-zinc-600">
             {isJa
               ? "学生認証、紹介の流れ、チケット返還など、気になる点があれば公式カカオトーク1:1オープンチャットでリアルタイムにご相談いただけます。"
               : "학생 인증, 소개팅 진행 방식, 티켓 환불 등 궁금한 점이 있다면 공식 카카오톡 1:1 고객센터로 언제든 편하게 문의해 주세요."}
@@ -144,7 +144,7 @@ export default function FaqPage() {
             href={KAKAO_OPENCHAT_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#FEE500] py-3.5 text-[13px] font-extrabold text-zinc-900 shadow-2xs transition-transform active:scale-[0.99]"
+            className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#FEE500] py-3.5 text-[13.5px] font-extrabold text-zinc-900 transition-transform active:scale-[0.99]"
           >
             <MessageCircle className="h-4 w-4" fill="currentColor" />
             <span>
@@ -158,8 +158,8 @@ export default function FaqPage() {
         {/* Accordion FAQ List */}
         <section className="space-y-2.5">
           <div className="flex items-center gap-1.5 px-1">
-            <HelpCircle className="h-4 w-4 text-rose-600" />
-            <h3 className="text-[14px] font-extrabold text-zinc-900">
+            <HelpCircle className="h-4 w-4 text-rose-700" />
+            <h3 className="text-[15px] font-extrabold text-zinc-900">
               {isJa ? "よくある質問 TOP 5" : "자주 묻는 질문 TOP 5"}
             </h3>
           </div>
@@ -178,13 +178,13 @@ export default function FaqPage() {
                   aria-controls={`faq-answer-${idx}`}
                   className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
                 >
-                  <span className="text-[13px] font-bold text-zinc-900">
+                  <span className="text-[13.5px] font-bold text-zinc-900">
                     {item.q}
                   </span>
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 shrink-0 text-zinc-400 transition-transform duration-300",
-                      open && "rotate-180 text-rose-600"
+                      "h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-300",
+                      open && "rotate-180 text-rose-700"
                     )}
                   />
                 </button>
@@ -201,7 +201,7 @@ export default function FaqPage() {
                   <div className="overflow-hidden">
                     <div
                       className={cn(
-                        "border-t border-stone-100 bg-stone-50/60 px-4 py-3.5 text-[12px] leading-relaxed text-zinc-600 transition-opacity duration-300",
+                        "border-t border-stone-100 bg-stone-50/60 px-4 py-3.5 text-[13px] leading-relaxed text-zinc-700 transition-opacity duration-300",
                         open ? "opacity-100" : "opacity-0"
                       )}
                     >
@@ -216,12 +216,12 @@ export default function FaqPage() {
 
         {/* Direct Web Inquiry to Admin Console */}
         <section className="rounded-3xl border border-stone-200 bg-white p-5">
-          <h3 className="text-[14px] font-extrabold text-zinc-900">
+          <h3 className="text-[15px] font-extrabold text-zinc-900">
             {isJa
               ? "運営チームへ直接メッセージを残す"
               : "홈페이지에서 바로 문의 남기기 (운영자 직통)"}
           </h3>
-          <p className="mt-1 text-[12px] text-zinc-500">
+          <p className="mt-1 text-[13px] text-zinc-600">
             {isJa
               ? "ここに記入して送信すると、運営チームの管理画面(/admin)へ即座に届きます。"
               : "아래에 문의 내용을 남겨주시면 운영팀 관리자 콘솔로 즉시 접수됩니다."}

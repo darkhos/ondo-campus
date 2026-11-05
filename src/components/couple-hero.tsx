@@ -102,7 +102,7 @@ export function CoupleHero({ isJa }: { isJa: boolean }) {
             style={{
               transform: `rotate(${done ? 4 : 0}deg)`,
               transformOrigin: "95px 120px",
-              transition: "transform 0.6s cubic-bezier(0.34,1.56,0.64,1)",
+              transition: "transform 0.6s cubic-bezier(0.22,1,0.36,1)",
             }}
           >
             {/* 후드티 */}
@@ -149,7 +149,7 @@ export function CoupleHero({ isJa }: { isJa: boolean }) {
             style={{
               transform: `rotate(${done ? -4 : 0}deg)`,
               transformOrigin: "265px 120px",
-              transition: "transform 0.6s cubic-bezier(0.34,1.56,0.64,1)",
+              transition: "transform 0.6s cubic-bezier(0.22,1,0.36,1)",
             }}
           >
             {/* 뒷머리 */}
@@ -285,7 +285,7 @@ export function CoupleHero({ isJa }: { isJa: boolean }) {
           </g>
         )}
       </svg>
-      <span className="pointer-events-none absolute right-2 bottom-1 rounded-full bg-white/80 px-2 py-0.5 text-[10.5px] font-semibold text-zinc-400 opacity-0 transition-opacity group-hover:opacity-100">
+      <span className="pointer-events-none absolute right-2 bottom-1 rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100">
         {isJa ? "タップでもう一度" : "눌러서 다시 보기"}
       </span>
     </button>

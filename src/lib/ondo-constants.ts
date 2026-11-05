@@ -469,11 +469,11 @@ export function formatShortLocation(loc?: UserLocation | null): string {
 }
 
 export const FIELD_INPUT =
-  "h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 text-[15px] text-zinc-900 placeholder:text-zinc-400 transition-colors focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-rose-500/10 disabled:bg-stone-50 disabled:opacity-60";
+  "h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 text-[15px] text-zinc-900 placeholder:text-zinc-500 transition-colors focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-rose-500/10 disabled:bg-stone-50 disabled:opacity-60";
 export const FIELD_SELECT = `${FIELD_INPUT} appearance-none pr-10`;
 export const FIELD_LABEL = "mb-1.5 block text-[13px] font-medium text-zinc-600";
 export const FIELD_TEXTAREA =
-  "w-full resize-none rounded-xl border border-stone-200 bg-white px-3.5 py-3 text-[15px] leading-relaxed text-zinc-900 placeholder:text-zinc-400 transition-colors focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-rose-500/10";
+  "w-full resize-none rounded-xl border border-stone-200 bg-white px-3.5 py-3 text-[15px] leading-relaxed text-zinc-900 placeholder:text-zinc-500 transition-colors focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-rose-500/10";
 
 export const CAMPUS_POST_TEMPLATES = [
   {
