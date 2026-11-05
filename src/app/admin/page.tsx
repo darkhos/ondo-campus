@@ -99,6 +99,7 @@ type AdminData =
       escrowPairs: EscrowPair[];
       tickets: DbSupportTicket[];
       dailyStats: DbDailyStat[];
+      betaFreeTickets: boolean;
     };
 
 /** 운영자 전용 서버 함수로 회원·매칭·문의·일별 통계 목록을 한 번에 불러옴 */
@@ -124,6 +125,8 @@ async function loadAdminData(): Promise<AdminData> {
       "ondo_admin_get_daily_stats",
       { p_days: 30 }
     );
+
+    const { data: rpcBetaFree } = await supabase.rpc("ondo_beta_free_tickets");
 
     return {
       ok: true,
@@ -184,6 +187,7 @@ async function loadAdminData(): Promise<AdminData> {
         !statsRpcErr && Array.isArray(rpcDailyStats)
           ? (rpcDailyStats as DbDailyStat[])
           : [],
+      betaFreeTickets: typeof rpcBetaFree === "boolean" ? rpcBetaFree : true,
     };
   } catch {
     return { ok: false };
@@ -221,6 +225,7 @@ export default function AdminDashboardPage() {
   const [selectedMaleUid, setSelectedMaleUid] = useState<string>("");
   const [escrowPairs, setEscrowPairs] = useState<EscrowPair[]>([]);
   const [dailyStats, setDailyStats] = useState<DbDailyStat[]>([]);
+  const [betaFreeTickets, setBetaFreeTickets] = useState<boolean>(true);
   const [statsRangeDays, setStatsRangeDays] = useState<7 | 14 | 30>(14);
   const [selectedStatDate, setSelectedStatDate] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -302,6 +307,7 @@ export default function AdminDashboardPage() {
       setEscrowPairs(result.escrowPairs);
       setTickets(result.tickets);
       setDailyStats(result.dailyStats);
+      setBetaFreeTickets(result.betaFreeTickets);
       const firstFemale = result.members.find((m) => m.gender === "FEMALE");
       const firstMale = result.members.find((m) => m.gender === "MALE");
       if (firstFemale) {
@@ -612,6 +618,66 @@ export default function AdminDashboardPage() {
             </div>
           </section>
         )}
+
+        {/* Commercial Billing / Beta Free Mode Switch */}
+        <section className="flex flex-col justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3.5 sm:flex-row sm:items-center sm:rounded-3xl sm:px-5">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[14px] font-extrabold text-zinc-900">
+                ☕ 커피티켓 과금 모드 설정
+              </span>
+              <span
+                className={cn(
+                  "rounded-full px-2.5 py-0.5 text-[11px] font-bold",
+                  betaFreeTickets
+                    ? "bg-amber-50 text-amber-700"
+                    : "bg-emerald-50 text-emerald-700"
+                )}
+              >
+                {betaFreeTickets
+                  ? "현재: 베타 무료 무제한 모드"
+                  : "현재: 정식 유료 상업화 모드"}
+              </span>
+            </div>
+            <p className="mt-0.5 text-[11.5px] text-zinc-500">
+              {betaFreeTickets
+                ? "모든 회원이 티켓 차감 없이 무료로 매칭을 수락합니다. 유료화로 전환할 때 우측 버튼을 누르세요."
+                : "남성 학우가 매칭 수락 시 커피티켓 1장이 에스크로 차감되며, 스토어(/points)에 충전 패키지가 노출됩니다."}
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant={betaFreeTickets ? "primary" : "secondary"}
+            className="shrink-0 rounded-full px-4"
+            onClick={async () => {
+              const nextVal = !betaFreeTickets;
+              const ok = window.confirm(
+                nextVal
+                  ? "베타 무료 무제한 모드로 전환할까요? (남성 학우 수락 시 티켓이 차감되지 않습니다)"
+                  : "정식 유료 상업화 모드로 전환할까요? (남성 학우 매칭 수락 시 커피티켓 1장이 차감되며 충전 스토어가 활성화됩니다)"
+              );
+              if (!ok) return;
+              const { data, error } = await supabase.rpc(
+                "ondo_admin_set_beta_free_tickets",
+                { p_free: nextVal }
+              );
+              if (error || typeof data !== "boolean") {
+                showToast("모드 전환에 실패했습니다.");
+                return;
+              }
+              setBetaFreeTickets(data);
+              showToast(
+                data
+                  ? "베타 무료 무제한 모드로 전환했습니다."
+                  : "정식 유료 상업화 모드로 전환했습니다."
+              );
+            }}
+          >
+            {betaFreeTickets
+              ? "💳 정식 유료 모드로 전환"
+              : "🎁 베타 무료 모드로 전환"}
+          </Button>
+        </section>
 
         {/* KPI Summary Cards */}
         <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">

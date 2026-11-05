@@ -9,7 +9,7 @@ import {
   useInitialSearch,
   useLocalStorageItem,
 } from "@/lib/use-browser-storage";
-import { submitSupportTicket } from "@/lib/supabase";
+import { redeemInviteCode } from "@/lib/supabase";
 import { Button, PageHeader } from "@/components/ondo-ui";
 
 const STORAGE_KEY = "ondo_campus_auth_v3";
@@ -23,7 +23,7 @@ export default function InvitePage() {
       | undefined
   )?.uid;
   const myCode = storedUid
-    ? `ONDO-${String(storedUid).replace(/^u-/, "").slice(0, 8).toUpperCase()}`
+    ? `ONDO-${String(storedUid).replace(/^u[-_]/i, "").slice(0, 8).toUpperCase()}`
     : "ONDO365";
   const urlRef = new URLSearchParams(useInitialSearch()).get("ref")?.trim() ?? "";
   const savedRef = useLocalStorageItem("ondo_invited_by_code") ?? "";
@@ -82,33 +82,47 @@ export default function InvitePage() {
       setTimeout(() => setToast(null), 2400);
       return;
     }
-    const result = await submitSupportTicket({
-      kind: "INVITE",
-      reason: friendCode.trim(),
-      message: `친구 초대코드 등록: ${friendCode.trim()}`,
-    });
-    if (!result.ok) {
+    const status = await redeemInviteCode(friendCode.trim());
+    if (status === "REWARDED_NOW") {
+      setRedeemed(true);
       setToast(
-        result.error === "login_required"
-          ? isJa
-            ? "招待コードの登録はカカオログイン後にご利用いただけます。"
-            : "초대코드 등록은 카카오 로그인 후에 할 수 있어요."
-          : result.error === "rate_limited"
-          ? isJa
-            ? "短時間に送信が多すぎます。しばらくしてから再度お試しください。"
-            : "짧은 시간에 너무 많이 등록했어요. 잠시 후 다시 시도해 주세요."
-          : isJa
-          ? "登録に失敗しました。カカオトーク1:1相談室へご連絡ください。"
-          : "등록에 실패했어요. 카카오톡 1:1 고객센터로 문의해 주세요."
+        isJa
+          ? "招待コードが認証され、お互いにコーヒーチケット1枚(☕)が自動付与されました！"
+          : "초대 코드가 확인되어 친구와 나 모두에게 커피티켓 1장(☕)이 즉시 지급되었습니다!"
       );
-      setTimeout(() => setToast(null), 3000);
+      setTimeout(() => setToast(null), 3500);
       return;
     }
-    setRedeemed(true);
+    if (status === "REGISTERED_PENDING_VERIFY") {
+      setRedeemed(true);
+      setToast(
+        isJa
+          ? "招待コードが登録されました！学生認証完了時にコーヒーチケット1枚が自動付与されます。"
+          : "초대 코드가 등록되었습니다! 본인의 학생 인증 완료 즉시 두 분 모두에게 커피티켓 1장이 자동 지급됩니다."
+      );
+      setTimeout(() => setToast(null), 3500);
+      return;
+    }
     setToast(
-      isJa
-        ? "招待コードが登録されました！お友達の学校認証完了時にコーヒーチケット1枚が付与されます。"
-        : "초대 코드가 등록되었습니다! 친구의 재학 인증 완료 시 커피티켓 1장이 지급됩니다."
+      status === "LOGIN_REQUIRED"
+        ? isJa
+          ? "招待コードの登録はカカオログイン後にご利用いただけます。"
+          : "초대코드 등록은 카카오 로그인 후에 할 수 있어요."
+        : status === "SELF_CODE"
+        ? isJa
+          ? "ご自身の招待コードは入力できません。"
+          : "본인의 초대 코드는 입력할 수 없어요."
+        : status === "ALREADY_REDEEMED"
+        ? isJa
+          ? "すでに招待コードを登録済みです（1アカウント1回限り）。"
+          : "이미 초대 코드를 등록하셨어요. (1계정당 1회 가능)"
+        : status === "NOT_FOUND" || status === "INVALID_CODE"
+        ? isJa
+          ? "存在しない招待コードです。お友達のコードをもう一度確認してください。"
+          : "존재하지 않는 초대 코드예요. 친구의 코드를 다시 확인해 주세요."
+        : isJa
+        ? "登録に失敗しました。カカオトーク1:1相談室へご連絡ください。"
+        : "등록에 실패했어요. 카카오톡 1:1 고객센터로 문의해 주세요."
     );
     setTimeout(() => setToast(null), 3000);
   };

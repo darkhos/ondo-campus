@@ -27,7 +27,11 @@ import {
 } from "@/components/ondo-ui";
 import { useAppLocale } from "@/lib/i18n";
 import { useLocalStorageItem } from "@/lib/use-browser-storage";
-import { DbMatchPartner, logoutEverywhere } from "@/lib/supabase";
+import {
+  DbMatchPartner,
+  fetchBetaFreeTickets,
+  logoutEverywhere,
+} from "@/lib/supabase";
 import { RealMatchPanel, isActiveMatch } from "@/components/real-match-panel";
 
 export type MatchViewState =
@@ -44,15 +48,17 @@ function useNextMatchCountdown(): string {
 
   useEffect(() => {
     const update = () => {
-      const now = new Date();
-      const target = new Date(now);
+      const kstNow = new Date(
+        new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })
+      );
+      const target = new Date(kstNow);
       target.setHours(21, 0, 0, 0);
-      if (now >= target) {
+      if (kstNow >= target) {
         target.setDate(target.getDate() + 1);
       }
       const diffSec = Math.max(
         0,
-        Math.floor((target.getTime() - now.getTime()) / 1000)
+        Math.floor((target.getTime() - kstNow.getTime()) / 1000)
       );
       const h = String(Math.floor(diffSec / 3600)).padStart(2, "0");
       const m = String(Math.floor((diffSec % 3600) / 60)).padStart(2, "0");
@@ -93,6 +99,11 @@ export function HomeMatchTab({
   const countdown = useNextMatchCountdown();
 
   const [toast, setToast] = useState<string | null>(null);
+  const [betaFree, setBetaFree] = useState<boolean>(BETA_UNLIMITED_TICKETS);
+
+  useEffect(() => {
+    fetchBetaFreeTickets(BETA_UNLIMITED_TICKETS).then(setBetaFree);
+  }, []);
   const readNotifRaw = useLocalStorageItem("ondo_read_notifications_v1");
   const readNotifIds = (() => {
     try {
@@ -180,7 +191,7 @@ export function HomeMatchTab({
             >
               <Coffee className="h-3 w-3 text-rose-600 sm:h-3.5 sm:w-3.5" />
               <span>
-                {BETA_UNLIMITED_TICKETS
+                {betaFree
                   ? isJa ? "無制限" : "티켓 무제한"
                   : isJa ? `${ticketCount}枚` : `티켓 ${ticketCount}장`}
               </span>

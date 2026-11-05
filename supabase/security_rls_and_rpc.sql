@@ -1406,6 +1406,217 @@ begin
 end;
 $$;
 
+-- 회원에게 이메일(학교 메일 또는 카카오 계정 이메일) + 카카오톡 알림(나와의 채팅) 발송 (내부 전용)
+create or replace function public.ondo_notify_member_event(
+  p_member_id text,
+  p_subject text,
+  p_email_text text,
+  p_kakao_text text,
+  p_link_url text default 'https://darkhos.github.io/ondo-campus/',
+  p_button_title text default '온도 라운지 열기'
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_auth_user_id uuid;
+  v_email text;
+  v_secret text;
+begin
+  if p_member_id is null then
+    return;
+  end if;
+
+  select m.auth_user_id,
+         coalesce(nullif(trim(m.school_email), ''), u.email)
+    into v_auth_user_id, v_email
+  from public.ondo_members m
+  left join auth.users u on u.id = m.auth_user_id
+  where m.id = p_member_id;
+
+  begin
+    select decrypted_secret into v_secret from vault.decrypted_secrets where name = 'ondo_mail_hook_secret' limit 1;
+    if v_email is not null and v_secret is not null and coalesce(p_subject, '') <> '' then
+      perform net.http_post(
+        url := 'https://ofnechamnjafsjmuydpl.supabase.co/functions/v1/ondo-send-mail',
+        headers := jsonb_build_object('Content-Type', 'application/json', 'x-ondo-mail-secret', v_secret),
+        body := jsonb_build_object(
+          'to', v_email,
+          'subject', p_subject,
+          'text', p_email_text
+        ),
+        timeout_milliseconds := 15000
+      );
+    end if;
+  exception when others then
+    null;
+  end;
+
+  if v_auth_user_id is not null and coalesce(p_kakao_text, '') <> '' then
+    begin
+      perform public.ondo_kakao_notify_call(jsonb_build_object(
+        'action', 'send_member',
+        'auth_user_id', v_auth_user_id::text,
+        'text', p_kakao_text,
+        'link_url', coalesce(p_link_url, 'https://darkhos.github.io/ondo-campus/'),
+        'button_title', coalesce(p_button_title, '온도 라운지 열기')
+      ));
+    exception when others then
+      null;
+    end;
+  end if;
+end;
+$$;
+
+-- 친구 초대 원장: 본인 코드 입력·중복 입력·교차 추천 차단 및 학생 인증 완료 시 양쪽 +1장 자동 지급
+create table if not exists public.ondo_referrals (
+  invitee_id text primary key,
+  inviter_id text not null,
+  invite_code text not null,
+  rewarded boolean not null default false,
+  created_at timestamptz not null default now(),
+  rewarded_at timestamptz
+);
+alter table public.ondo_referrals enable row level security;
+
+create or replace function public.ondo_process_pending_referral(p_invitee_id text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_ref public.ondo_referrals;
+  v_verified boolean := false;
+begin
+  if p_invitee_id is null then
+    return false;
+  end if;
+
+  select verified into v_verified from public.ondo_members where id = p_invitee_id;
+  if not coalesce(v_verified, false) then
+    return false;
+  end if;
+
+  select * into v_ref from public.ondo_referrals
+  where invitee_id = p_invitee_id and not rewarded
+  for update;
+
+  if v_ref.invitee_id is null then
+    return false;
+  end if;
+
+  update public.ondo_referrals
+  set rewarded = true, rewarded_at = now()
+  where invitee_id = p_invitee_id;
+
+  update public.ondo_members
+  set tickets = coalesce(tickets, 0) + 1, updated_at = now()
+  where id in (v_ref.invitee_id, v_ref.inviter_id);
+
+  update public.ondo_support_tickets
+  set status = 'DONE'
+  where kind = 'INVITE' and member_id = p_invitee_id and status = 'OPEN';
+
+  perform public.ondo_notify_member_event(
+    v_ref.inviter_id,
+    '🎁 [ONDO 36.5°] 초대한 친구가 학생 인증을 마쳐 커피티켓 1장이 지급됐어요!',
+    '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+      || '내 초대 코드로 가입한 학우가 학생 인증을 완료하여 보너스 커피티켓 1장(☕)이 자동 지급되었습니다!' || chr(10)
+      || 'https://darkhos.github.io/ondo-campus/points/',
+    '🎁 [ONDO 36.5°] 초대한 친구가 학생 인증을 마쳐 보너스 커피티켓 +1장(☕)이 지급됐어요!' || chr(10)
+      || '(招待したお友達が学生認証を完了し、コーヒーチケット1枚が付与されました！)',
+    'https://darkhos.github.io/ondo-campus/points/',
+    '보유 티켓 확인하기'
+  );
+
+  return true;
+end;
+$$;
+
+create or replace function public.ondo_redeem_invite_code(p_code text)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_me public.ondo_members;
+  v_inviter public.ondo_members;
+  v_raw text := upper(trim(coalesce(p_code, '')));
+  v_clean text;
+  v_rewarded_now boolean := false;
+begin
+  select * into v_me from public.ondo_members
+  where auth.uid() is not null and auth_user_id = auth.uid()
+  for update;
+
+  if v_me.id is null then
+    raise exception 'Login required';
+  end if;
+
+  v_clean := regexp_replace(v_raw, '^ONDO[-_]?', '', 'i');
+  v_clean := regexp_replace(v_clean, '[^A-Z0-9_]', '', 'g');
+  if length(v_clean) < 4 or length(v_clean) > 24 then
+    return 'INVALID_CODE';
+  end if;
+
+  if exists (select 1 from public.ondo_referrals where invitee_id = v_me.id) then
+    return 'ALREADY_REDEEMED';
+  end if;
+
+  select * into v_inviter
+  from public.ondo_members m
+  where m.id <> v_me.id
+    and (
+      upper(regexp_replace(m.id, '^u[-_]', '', 'i')) = v_clean
+      or upper(left(regexp_replace(m.id, '^u[-_]', '', 'i'), 8)) = v_clean
+      or upper(left(m.id, 8)) = v_clean
+    )
+  order by m.verified desc, m.updated_at desc
+  limit 1;
+
+  if v_inviter.id is null then
+    if upper(regexp_replace(v_me.id, '^u[-_]', '', 'i')) = v_clean
+       or upper(left(regexp_replace(v_me.id, '^u[-_]', '', 'i'), 8)) = v_clean
+       or upper(left(v_me.id, 8)) = v_clean then
+      return 'SELF_CODE';
+    end if;
+    return 'NOT_FOUND';
+  end if;
+
+  if exists (
+    select 1 from public.ondo_referrals r
+    where r.invitee_id = v_inviter.id and r.inviter_id = v_me.id
+  ) then
+    return 'ALREADY_REDEEMED';
+  end if;
+
+  insert into public.ondo_referrals (invitee_id, inviter_id, invite_code, rewarded, created_at)
+  values (v_me.id, v_inviter.id, 'ONDO-' || v_clean, false, now());
+
+  if v_me.verified then
+    v_rewarded_now := public.ondo_process_pending_referral(v_me.id);
+  end if;
+
+  insert into public.ondo_support_tickets (kind, member_id, reply_contact, reason, message, status, client_key)
+  values (
+    'INVITE',
+    v_me.id,
+    v_me.contact,
+    'ONDO-' || v_clean,
+    v_me.nickname || '님이 ' || v_inviter.nickname || '님의 초대코드(ONDO-' || v_clean || ') 등록'
+      || case when v_rewarded_now then ' (학생인증 완료 · 양쪽 +1장 자동 지급 완료)' else ' (학생인증 완료 시 양쪽 +1장 자동 지급 대기)' end,
+    case when v_rewarded_now then 'DONE' else 'OPEN' end,
+    v_me.id
+  );
+
+  return case when v_rewarded_now then 'REWARDED_NOW' else 'REGISTERED_PENDING_VERIFY' end;
+end;
+$$;
+
 create or replace function public.ondo_verify_school_email_code(p_code text)
 returns boolean
 language plpgsql
@@ -1466,6 +1677,7 @@ begin
       updated_at = now()
   where id = v_member.id;
   delete from public.ondo_school_email_codes where member_id = v_member.id;
+  perform public.ondo_process_pending_referral(v_member.id);
   return true;
 end;
 $$;
@@ -1614,6 +1826,10 @@ begin
 
   update public.ondo_support_tickets set status = 'DONE'
   where kind = 'VERIFY' and member_id = p_member_id and status = 'OPEN';
+
+  if p_approve then
+    perform public.ondo_process_pending_referral(p_member_id);
+  end if;
 
   -- 1) 이메일 알림 발송 (학교 이메일 또는 카카오 계정 이메일)
   begin
@@ -2023,7 +2239,26 @@ set search_path = public
 as $$
   select coalesce((select value = 'true'::jsonb from public.ondo_settings where key = 'beta_free_tickets'), false);
 $$;
-revoke all on function public.ondo_beta_free_tickets() from public, anon, authenticated;
+grant execute on function public.ondo_beta_free_tickets() to anon, authenticated;
+
+create or replace function public.ondo_admin_set_beta_free_tickets(p_free boolean)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.ondo_is_admin() then
+    raise exception 'Admin only';
+  end if;
+  insert into public.ondo_settings (key, value, updated_at)
+  values ('beta_free_tickets', to_jsonb(coalesce(p_free, false)), now())
+  on conflict (key) do update set
+    value = excluded.value,
+    updated_at = now();
+  return coalesce(p_free, false);
+end;
+$$;
 
 create or replace function public.ondo_respond_match(p_match_id text, p_accept boolean)
 returns text
@@ -2089,6 +2324,37 @@ begin
   if v_other = 'ACCEPT' then
     update public.ondo_matches set ticket_status = 'CHATTING', chat_opened_at = now()
     where id = p_match_id;
+
+    -- 양쪽 수락으로 1:1 블라인드 대화방이 열렸음을 두 회원에게 즉시 알림 (24h 내 첫 답장 안내 포함)
+    perform public.ondo_notify_member_event(
+      v_m.female_id,
+      '💬 [ONDO 36.5°] ' || coalesce(v_m.male_name, '상대 학우') || '님과 1:1 블라인드 대화방이 열렸어요! (チャットルームが開設されました)',
+      '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+        || coalesce(v_m.male_name, '상대 학우') || '님과 서로 호감을 수락해 1:1 블라인드 대화방이 열렸어요!' || chr(10)
+        || '※ 대화방이 열린 뒤 24시간 안에 첫 답장을 보내지 않으면 매칭이 자동 종료되고 다음 3번의 매칭이 제한되니, 지금 가볍게 첫 인사를 건네 보세요.' || chr(10)
+        || 'https://darkhos.github.io/ondo-campus/' || chr(10) || chr(10)
+        || '---' || chr(10)
+        || coalesce(v_m.male_name, 'お相手') || 'さんと双方が承認し、1:1ブラインド・チャットルームが開設されました！' || chr(10)
+        || '※ 24時間以内に最初の返信を送らない場合、マッチングが終了し次回3回のマッチングが制限されます。今すぐ挨拶を送ってみましょう！' || chr(10)
+        || 'https://darkhos.github.io/ondo-campus/jp/',
+      '💬 [ONDO 36.5°] ' || coalesce(v_m.male_name, '상대 학우') || '님과 서로 수락해 1:1 대화방이 열렸어요!' || chr(10)
+        || '24시간 안에 첫 인사를 건네 보세요. (チャットルームが開設されました！24時間以内に最初の返信を送ってください)'
+    );
+    perform public.ondo_notify_member_event(
+      v_m.male_id,
+      '💬 [ONDO 36.5°] ' || coalesce(v_m.female_name, '상대 학우') || '님과 1:1 블라인드 대화방이 열렸어요! (チャットルームが開設されました)',
+      '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+        || coalesce(v_m.female_name, '상대 학우') || '님과 서로 호감을 수락해 1:1 블라인드 대화방이 열렸어요!' || chr(10)
+        || '※ 대화방이 열린 뒤 24시간 안에 첫 답장을 보내지 않으면 매칭이 자동 종료되고 다음 3번의 매칭이 제한되니, 지금 가볍게 첫 인사를 건네 보세요.' || chr(10)
+        || 'https://darkhos.github.io/ondo-campus/' || chr(10) || chr(10)
+        || '---' || chr(10)
+        || coalesce(v_m.female_name, 'お相手') || 'さんと双方が承認し、1:1ブラインド・チャットルームが開設されました！' || chr(10)
+        || '※ 24時間以内に最初の返信を送らない場合、マッチングが終了し次回3回のマッチングが制限されます。今すぐ挨拶を送ってみましょう！' || chr(10)
+        || 'https://darkhos.github.io/ondo-campus/jp/',
+      '💬 [ONDO 36.5°] ' || coalesce(v_m.female_name, '상대 학우') || '님과 서로 수락해 1:1 대화방이 열렸어요!' || chr(10)
+        || '24시간 안에 첫 인사를 건네 보세요. (チャットルームが開設されました！24時間以内に最初の返信を送ってください)'
+    );
+
     return 'CHATTING';
   end if;
   return 'PENDING';
@@ -2106,6 +2372,9 @@ declare
   v_m public.ondo_matches;
   v_body text := trim(coalesce(p_body, ''));
   v_id bigint;
+  v_my_msg_count integer := 0;
+  v_partner_id text;
+  v_my_name text;
 begin
   if v_me is null then
     raise exception 'Login required';
@@ -2135,9 +2404,51 @@ begin
   values (p_match_id, v_me, v_body)
   returning id into v_id;
 
-  -- 대화 조건(각자 2번·합계 5번)을 채우면 연락처 공개 상태로 전환
+  v_partner_id := case when v_me = v_m.female_id then v_m.male_id else v_m.female_id end;
+  v_my_name := case when v_me = v_m.female_id then coalesce(v_m.female_name, '상대 학우') else coalesce(v_m.male_name, '상대 학우') end;
+
+  -- 본인이 이 대화방에서 보낸 첫 메시지일 때 상대방에게 알림 발송 (도배 방지 위해 첫 메시지에만 1회 발송)
+  select count(*) into v_my_msg_count
+  from public.ondo_match_messages
+  where match_id = p_match_id and sender_id = v_me;
+
+  if v_my_msg_count = 1 then
+    perform public.ondo_notify_member_event(
+      v_partner_id,
+      '💌 [ONDO 36.5°] ' || v_my_name || '님이 첫 대화 메시지를 보냈어요! (最初のメッセージが届きました)',
+      '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+        || '1:1 블라인드 대화방에서 ' || v_my_name || '님이 첫 인사를 보냈어요!' || chr(10)
+        || '서로 2번 이상, 합쳐서 5번 이상 대화가 오가면 안심 연락처(카카오톡 ID)가 자동으로 공개됩니다.' || chr(10)
+        || 'https://darkhos.github.io/ondo-campus/',
+      '💌 [ONDO 36.5°] ' || v_my_name || '님이 대화방에서 첫 메시지를 보냈어요! 지금 확인하고 답장해 보세요.' || chr(10)
+        || '(最初のメッセージが届きました！確認して返信してみましょう)'
+    );
+  end if;
+
+  -- 대화 조건(각자 2번·합계 5번)을 채우면 연락처 공개 상태로 전환 + 양쪽에 알림 발송
   if v_m.ticket_status = 'CHATTING' and public.ondo_match_contact_open(p_match_id) then
     update public.ondo_matches set ticket_status = 'CONFIRMED' where id = p_match_id;
+
+    perform public.ondo_notify_member_event(
+      v_m.female_id,
+      '🎉 [ONDO 36.5°] 대화가 충분히 이어져 서로의 카카오톡 ID가 공개됐어요! (カカオトークIDが公開されました)',
+      '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+        || '두 분의 대화가 따뜻하게 이어져 서로의 안심 연락처(카카오톡 ID)가 공개되었습니다!' || chr(10)
+        || '지금 대화방 상단에서 상대방의 카카오톡 ID를 확인해 보세요.' || chr(10)
+        || 'https://darkhos.github.io/ondo-campus/',
+      '🎉 [ONDO 36.5°] 대화가 이어져 서로의 카카오톡 ID가 공개됐어요! 대화방에서 확인해 보세요.' || chr(10)
+        || '(お互いのカカオトークIDが公開されました！チャット画面でご確認ください)'
+    );
+    perform public.ondo_notify_member_event(
+      v_m.male_id,
+      '🎉 [ONDO 36.5°] 대화가 충분히 이어져 서로의 카카오톡 ID가 공개됐어요! (カカオトークIDが公開されました)',
+      '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+        || '두 분의 대화가 따뜻하게 이어져 서로의 안심 연락처(카카오톡 ID)가 공개되었습니다!' || chr(10)
+        || '지금 대화방 상단에서 상대방의 카카오톡 ID를 확인해 보세요.' || chr(10)
+        || 'https://darkhos.github.io/ondo-campus/',
+      '🎉 [ONDO 36.5°] 대화가 이어져 서로의 카카오톡 ID가 공개됐어요! 대화방에서 확인해 보세요.' || chr(10)
+        || '(お互いのカカオトークIDが公開されました！チャット画面でご確認ください)'
+    );
   end if;
   return v_id;
 end;
@@ -2239,6 +2550,7 @@ declare
   v_admin boolean := public.ondo_is_admin();
   r_expired record;
   r_male_expired record;
+  r_sched record;
   r_pair record;
   v_score integer;
   v_match_id text;
@@ -2366,16 +2678,39 @@ begin
     where coalesce(penalty_skip_remaining, 0) > 0
       and coalesce(penalty_last_skipped_date, '') <> v_today_date;
 
-    -- 운영자가 미리 예약해 둔 수동 커플 매칭('SCHEDULED')을 밤 9시 매칭 시간에 맞춰 일괄 발송('PENDING')
-    update public.ondo_matches m
-    set ticket_status = 'PENDING',
-        created_at = to_char(now() at time zone 'Asia/Seoul', 'MM/DD') || ' 밤 9시 매칭',
-        created_at_ts = now()
-    where m.ticket_status = 'SCHEDULED'
-      and exists (select 1 from public.ondo_members f where f.id = m.female_id)
-      and exists (select 1 from public.ondo_members mm where mm.id = m.male_id);
-    get diagnostics v_scheduled_count = row_count;
-    v_matched_count := v_matched_count + v_scheduled_count;
+    -- 운영자가 미리 예약해 둔 수동 커플 매칭('SCHEDULED')을 밤 9시 매칭 시간에 맞춰 일괄 발송('PENDING') + 알림 발송
+    for r_sched in
+      update public.ondo_matches m
+      set ticket_status = 'PENDING',
+          created_at = to_char(now() at time zone 'Asia/Seoul', 'MM/DD') || ' 밤 9시 매칭',
+          created_at_ts = now()
+      where m.ticket_status = 'SCHEDULED'
+        and exists (select 1 from public.ondo_members f where f.id = m.female_id)
+        and exists (select 1 from public.ondo_members mm where mm.id = m.male_id)
+      returning m.female_id, m.female_name, m.male_id, m.male_name
+    loop
+      v_matched_count := v_matched_count + 1;
+      perform public.ondo_notify_member_event(
+        r_sched.female_id,
+        '🌙 [ONDO 36.5°] 오늘 밤 9시 새 매칭 상대가 도착했어요! (21時の新しいマッチングが届きました)',
+        '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+          || '오늘 밤 9시 매칭으로 ' || coalesce(r_sched.male_name, '상대 학우') || '님의 프로필과 가치관 노트가 도착했어요!' || chr(10)
+          || '24시간 안에 온도 라운지에서 확인하고 수락 또는 패스를 선택해 주세요.' || chr(10)
+          || 'https://darkhos.github.io/ondo-campus/',
+        '🌙 [ONDO 36.5°] 오늘 밤 9시 새 매칭 상대(' || coalesce(r_sched.male_name, '상대 학우') || '님)가 도착했어요!' || chr(10)
+          || '24시간 안에 라운지에서 확인해 주세요. (21時の新しいマッチングが届きました！)'
+      );
+      perform public.ondo_notify_member_event(
+        r_sched.male_id,
+        '🌙 [ONDO 36.5°] 오늘 밤 9시 새 매칭 상대가 도착했어요! (21時の新しいマッチングが届きました)',
+        '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+          || '오늘 밤 9시 매칭으로 ' || coalesce(r_sched.female_name, '상대 학우') || '님의 프로필과 가치관 노트가 도착했어요!' || chr(10)
+          || '24시간 안에 온도 라운지에서 확인하고 수락 또는 패스를 선택해 주세요.' || chr(10)
+          || 'https://darkhos.github.io/ondo-campus/',
+        '🌙 [ONDO 36.5°] 오늘 밤 9시 새 매칭 상대(' || coalesce(r_sched.female_name, '상대 학우') || '님)가 도착했어요!' || chr(10)
+          || '24시간 안에 라운지에서 확인해 주세요. (21時の新しいマッチングが届きました！)'
+      );
+    end loop;
 
     for r_pair in
       with f as (
@@ -2503,6 +2838,27 @@ begin
         v_matched_count := v_matched_count + 1;
         v_used_females := v_used_females || r_pair.f_id;
         v_used_males := v_used_males || r_pair.m_id;
+
+        perform public.ondo_notify_member_event(
+          r_pair.f_id,
+          '🌙 [ONDO 36.5°] 오늘 밤 9시 새 매칭 상대가 도착했어요! (21時の新しいマッチングが届きました)',
+          '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+            || '오늘 밤 9시 매칭으로 ' || coalesce(r_pair.m_name, '상대 학우') || '님의 프로필과 가치관 노트가 도착했어요!' || chr(10)
+            || '24시간 안에 온도 라운지에서 확인하고 수락 또는 패스를 선택해 주세요.' || chr(10)
+            || 'https://darkhos.github.io/ondo-campus/',
+          '🌙 [ONDO 36.5°] 오늘 밤 9시 새 매칭 상대(' || coalesce(r_pair.m_name, '상대 학우') || '님)가 도착했어요!' || chr(10)
+            || '24시간 안에 라운지에서 확인해 주세요. (21時の新しいマッチングが届きました！)'
+        );
+        perform public.ondo_notify_member_event(
+          r_pair.m_id,
+          '🌙 [ONDO 36.5°] 오늘 밤 9시 새 매칭 상대가 도착했어요! (21時の新しいマッチングが届きました)',
+          '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+            || '오늘 밤 9시 매칭으로 ' || coalesce(r_pair.f_name, '상대 학우') || '님의 프로필과 가치관 노트가 도착했어요!' || chr(10)
+            || '24시간 안에 온도 라운지에서 확인하고 수락 또는 패스를 선택해 주세요.' || chr(10)
+            || 'https://darkhos.github.io/ondo-campus/',
+          '🌙 [ONDO 36.5°] 오늘 밤 9시 새 매칭 상대(' || coalesce(r_pair.f_name, '상대 학우') || '님)가 도착했어요!' || chr(10)
+            || '24시간 안에 라운지에서 확인해 주세요. (21時の新しいマッチングが届きました！)'
+        );
       end if;
     end loop;
   end if;
@@ -2761,7 +3117,7 @@ revoke all on table public.ondo_members, public.ondo_matches,
   public.ondo_univ_email_domains, public.ondo_school_email_codes,
   public.ondo_kakao_notify, public.ondo_kakao_connect_states,
   public.ondo_member_kakao_tokens, public.ondo_member_penalties,
-  public.ondo_daily_visits
+  public.ondo_daily_visits, public.ondo_referrals
   from anon, authenticated;
 
 -- Supabase가 만든 자동 보안 켜기 함수(rls_auto_enable)는 사람이 직접 부를 일이 없으므로 실행 권한 회수
@@ -2804,6 +3160,7 @@ grant execute on function public.ondo_get_my_match_partners() to authenticated;
 grant execute on function public.ondo_reset_my_profile() to authenticated;
 grant execute on function public.ondo_delete_my_account() to authenticated;
 grant execute on function public.ondo_save_my_kakao_token(text, text) to authenticated;
+grant execute on function public.ondo_redeem_invite_code(text) to authenticated;
 
 -- 어드민 함수: 운영자 명찰(ondo_admins)이 있는 카카오 계정만 실제로 동작
 grant execute on function public.ondo_is_admin() to authenticated;
@@ -2821,10 +3178,12 @@ grant execute on function public.ondo_admin_kakao_notify_test() to authenticated
 grant execute on function public.ondo_admin_update_support_ticket(bigint, text) to authenticated;
 grant execute on function public.ondo_admin_review_student(text, boolean) to authenticated;
 grant execute on function public.ondo_admin_get_daily_stats(integer) to authenticated;
+grant execute on function public.ondo_admin_set_beta_free_tickets(boolean) to authenticated;
 
 -- 문의 접수 및 방문 집계를 위한 함수는 비회원(anon)도 가능 — 넣기만 되고 꺼내 보기는 불가
 grant execute on function public.ondo_submit_support_ticket(text, text, text, text) to anon, authenticated;
 grant execute on function public.ondo_record_visit(text, text) to anon, authenticated;
+grant execute on function public.ondo_beta_free_tickets() to anon, authenticated;
 
 -- 기존 회원의 선호 나이 범위가 만 28세를 초과해 저장된 경우 만 18~28세 범위로 자동 보정
 update public.ondo_members

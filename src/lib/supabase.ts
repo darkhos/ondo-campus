@@ -753,3 +753,48 @@ export async function recordDailyVisit(force = false): Promise<void> {
     // ignore analytics network error
   }
 }
+
+export async function fetchBetaFreeTickets(fallback = true): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.rpc("ondo_beta_free_tickets");
+    if (!error && typeof data === "boolean") return data;
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export type RedeemInviteResult =
+  | "REWARDED_NOW"
+  | "REGISTERED_PENDING_VERIFY"
+  | "ALREADY_REDEEMED"
+  | "SELF_CODE"
+  | "NOT_FOUND"
+  | "INVALID_CODE"
+  | "LOGIN_REQUIRED"
+  | "FAILED";
+
+export async function redeemInviteCode(code: string): Promise<RedeemInviteResult> {
+  try {
+    const { data, error } = await supabase.rpc("ondo_redeem_invite_code", {
+      p_code: code,
+    });
+    if (error) {
+      if (error.message?.includes("Login required")) return "LOGIN_REQUIRED";
+      return "FAILED";
+    }
+    if (
+      data === "REWARDED_NOW" ||
+      data === "REGISTERED_PENDING_VERIFY" ||
+      data === "ALREADY_REDEEMED" ||
+      data === "SELF_CODE" ||
+      data === "NOT_FOUND" ||
+      data === "INVALID_CODE"
+    ) {
+      return data;
+    }
+    return "FAILED";
+  } catch {
+    return "FAILED";
+  }
+}

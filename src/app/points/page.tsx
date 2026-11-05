@@ -3,10 +3,19 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Megaphone, Send, ShieldCheck, Users } from "lucide-react";
-import { BETA_UNLIMITED_TICKETS, INITIAL_USER_PROFILE, ROUTES } from "@/lib/ondo-constants";
+import {
+  BETA_UNLIMITED_TICKETS,
+  FIELD_INPUT,
+  INITIAL_USER_PROFILE,
+  ROUTES,
+} from "@/lib/ondo-constants";
 import { useAppLocale } from "@/lib/i18n";
 import { parseJsonObject, useLocalStorageItem } from "@/lib/use-browser-storage";
-import { fetchMyMemberSecure, submitSupportTicket } from "@/lib/supabase";
+import {
+  fetchBetaFreeTickets,
+  fetchMyMemberSecure,
+  submitSupportTicket,
+} from "@/lib/supabase";
 import { Button, PageHeader, RollingNumber, cn } from "@/components/ondo-ui";
 
 const STORAGE_KEY = "ondo_campus_auth_v3";
@@ -75,6 +84,8 @@ export default function PointsPage() {
       : INITIAL_USER_PROFILE.points);
   const [selectedPkg, setSelectedPkg] = useState(TICKET_PACKAGES[1]);
   const [agreeTerms, setAgreeTerms] = useState(true);
+  const [depositorName, setDepositorName] = useState("");
+  const [betaFree, setBetaFree] = useState<boolean>(BETA_UNLIMITED_TICKETS);
 
   const kakaoId =
     typeof storedSession?.kakaoId === "string" ? storedSession.kakaoId : "";
@@ -82,6 +93,7 @@ export default function PointsPage() {
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
+    fetchBetaFreeTickets(BETA_UNLIMITED_TICKETS).then(setBetaFree);
     fetchMyMemberSecure().then((data) => {
       if (data && typeof data.tickets === "number") {
         setServerPoints(data.tickets * 2900);
@@ -113,10 +125,13 @@ export default function PointsPage() {
       return;
     }
     setRequesting(true);
+    const cleanDepositor = depositorName.trim();
     const result = await submitSupportTicket({
       kind: "TOPUP",
       reason: selectedPkg.id,
-      message: `${selectedPkg.label} 충전 신청 (${selectedPkg.price.toLocaleString("ko-KR")}원)`,
+      message: `${selectedPkg.label} 충전 신청 (${selectedPkg.price.toLocaleString("ko-KR")}원)${
+        cleanDepositor ? ` · 입금자명: ${cleanDepositor}` : ""
+      }`,
       replyContact: kakaoId,
     });
     setRequesting(false);
@@ -181,7 +196,7 @@ export default function PointsPage() {
           </div>
           <p className="mt-2 flex items-baseline gap-2 text-[32px] font-black tabular-nums tracking-tight text-zinc-900">
             <span>
-              {BETA_UNLIMITED_TICKETS
+              {betaFree
                 ? isJa ? "☕ 無制限" : "☕ 무제한"
                 : isJa ? `☕ ${ticketCount}枚` : `☕ ${ticketCount}장`}
             </span>
@@ -190,14 +205,14 @@ export default function PointsPage() {
             {gender === "FEMALE"
               ? isJa
                 ? "女性会員様は定時マッチングの24時間ブラインドチャットおよび安心連絡先（カカオトークID）交換が100%無料で提供されます。"
-                : "여성 학우님은 정기 매칭의 24시간 블라인드 룸 대화 및 안심 연락처(카카오톡 ID) 확인이 100% 무료로 제공됩니다. 보유 티켓은 '오늘 한 명 더 만나보기'에 자유롭게 사용하실 수 있어요."
+                : "여성 학우님은 정기 매칭의 24시간 블라인드 룸 대화 및 안심 연락처(카카오톡 ID) 확인이 100% 무료로 제공됩니다."
               : isJa
               ? "チャージしたコーヒーチケットは相手と実際に最初の会話が交わされた時のみ使用され、24時間未返信の場合は100%自動返還されます。"
               : "충전한 커피티켓은 상대방과 첫 대화가 실제로 오갔을 때만 차감되며, 미응답 시 100% 자동 반환됩니다."}
           </p>
         </section>
 
-        {BETA_UNLIMITED_TICKETS ? (
+        {betaFree ? (
           <section className="rounded-3xl border border-rose-100 bg-white p-5">
             <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-rose-600">
               {isJa ? "ベータオープン記念" : "베타 오픈 기념"}
@@ -237,8 +252,8 @@ export default function PointsPage() {
             </h2>
             <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-600">
               {isJa
-                ? "追加マッチングに使えるボーナス・コーヒーチケットは、下の友達招待ミッションでいつでも無料で受け取れます。"
-                : "추가 매칭(오늘 한 명 더 만나보기)에 쓸 수 있는 보너스 커피티켓은 아래 친구 초대 또는 캠퍼스 라운지 공유 미션으로 언제든 무료로 받으실 수 있어요."}
+                ? "友達を招待すると、招待された友達にもあなたにもボーナス・コーヒーチケット1枚ずつプレゼントされます。"
+                : "친구를 초대하거나 캠퍼스 라운지를 공유하면, 초대받은 친구와 나 모두에게 보너스 커피티켓을 선물해 드려요."}
             </p>
           </section>
         ) : (
@@ -309,6 +324,26 @@ export default function PointsPage() {
                   </button>
                 );
               })}
+            </div>
+
+            <div className="pt-1">
+              <label className="mb-1 block px-1 text-[11.5px] font-bold text-zinc-600">
+                {isJa
+                  ? "お振込名義（任意・入金確認用）"
+                  : "입금자명 (선택 · 빠른 입금 확인용)"}
+              </label>
+              <input
+                type="text"
+                value={depositorName}
+                onChange={(e) => setDepositorName(e.target.value)}
+                maxLength={24}
+                placeholder={
+                  isJa
+                    ? "例: ホン・ギルドン（お振込されるお名前）"
+                    : "예: 홍길동 (계좌이체 시 보내시는 분 성함)"
+                }
+                className={FIELD_INPUT}
+              />
             </div>
 
             <label className="mt-2 flex cursor-pointer items-center gap-2 px-1 pt-1 text-[12px] text-zinc-600">
