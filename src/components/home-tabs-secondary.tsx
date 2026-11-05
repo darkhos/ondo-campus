@@ -1,7 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
-import { DbMatchPartner, deleteMyAccount, logoutEverywhere } from "@/lib/supabase";
+import React, { useEffect, useState } from "react";
+import {
+  DbMatchPartner,
+  deleteMyAccount,
+  fetchBetaFreeTickets,
+  logoutEverywhere,
+} from "@/lib/supabase";
 import { RealMatchPanel } from "@/components/real-match-panel";
 import { useInViewRepeat } from "@/components/reveal";
 import { useRouter } from "next/navigation";
@@ -1783,6 +1788,11 @@ export function MyPageTab({
   const [kakaoInput, setKakaoInput] = useState(kakaoId);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [betaFree, setBetaFree] = useState<boolean>(BETA_UNLIMITED_TICKETS);
+
+  useEffect(() => {
+    fetchBetaFreeTickets(BETA_UNLIMITED_TICKETS).then(setBetaFree);
+  }, []);
 
   const editLabel = isJa ? "編集" : "편집";
   const dispSchool = isJa ? schoolLabelJa(user.school) : user.school;
@@ -1902,7 +1912,7 @@ export function MyPageTab({
               className="flex w-full items-center justify-between py-3 text-left text-[14px]"
             >
               <span className="font-medium text-gray-800">
-                {BETA_UNLIMITED_TICKETS
+                {betaFree
                   ? isJa
                     ? "コーヒーチケット 無制限（ベータ）"
                     : "커피티켓 무제한 (베타)"

@@ -36,6 +36,7 @@ import {
 import {
   DbMatchMessage,
   DbMatchPartner,
+  fetchBetaFreeTickets,
   listMatchMessages,
   respondMatch,
   sendMatchMessage,
@@ -79,14 +80,28 @@ export function RealMatchPanel({
   matches,
   isMale,
   ticketCount,
+  betaFree: betaFreeProp,
   onChanged,
 }: {
   matches: DbMatchPartner[];
   isMale: boolean;
   ticketCount: number;
+  betaFree?: boolean;
   /** 수락·패스·메시지 후 매칭 목록과 티켓 수를 다시 불러옴 */
   onChanged: () => void;
 }) {
+  const [betaFree, setBetaFree] = useState<boolean>(
+    betaFreeProp ?? BETA_UNLIMITED_TICKETS
+  );
+
+  useEffect(() => {
+    if (typeof betaFreeProp === "boolean") {
+      setBetaFree(betaFreeProp);
+      return;
+    }
+    fetchBetaFreeTickets(BETA_UNLIMITED_TICKETS).then(setBetaFree);
+  }, [betaFreeProp]);
+
   const active = matches.filter(isActiveMatch);
   const hasPending = active.some((m) => m.ticket_status === "PENDING");
 
@@ -107,6 +122,7 @@ export function RealMatchPanel({
           match={m}
           isMale={isMale}
           ticketCount={ticketCount}
+          betaFree={betaFree}
           onChanged={onChanged}
         />
       ))}
@@ -118,11 +134,13 @@ function MatchCardReal({
   match,
   isMale,
   ticketCount,
+  betaFree,
   onChanged,
 }: {
   match: DbMatchPartner;
   isMale: boolean;
   ticketCount: number;
+  betaFree: boolean;
   onChanged: () => void;
 }) {
   const router = useRouter();
@@ -395,7 +413,7 @@ function MatchCardReal({
         {match.ticket_status === "PENDING" && match.my_response === "PENDING" && (
           <>
             <p className="text-[13px] leading-relaxed text-zinc-600">
-              {isMale && BETA_UNLIMITED_TICKETS
+              {isMale && betaFree
                 ? isJa
                   ? "ベータ期間中はコーヒーチケットなしで無料で承認できます。"
                   : "베타 기간에는 커피티켓 없이 무료로 수락할 수 있어요."
@@ -411,7 +429,7 @@ function MatchCardReal({
               <Button variant="secondary" size="lg" fullWidth disabled={busy} onClick={() => setPassSheetOpen(true)}>
                 {isJa ? "パス" : "넘기기"}
               </Button>
-              {isMale && !BETA_UNLIMITED_TICKETS && ticketCount < 1 ? (
+              {isMale && !betaFree && ticketCount < 1 ? (
                 <Button variant="destructive" size="lg" fullWidth onClick={() => router.push(ROUTES.POINTS)}>
                   <Coffee className="h-4 w-4" />
                   {isJa ? "チケットをチャージ" : "티켓 충전하기"}
@@ -420,7 +438,7 @@ function MatchCardReal({
                 <div className="relative">
                   {heartBurst && <HeartBurst />}
                   <Button variant="destructive" size="lg" fullWidth loading={busy} onClick={() => respond(true)}>
-                    {isMale
+                    {isMale && !betaFree
                       ? isJa
                         ? "承認する（1枚）"
                         : "수락하기 (1장)"
@@ -564,6 +582,9 @@ function MatchChat({
   }, [match.match_id, translateMessages]);
 
   useEffect(() => {
+    lastIdRef.current = 0;
+    firstLoadDoneRef.current = false;
+    setMessages([]);
     load();
     const t = setInterval(() => {
       load();
@@ -571,7 +592,7 @@ function MatchChat({
       if (!contactShownRef.current) onChanged();
     }, POLL_MS);
     return () => clearInterval(t);
-  }, [load, onChanged]);
+  }, [match.match_id, load, onChanged]);
 
   useEffect(() => {
     contactShownRef.current = !!match.contact;

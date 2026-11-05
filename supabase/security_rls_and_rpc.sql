@@ -645,6 +645,29 @@ begin
     update public.ondo_matches
     set ticket_status = p_status
     where id = p_match_id;
+
+    if p_status = 'CONFIRMED' and v_m.ticket_status <> 'CONFIRMED' then
+      perform public.ondo_notify_member_event(
+        v_m.female_id,
+        '🎉 [ONDO 36.5°] 매칭이 확정되어 상대방의 카카오톡 ID가 공개됐어요! (カカオトークIDが公開されました)',
+        '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+          || '두 분의 매칭이 최종 확정되어 서로의 안심 연락처(카카오톡 ID)가 공개되었습니다!' || chr(10)
+          || '지금 라운지 또는 대화방에서 상대방의 카카오톡 ID를 확인해 보세요.' || chr(10)
+          || 'https://darkhos.github.io/ondo-campus/',
+        '🎉 [ONDO 36.5°] 매칭이 확정되어 상대방의 카카오톡 ID가 공개됐어요! 라운지에서 확인해 보세요.' || chr(10)
+          || '(お互いのカカオトークIDが公開されました！)'
+      );
+      perform public.ondo_notify_member_event(
+        v_m.male_id,
+        '🎉 [ONDO 36.5°] 매칭이 확정되어 상대방의 카카오톡 ID가 공개됐어요! (カカオトークIDが公開されました)',
+        '안녕하세요, ONDO 36.5° 입니다.' || chr(10) || chr(10)
+          || '두 분의 매칭이 최종 확정되어 서로의 안심 연락처(카카오톡 ID)가 공개되었습니다!' || chr(10)
+          || '지금 라운지 또는 대화방에서 상대방의 카카오톡 ID를 확인해 보세요.' || chr(10)
+          || 'https://darkhos.github.io/ondo-campus/',
+        '🎉 [ONDO 36.5°] 매칭이 확정되어 상대방의 카카오톡 ID가 공개됐어요! 라운지에서 확인해 보세요.' || chr(10)
+          || '(お互いのカカオトークIDが公開されました！)'
+      );
+    end if;
   end if;
   return true;
 end;
@@ -678,8 +701,7 @@ begin
 
   if exists (
     select 1 from public.ondo_matches om
-    where om.female_id = v_female.id
-      and om.male_id = v_male.id
+    where (om.female_id = v_female.id or om.male_id = v_male.id)
       and om.ticket_status in ('SCHEDULED', 'PENDING', 'HELD', 'CHATTING')
   ) then
     raise exception 'Active match already exists';
@@ -2720,13 +2742,18 @@ begin
           and coalesce(f.penalty_skip_remaining, 0) = 0
           and coalesce(f.penalty_last_skipped_date, '') <> v_today_date
           and coalesce(public.ondo_calc_age(f.profile_extra ->> 'birthDate', f.age), 22) between 18 and 28
-          and public.ondo_extra_int(f.profile_extra, 'height', 0) between 140 and 210
-          and coalesce(trim(f.contact), '') not in ('', 'ondo_univ')
+          and (public.ondo_extra_int(f.profile_extra, 'height', 0) = 0
+               or public.ondo_extra_int(f.profile_extra, 'height', 0) between 140 and 210)
+          and coalesce(trim(f.contact), '') not in ('', 'ondo_univ', '미등록')
           and not exists (select 1 from public.ondo_matches om
                           where om.female_id = f.id
                             and (om.ticket_status in ('SCHEDULED', 'PENDING', 'HELD', 'CHATTING')
-                                 or (not v_admin and om.id like v_today_prefix || '%')))
-        order by f.updated_at desc
+                                 or (not v_admin and (
+                                   om.id like v_today_prefix || '%'
+                                   or (om.created_at_ts is not null
+                                       and to_char(om.created_at_ts at time zone 'Asia/Seoul', 'YYYYMMDD') = v_today_date)
+                                 ))))
+        order by (public.ondo_extra_int(f.profile_extra, 'height', 0) between 140 and 210) desc, f.updated_at desc
         limit 300
       ),
       mm as (
@@ -2736,13 +2763,18 @@ begin
           and coalesce(m.penalty_skip_remaining, 0) = 0
           and coalesce(m.penalty_last_skipped_date, '') <> v_today_date
           and coalesce(public.ondo_calc_age(m.profile_extra ->> 'birthDate', m.age), 24) between 18 and 28
-          and public.ondo_extra_int(m.profile_extra, 'height', 0) between 140 and 210
-          and coalesce(trim(m.contact), '') not in ('', 'ondo_univ')
+          and (public.ondo_extra_int(m.profile_extra, 'height', 0) = 0
+               or public.ondo_extra_int(m.profile_extra, 'height', 0) between 140 and 210)
+          and coalesce(trim(m.contact), '') not in ('', 'ondo_univ', '미등록')
           and not exists (select 1 from public.ondo_matches om
                           where om.male_id = m.id
                             and (om.ticket_status in ('SCHEDULED', 'PENDING', 'HELD', 'CHATTING')
-                                 or (not v_admin and om.id like v_today_prefix || '%')))
-        order by m.updated_at desc
+                                 or (not v_admin and (
+                                   om.id like v_today_prefix || '%'
+                                   or (om.created_at_ts is not null
+                                       and to_char(om.created_at_ts at time zone 'Asia/Seoul', 'YYYYMMDD') = v_today_date)
+                                 ))))
+        order by (public.ondo_extra_int(m.profile_extra, 'height', 0) between 140 and 210) desc, m.updated_at desc
         limit 300
       ),
       c as (

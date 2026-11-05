@@ -227,6 +227,7 @@ export function HomeMatchTab({
               matches={serverMatches}
               isMale={user.gender === "MALE"}
               ticketCount={ticketCount}
+              betaFree={betaFree}
               onChanged={onServerChanged ?? noop}
             />
           )}

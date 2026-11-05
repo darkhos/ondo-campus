@@ -6,6 +6,7 @@ import { Bell, CheckCheck, Gift, Heart, Sparkles } from "lucide-react";
 import { BETA_UNLIMITED_TICKETS, ROUTES } from "@/lib/ondo-constants";
 import { useAppLocale } from "@/lib/i18n";
 import {
+  fetchBetaFreeTickets,
   fetchMyMatchPartners,
   fetchMyMemberSecure,
   toVerificationStatus,
@@ -43,9 +44,10 @@ function saveReadIds(ids: Set<string>) {
 
 // 서버의 실제 상태(학생 인증·매칭)로 알림 목록을 만듦
 async function buildNotifications(): Promise<NotificationItem[]> {
-  const [member, matches] = await Promise.all([
+  const [member, matches, betaFree] = await Promise.all([
     fetchMyMemberSecure(),
     fetchMyMatchPartners(),
+    fetchBetaFreeTickets(BETA_UNLIMITED_TICKETS),
   ]);
   if (!member) return [];
   const read = loadReadIds();
@@ -70,7 +72,7 @@ async function buildNotifications(): Promise<NotificationItem[]> {
         title: `${m.nickname}님과 새 매칭이 도착했어요`,
         titleJa: `${m.nickname}さんとの新しいマッチングが届きました`,
         body: "24시간 안에 수락하거나 넘겨 주세요.",
-        bodyJa: "24時間以内に承認またはパスしてください。",
+        bodyJa: "24시간以内に承認またはパスしてください。",
         href: ROUTES.HOME,
       });
     } else if (m.ticket_status === "CHATTING") {
@@ -98,16 +100,16 @@ async function buildNotifications(): Promise<NotificationItem[]> {
   items.push({
     id: "welcome-tickets",
     type: "POINT_REWARD",
-    title: BETA_UNLIMITED_TICKETS
+    title: betaFree
       ? "베타 기간에는 커피티켓이 무제한이에요 🎁"
       : "가입 축하 커피티켓 2장이 지급됐어요 🎁",
-    titleJa: BETA_UNLIMITED_TICKETS
+    titleJa: betaFree
       ? "ベータ期間中はコーヒーチケットが無制限です 🎁"
       : "新規登録ウェルカム・コーヒーチケット2枚が付与されました 🎁",
-    body: BETA_UNLIMITED_TICKETS
+    body: betaFree
       ? "충전 없이 매칭을 무료로 수락할 수 있어요."
       : "매칭을 수락할 때 사용할 수 있어요.",
-    bodyJa: BETA_UNLIMITED_TICKETS
+    bodyJa: betaFree
       ? "チャージなしでマッチングを無料で承認できます。"
       : "マッチングの承認時に使用できます。",
     href: ROUTES.POINTS,
