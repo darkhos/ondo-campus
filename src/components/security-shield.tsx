@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { recordDailyVisit, supabase } from "@/lib/supabase";
+import {
+  recordDailyVisit,
+  saveMyKakaoProviderToken,
+  supabase,
+} from "@/lib/supabase";
 
 /**
  * ONDO 36.5° Anti-Clone & Anti-Scraper Runtime Shield
@@ -11,12 +15,28 @@ import { recordDailyVisit, supabase } from "@/lib/supabase";
  */
 export function SecurityShield() {
   useEffect(() => {
-    void recordDailyVisit(false);
-    const { data: authSub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") {
-        void recordDailyVisit(true);
-      }
-    });
+    const isSajuRoute =
+      typeof window !== "undefined" &&
+      window.location.pathname.startsWith("/saju");
+
+    let authSub: { subscription: { unsubscribe: () => void } } | null = null;
+    if (!isSajuRoute) {
+      void recordDailyVisit(false);
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          if (session?.provider_token) {
+            void saveMyKakaoProviderToken(
+              session.provider_token,
+              session.provider_refresh_token
+            );
+          }
+          if (event === "SIGNED_IN") {
+            void recordDailyVisit(true);
+          }
+        }
+      });
+      authSub = data;
+    }
 
     // 1. Frame-busting against unauthorized mirror iframes
     try {
@@ -27,12 +47,14 @@ export function SecurityShield() {
       // ignore cross-origin frame access restriction
     }
 
-    // 2. Block contextmenu & dragstart on non-input elements
+    // 2. Block contextmenu & dragstart on non-input elements (except downloadable story cards)
     const handleContextMenu = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (
         target &&
-        (target.tagName === "INPUT" || target.tagName === "TEXTAREA")
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.getAttribute("data-allow-save") === "true")
       ) {
         return;
       }
@@ -63,7 +85,7 @@ export function SecurityShield() {
     window.addEventListener("keydown", handleKeyDown, true);
 
     return () => {
-      authSub.subscription.unsubscribe();
+      authSub?.subscription.unsubscribe();
       document.removeEventListener("contextmenu", handleContextMenu);
       document.removeEventListener("dragstart", handleDragStart);
       window.removeEventListener("keydown", handleKeyDown, true);

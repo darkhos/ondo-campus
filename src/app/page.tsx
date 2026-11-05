@@ -13,6 +13,7 @@ import {
   isStaleAutoCreatedMember,
   persistMemberSession,
   purgeStaleMemberRow,
+  saveMyKakaoProviderToken,
   supabase,
 } from "@/lib/supabase";
 import { Spinner } from "@/components/ondo-ui";
@@ -66,6 +67,12 @@ export default function RootPage() {
           }
 
           if (session) {
+            if (session.provider_token) {
+              await saveMyKakaoProviderToken(
+                session.provider_token,
+                session.provider_refresh_token
+              );
+            }
             const nextPath = consumeAuthNextPath();
             let member = await fetchMyMemberSecure();
             if (member && isStaleAutoCreatedMember(member)) {
