@@ -183,7 +183,7 @@ export default function FaqPage() {
                   </span>
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-300",
+                      "h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-200 ease-[var(--ease-out)]",
                       open && "rotate-180 text-rose-700"
                     )}
                   />
@@ -194,14 +194,14 @@ export default function FaqPage() {
                   role="region"
                   aria-hidden={!open}
                   className={cn(
-                    "grid transition-[grid-template-rows] duration-300 ease-out",
+                    "grid transition-[grid-template-rows] duration-200 ease-[var(--ease-out)]",
                     open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
                   )}
                 >
                   <div className="overflow-hidden">
                     <div
                       className={cn(
-                        "border-t border-stone-100 bg-stone-50/60 px-4 py-3.5 text-[13px] leading-relaxed text-zinc-700 transition-opacity duration-300",
+                        "border-t border-stone-100 bg-stone-50/60 px-4 py-3.5 text-[13px] leading-relaxed text-zinc-700 transition-opacity duration-200 ease-[var(--ease-out)]",
                         open ? "opacity-100" : "opacity-0"
                       )}
                     >

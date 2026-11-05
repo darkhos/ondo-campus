@@ -205,11 +205,14 @@ export function CoupleHero({ isJa }: { isJa: boolean }) {
           <g clipPath="url(#ondo-heart-clip)">
             <rect
               x="140"
-              y={140 - 60 * fill}
+              y="80"
               width="80"
               height="62"
               fill="#f43f5e"
-              style={{ transition: "y 0.7s cubic-bezier(0.16,1,0.3,1)" }}
+              style={{
+                transform: `translateY(${60 * (1 - fill)}px)`,
+                transition: "transform 0.55s var(--ease-out)",
+              }}
             />
           </g>
           <text
@@ -219,7 +222,11 @@ export function CoupleHero({ isJa }: { isJa: boolean }) {
             fontSize="13"
             fontWeight="900"
             fill={done ? "#e11d48" : "#71717a"}
-            style={{ fontFamily: "inherit", transition: "fill 0.3s" }}
+            style={{
+              fontFamily: "inherit",
+              fontVariantNumeric: "tabular-nums",
+              transition: "fill 0.25s ease",
+            }}
           >
             {temp}°
           </text>

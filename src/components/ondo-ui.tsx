@@ -94,7 +94,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       destructive:
         "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800",
       kakao:
-        "ondo-shimmer-btn bg-[#FEE500] text-zinc-900 font-extrabold hover:bg-[#FADA0A] hover:scale-[1.01] active:bg-[#F2CF00] active:scale-[0.99] shadow-xs",
+        "ondo-shimmer-btn bg-[#FEE500] text-zinc-900 font-extrabold hover:bg-[#FADA0A] active:bg-[#F2CF00] shadow-xs",
     };
     const sizes = {
       sm: "h-9 px-3.5 text-[13px]",
@@ -105,7 +105,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-150 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45",
+          "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-[transform,background-color,color,border-color,box-shadow,opacity] duration-150 ease-[var(--ease-out)] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45",
           variants[variant],
           sizes[size],
           fullWidth && "w-full",
@@ -136,7 +136,7 @@ export function LanguageToggle({ className }: { className?: string }) {
       <span
         aria-hidden="true"
         className={cn(
-          "pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-full shadow-xs transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-full shadow-xs transition-[transform,background-color] duration-200 ease-[var(--ease-out)]",
           isJa
             ? "translate-x-full bg-rose-600"
             : "translate-x-0 bg-zinc-900"
@@ -146,7 +146,7 @@ export function LanguageToggle({ className }: { className?: string }) {
         type="button"
         onClick={() => setLocale("ko")}
         className={cn(
-          "relative z-10 rounded-full px-2 py-1 text-center text-[11px] transition-colors duration-300 sm:px-2.5 sm:py-1.5 sm:text-[12px]",
+          "relative z-10 rounded-full px-2 py-1 text-center text-[11px] transition-colors duration-200 ease-[var(--ease-out)] sm:px-2.5 sm:py-1.5 sm:text-[12px]",
           !isJa ? "text-white" : "text-zinc-600 hover:text-zinc-900"
         )}
       >
@@ -157,7 +157,7 @@ export function LanguageToggle({ className }: { className?: string }) {
         type="button"
         onClick={() => setLocale("ja")}
         className={cn(
-          "relative z-10 rounded-full px-2 py-1 text-center text-[11px] transition-colors duration-300 sm:px-2.5 sm:py-1.5 sm:text-[12px]",
+          "relative z-10 rounded-full px-2 py-1 text-center text-[11px] transition-colors duration-200 ease-[var(--ease-out)] sm:px-2.5 sm:py-1.5 sm:text-[12px]",
           isJa ? "text-white" : "text-zinc-600 hover:text-zinc-900"
         )}
       >
@@ -187,7 +187,7 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-10 flex h-14 items-center justify-between gap-2 border-b border-stone-200/70 bg-[#FAF9F6]/90 px-4 backdrop-blur-md sm:px-5",
+        "sticky top-0 z-10 flex h-14 items-center justify-between gap-2 border-b border-stone-200/70 bg-[#FAF9F6]/90 px-4 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md sm:px-5",
         className
       )}
     >
@@ -1298,14 +1298,14 @@ export function PillNav({
   return (
     <nav
       aria-label="하단 플로팅 내비게이션"
-      className="fixed inset-x-0 bottom-4 z-30 mx-auto max-w-md px-4"
+      className="fixed inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom,0px))] z-30 mx-auto max-w-md px-4"
     >
       <div className="h-14 rounded-full border border-stone-200/90 bg-zinc-900/95 px-2 text-white shadow-xl backdrop-blur-md">
         <div className="relative grid h-full grid-cols-5 items-center">
           {/* 고른 탭 뒤의 흰 배경이 옆으로 미끄러지듯 이동 */}
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-y-1.5 left-0 w-1/5 rounded-full bg-white shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            className="pointer-events-none absolute inset-y-1.5 left-0 w-1/5 rounded-full bg-white shadow-sm transition-transform duration-200 ease-[var(--ease-out)]"
             style={{
               transform: `translateX(${Math.max(0, TAB_ITEMS.findIndex((t) => t.id === active)) * 100}%)`,
             }}
@@ -1319,7 +1319,7 @@ export function PillNav({
                 onClick={() => onChange(id)}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "relative z-10 flex flex-col items-center justify-center gap-1 rounded-full py-1.5 text-[11px] transition-colors duration-300 active:scale-95",
+                  "relative z-10 flex flex-col items-center justify-center gap-1 rounded-full py-1.5 text-[11px] transition-colors duration-200 ease-[var(--ease-out)] active:scale-95",
                   isActive
                     ? "font-bold text-zinc-900"
                     : "font-medium text-zinc-400 hover:text-white"
@@ -1390,13 +1390,13 @@ export function MatchingToggleCard({
         disabled={isDisabled}
         onClick={handleToggle}
         className={cn(
-          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors duration-300",
+          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors duration-200 ease-[var(--ease-out)]",
           isOn ? "bg-rose-600" : "bg-stone-300"
         )}
       >
         <span
           className={cn(
-            "flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            "flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm transition-transform duration-200 ease-[var(--ease-out)]",
             isOn ? "translate-x-5" : "translate-x-0"
           )}
         >

@@ -43,23 +43,25 @@ export const metadata: Metadata = {
 const SUPABASE_HOST = "ofnechamnjafsjmuydpl.supabase.co";
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://js.tosspayments.com https://cdn.portone.io https://cdn.iamport.kr https://t1.kakaocdn.net",
   "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
   "font-src 'self' data: https://cdn.jsdelivr.net",
-  `img-src 'self' data: blob: https://${SUPABASE_HOST}`,
+  `img-src 'self' data: blob: https://${SUPABASE_HOST} https://*.kakaocdn.net`,
   "media-src 'self' data: blob:",
-  `connect-src 'self' https://${SUPABASE_HOST} wss://${SUPABASE_HOST} https://translate.googleapis.com https://api.mymemory.translated.net`,
+  `connect-src 'self' https://${SUPABASE_HOST} wss://${SUPABASE_HOST} https://translate.googleapis.com https://api.mymemory.translated.net https://generativelanguage.googleapis.com https://*.tosspayments.com https://*.portone.io https://*.iamport.kr https://*.kakao.com`,
   "worker-src 'self' blob:",
-  "frame-src 'none'",
+  "frame-src 'self' https://*.tosspayments.com https://*.portone.io https://*.iamport.kr https://*.kakao.com",
   "object-src 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://*.tosspayments.com https://*.portone.io",
   "upgrade-insecure-requests",
 ].join("; ");
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
   themeColor: "#FAF9F6",
 };
 

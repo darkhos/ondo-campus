@@ -123,15 +123,15 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#FAF9F6] text-zinc-900">
+    <div className="min-h-dvh w-full overflow-x-hidden bg-[#FAF9F6] text-zinc-900">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-stone-200/80 bg-[#FAF9F6]/90 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-stone-200/80 bg-[#FAF9F6]/90 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md">
         <div className="mx-auto flex h-13 max-w-4xl items-center justify-between gap-1.5 px-3 sm:h-15 sm:gap-2 sm:px-5">
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-rose-400 sm:h-8 sm:w-8">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-rose-400 sm:h-8 sm:w-8">
               <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="currentColor" />
             </div>
-            <span className="whitespace-nowrap text-[14px] font-black tracking-tight text-zinc-900 sm:text-[17px]">
+            <span className="whitespace-nowrap text-[14px] font-black tracking-tight tabular-nums text-zinc-900 sm:text-[17px]">
               ONDO <span className="text-rose-700">36.5°</span>
             </span>
           </div>
@@ -139,13 +139,13 @@ export default function LandingPage() {
             <LanguageToggle />
             <Link
               href={ROUTES.LOGIN}
-              className="inline-block rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11.5px] font-bold text-zinc-800 transition-colors hover:bg-stone-50 sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className="inline-block rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11.5px] font-bold text-zinc-800 transition-[transform,background-color] duration-150 ease-[var(--ease-out)] hover:bg-stone-50 active:scale-[0.97] sm:px-3.5 sm:py-2 sm:text-[13px]"
             >
               {isJa ? "ログイン" : "로그인"}
             </Link>
             <Link
               href={ROUTES.JOIN}
-              className="rounded-full bg-zinc-900 px-3 py-1 text-[11.5px] font-bold text-white transition-colors hover:bg-zinc-800 sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className="rounded-full bg-zinc-900 px-3 py-1 text-[11.5px] font-bold text-white transition-[transform,background-color] duration-150 ease-[var(--ease-out)] hover:bg-zinc-800 active:scale-[0.97] sm:px-3.5 sm:py-2 sm:text-[13px]"
             >
               {isJa ? "新規登録" : "회원가입"}
             </Link>
@@ -164,7 +164,7 @@ export default function LandingPage() {
             </span>
           </div>
 
-          <h1 className="ondo-rise mt-3.5 text-[27px] font-black leading-[1.25] tracking-tight text-zinc-900 sm:mt-5 sm:text-[40px]" style={{ "--ondo-rise-delay": "90ms" } as React.CSSProperties}>
+          <h1 className="ondo-rise mt-3.5 text-[27px] font-black leading-[1.25] tracking-[-0.025em] text-zinc-900 sm:mt-5 sm:text-[40px]" style={{ "--ondo-rise-delay": "50ms" } as React.CSSProperties}>
             {isJa ? (
               <>
                 友達の紹介みたいに、
@@ -179,14 +179,14 @@ export default function LandingPage() {
               </>
             )}
           </h1>
-          <p className="ondo-rise mt-2.5 text-[14px] text-zinc-600 sm:mt-3.5 sm:text-[15px]" style={{ "--ondo-rise-delay": "180ms" } as React.CSSProperties}>
+          <p className="ondo-rise mx-auto mt-2.5 max-w-[65ch] text-[14px] text-zinc-600 sm:mt-3.5 sm:text-[15px]" style={{ "--ondo-rise-delay": "100ms" } as React.CSSProperties}>
             {isJa
               ? "毎晩21時、顔よりまず会話が通じる36.5°のご縁を1対1でお探しします。"
               : "매일 밤 9시, 얼굴보다 대화가 먼저 통하는 36.5°의 인연을 1:1로 찾아드려요."}
           </p>
 
           {/* 커플 그림: 대화를 나눌수록 온도가 올라가 36.5°에서 카톡 공개 */}
-          <div className="ondo-rise mt-3 sm:mt-4" style={{ "--ondo-rise-delay": "230ms" } as React.CSSProperties}>
+          <div className="ondo-rise mt-3 sm:mt-4" style={{ "--ondo-rise-delay": "150ms" } as React.CSSProperties}>
             <CoupleHero isJa={isJa} />
           </div>
 
@@ -194,7 +194,7 @@ export default function LandingPage() {
           <div
             ref={heroCtaRef}
             className="ondo-rise mx-auto mt-3 max-w-md sm:mt-4"
-            style={{ "--ondo-rise-delay": "270ms" } as React.CSSProperties}
+            style={{ "--ondo-rise-delay": "200ms" } as React.CSSProperties}
           >
             <Button
               size="lg"
@@ -262,15 +262,15 @@ export default function LandingPage() {
                 <li
                   key={step.title}
                   className={stepsSeen ? "ondo-reveal is-visible" : "ondo-reveal"}
-                  style={{ "--ondo-reveal-delay": `${idx * 90}ms` } as React.CSSProperties}
+                  style={{ "--ondo-reveal-delay": `${idx * 55}ms` } as React.CSSProperties}
                 >
                 <div
                   onClick={() => setActiveStep(idx)}
                   onMouseEnter={() => setActiveStep(idx)}
                   className={
                     isActive
-                      ? "h-full cursor-pointer rounded-2xl border-2 border-rose-600 bg-rose-50/40 p-3.5 shadow-[0_10px_24px_rgba(225,29,72,0.12)] transition-all duration-300 -translate-y-1 sm:rounded-3xl sm:p-5"
-                      : "h-full cursor-pointer rounded-2xl border border-stone-200/90 bg-white p-3.5 transition-all duration-300 hover:border-rose-200 sm:rounded-3xl sm:p-5"
+                      ? "h-full cursor-pointer rounded-2xl border-2 border-rose-600 bg-rose-50/40 p-3.5 shadow-[0_10px_24px_rgba(225,29,72,0.12)] transition-[transform,border-color,background-color,box-shadow] duration-200 ease-[var(--ease-out)] -translate-y-1 active:scale-[0.98] sm:rounded-3xl sm:p-5"
+                      : "h-full cursor-pointer rounded-2xl border border-stone-200/90 bg-white p-3.5 transition-[transform,border-color,background-color,box-shadow] duration-200 ease-[var(--ease-out)] hover:border-rose-200 active:scale-[0.98] sm:rounded-3xl sm:p-5"
                   }
                 >
                   <div className="flex items-center gap-1.5 sm:gap-2">
@@ -376,11 +376,11 @@ export default function LandingPage() {
             {reviews.map((r, i) => (
               <Reveal
                 key={i}
-                delay={i * 120}
+                delay={i * 60}
                 className="w-[86%] shrink-0 snap-start rounded-3xl border border-stone-200/90 bg-white p-5 sm:w-auto sm:p-6"
               >
                 <span className="text-[12px] font-bold text-rose-700">{r.meta}</span>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-zinc-700 sm:text-[14px]">
+                <p className="mt-2 max-w-[65ch] text-[13.5px] leading-relaxed text-zinc-700 sm:text-[14px]">
                   &ldquo;{r.body}&rdquo;
                 </p>
               </Reveal>
@@ -403,8 +403,8 @@ export default function LandingPage() {
                 }}
                 className={
                   reviewIdx === i
-                    ? "h-1.5 w-5 rounded-full bg-rose-600 transition-all duration-300"
-                    : "h-1.5 w-1.5 rounded-full bg-stone-300 transition-all duration-300"
+                    ? "h-1.5 w-5 rounded-full bg-rose-600 transition-[width,background-color] duration-200 ease-[var(--ease-out)]"
+                    : "h-1.5 w-1.5 rounded-full bg-stone-300 transition-[width,background-color] duration-200 ease-[var(--ease-out)]"
                 }
               />
             ))}

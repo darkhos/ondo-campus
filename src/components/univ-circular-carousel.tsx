@@ -167,11 +167,13 @@ export function UniversityCircularCarousel({
     velocity: 0,
     targetAngle: null as number | null,
     isDragging: false,
+    pointerId: null as number | null,
     isHovered: false,
     lastX: 0,
     lastTime: 0,
     dragDistance: 0,
     direction: -1, // 왼쪽 방향으로 회전 (ReactBits Circular Carousel 기본값)
+    lastCardW: 0,
   });
 
   useEffect(() => {
@@ -179,7 +181,10 @@ export function UniversityCircularCarousel({
     let prevTs = performance.now();
     const count = UNIV_RING_ITEMS.length;
     const stepDeg = 360 / count;
-    const driftSpeedDegPerSec = 14; // ReactBits 기본 14°/s
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const driftSpeedDegPerSec = prefersReducedMotion ? 0 : 14; // ReactBits 기본 14°/s
 
     const updateDOM = (now: number) => {
       const dt = Math.min(0.05, (now - prevTs) / 1000);
@@ -223,6 +228,11 @@ export function UniversityCircularCarousel({
       if (pivotRef.current) {
         pivotRef.current.style.transform =
           stageScale < 0.999 ? `scale(${stageScale.toFixed(3)})` : "none";
+      }
+
+      const widthChanged = st.lastCardW !== cardW;
+      if (widthChanged) {
+        st.lastCardW = cardW;
       }
 
       let frontIdx = 0;
@@ -276,7 +286,9 @@ export function UniversityCircularCarousel({
         const zIndex = Math.round(depthNorm * 100);
         const isFront = cosVal > 0.94;
 
-        el.style.width = `${cardW}px`;
+        if (widthChanged) {
+          el.style.width = `${cardW}px`;
+        }
         el.style.transform = `perspective(1600px) translate3d(calc(-50% + ${x.toFixed(
           1
         )}px), calc(-50% + ${y.toFixed(1)}px), ${z.toFixed(
@@ -311,7 +323,10 @@ export function UniversityCircularCarousel({
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const st = stateRef.current;
+    // Multi-touch protection: ignore additional touch points after initial drag begins
+    if (st.isDragging) return;
     st.isDragging = true;
+    st.pointerId = e.pointerId;
     st.targetAngle = null;
     st.lastX = e.clientX;
     st.lastTime = performance.now();
@@ -321,7 +336,7 @@ export function UniversityCircularCarousel({
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const st = stateRef.current;
-    if (!st.isDragging) return;
+    if (!st.isDragging || (st.pointerId !== null && e.pointerId !== st.pointerId)) return;
     const now = performance.now();
     const dx = e.clientX - st.lastX;
     const dt = Math.max(0.008, (now - st.lastTime) / 1000);
@@ -345,8 +360,11 @@ export function UniversityCircularCarousel({
     st.lastTime = now;
   };
 
-  const handlePointerUp = () => {
-    stateRef.current.isDragging = false;
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const st = stateRef.current;
+    if (st.pointerId !== null && e.pointerId !== st.pointerId) return;
+    st.isDragging = false;
+    st.pointerId = null;
   };
 
   const focusCard = (index: number) => {
