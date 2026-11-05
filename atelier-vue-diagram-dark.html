@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATELIER VUE · Single-Owner Vault Architecture (Dark Skin)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:       #161821;
+      --color-paper-2:     #1f222e;
+      --color-ink:         #f7f5f0;
+      --color-ink-strong:  #111111;
+      --color-muted:       #b8b2a6;
+      --color-soft:        #989288;
+      --color-rule:        rgba(247,245,240,0.12);
+      --color-rule-solid:  rgba(184,178,166,0.25);
+      --color-accent:      #c6a87c;
+      --color-accent-tint: rgba(198,168,124,0.10);
+      --color-link:        #739fdf;
+      --font-sans:         'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+      --font-serif:        'Instrument Serif', 'Noto Serif', 'Noto Serif KR', serif;
+      --font-mono:         'Geist Mono', ui-monospace, monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+
+    .frame { max-width: 1200px; width: 100%; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2.15rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      color: var(--color-muted);
+      margin-bottom: 1.75rem;
+    }
+
+    svg { width: 100%; min-width: 1000px; display: block; }
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · ATELIER VUE (Editorial Obsidian Dark Skin)</p>
+    <h1>ATELIER VUE · 1인 영구 독점 AI 헤어 볼트 아키텍처</h1>
+    <p class="subtitle">살롱 원장이 모델을 탐색하고 염색 톤을 시뮬레이션한 뒤, 1인 귀속 라이선스 증서와 SNS 규격 에셋을 발급받는 전체 파이프라인</p>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="atelier-vue-dark-title atelier-vue-dark-desc">
+        <title id="atelier-vue-dark-title">ATELIER VUE 1인 영구 독점 AI 헤어 볼트 아키텍처 (다크 스킨)</title>
+        <desc id="atelier-vue-dark-desc">살롱 디렉터 브라우저에서 실시간 염색 톤 랩과 1인 독점 볼트 엔진을 거쳐 라이선스 증서 및 SNS 규격 에셋으로 출력되는 다크 스킨 아키텍처 다이어그램</desc>
+        <defs>
+          <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="0.9" fill="rgba(247,245,240,0.08)"/>
+          </pattern>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#b8b2a6"/></marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#c6a87c"/></marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#739fdf"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#161821"/>
+        <rect width="100%" height="100%" fill="url(#dots)" opacity="0.55"/>
+
+        <!-- Zone: Output & Delivery Vault -->
+        <rect x="640" y="112" width="320" height="272" rx="8"
+              fill="rgba(247,245,240,0.03)" stroke="rgba(247,245,240,0.12)" stroke-width="0.8"/>
+        <rect x="740" y="116" width="120" height="12" rx="2" fill="#161821"/>
+        <text x="800" y="125" fill="#989288" font-size="7" font-family="'Geist Mono', monospace"
+              text-anchor="middle" letter-spacing="0.14em">EXCLUSIVE OUTPUTS</text>
+
+        <!-- Arrows first -->
+        <line x1="184" y1="248" x2="236" y2="248" stroke="#739fdf" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+        <line x1="396" y1="248" x2="448" y2="248" stroke="#c6a87c" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+        <path d="M 616,236 H 660 Q 668,236 668,228 V 188 H 688"
+              fill="none" stroke="#c6a87c" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <path d="M 616,260 H 660 Q 668,260 668,268 V 308 H 688"
+              fill="none" stroke="#b8b2a6" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- Dashed return: Lock status sync -->
+        <path d="M 448,268 H 396" fill="none" stroke="#b8b2a6" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+        <!-- Arrow labels -->
+        <rect x="188" y="228" width="44" height="12" rx="2" fill="#161821"/>
+        <text x="210" y="238" fill="#739fdf" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">SELECT</text>
+
+        <rect x="400" y="228" width="44" height="12" rx="2" fill="#161821"/>
+        <text x="422" y="238" fill="#c6a87c" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CLAIM</text>
+
+        <rect x="400" y="260" width="44" height="12" rx="2" fill="#161821"/>
+        <text x="422" y="270" fill="#b8b2a6" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">LOCKED</text>
+
+        <!-- Node 1: 살롱 원장 스튜디오 (Input) -->
+        <rect x="40" y="216" width="144" height="64" rx="6" fill="#161821"/>
+        <rect x="40" y="216" width="144" height="64" rx="6" fill="rgba(184,178,166,0.10)" stroke="#989288" stroke-width="1"/>
+        <rect x="48" y="224" width="36" height="12" rx="2" fill="transparent" stroke="rgba(152,146,136,0.40)" stroke-width="0.8"/>
+        <text x="66" y="233" fill="#989288" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CLIENT</text>
+        <text x="112" y="252" fill="#f7f5f0" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', sans-serif" text-anchor="middle">살롱 디렉터</text>
+        <text x="112" y="268" fill="#b8b2a6" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/pickly · Web UI</text>
+
+        <!-- Node 2: 실시간 염색 톤 랩 (Backend) -->
+        <rect x="236" y="216" width="160" height="64" rx="6" fill="#1f222e" stroke="#f7f5f0" stroke-width="1"/>
+        <rect x="244" y="224" width="36" height="12" rx="2" fill="transparent" stroke="rgba(247,245,240,0.35)" stroke-width="0.8"/>
+        <text x="262" y="233" fill="#f7f5f0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STUDIO</text>
+        <text x="388" y="272" fill="rgba(247,245,240,0.06)" font-size="32" font-weight="600" font-family="'Geist Mono', monospace" text-anchor="end">01</text>
+        <text x="316" y="252" fill="#f7f5f0" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', sans-serif" text-anchor="middle">실시간 염색 톤 랩</text>
+        <text x="316" y="268" fill="#b8b2a6" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">5 Tones · Live Filter</text>
+
+        <!-- Node 3: 1인 독점 볼트 엔진 (Focal Accent) -->
+        <rect x="448" y="216" width="168" height="64" rx="6" fill="#161821"/>
+        <rect x="448" y="216" width="168" height="64" rx="6" fill="rgba(198,168,124,0.10)" stroke="#c6a87c" stroke-width="1.2"/>
+        <rect x="456" y="224" width="36" height="12" rx="2" fill="transparent" stroke="rgba(198,168,124,0.55)" stroke-width="0.8"/>
+        <text x="474" y="233" fill="#c6a87c" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">VAULT</text>
+        <text x="608" y="272" fill="rgba(198,168,124,0.12)" font-size="32" font-weight="600" font-family="'Geist Mono', monospace" text-anchor="end">02</text>
+        <text x="532" y="252" fill="#f7f5f0" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', sans-serif" text-anchor="middle">1인 독점 귀속 볼트</text>
+        <text x="532" y="268" fill="#c6a87c" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Single-Owner Lock</text>
+
+        <!-- Node 4: 독점 라이선스 증서 발급 (Backend inside Zone) -->
+        <rect x="688" y="156" width="232" height="64" rx="6" fill="#1f222e" stroke="#f7f5f0" stroke-width="1"/>
+        <rect x="696" y="164" width="36" height="12" rx="2" fill="transparent" stroke="rgba(247,245,240,0.35)" stroke-width="0.8"/>
+        <text x="714" y="173" fill="#f7f5f0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CERT</text>
+        <text x="804" y="192" fill="#f7f5f0" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', sans-serif" text-anchor="middle">독점 라이선스 보증서</text>
+        <text x="804" y="208" fill="#b8b2a6" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">AV-2026-XXXX · Permanent</text>
+
+        <!-- Node 5: 인스타·네이버 플레이스 팩 (Store inside Zone) -->
+        <rect x="688" y="276" width="232" height="64" rx="6" fill="#161821"/>
+        <rect x="688" y="276" width="232" height="64" rx="6" fill="rgba(247,245,240,0.05)" stroke="#b8b2a6" stroke-width="1"/>
+        <rect x="696" y="284" width="36" height="12" rx="2" fill="transparent" stroke="rgba(184,178,166,0.45)" stroke-width="0.8"/>
+        <text x="714" y="293" fill="#b8b2a6" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">ASSET</text>
+        <text x="804" y="312" fill="#f7f5f0" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', sans-serif" text-anchor="middle">SNS &amp; 플레이스 화보 팩</text>
+        <text x="804" y="328" fill="#b8b2a6" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">4:5 Feed · 1:1 Menu · 9:16 Reels</text>
+
+        <!-- Legend strip -->
+        <line x1="40" y1="412" x2="960" y2="412" stroke="rgba(247,245,240,0.12)" stroke-width="0.8"/>
+        <text x="40" y="428" fill="#b8b2a6" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LEGEND · ATELIER VUE DARK TOKENS</text>
+
+        <rect x="40" y="444" width="16" height="12" rx="2" fill="rgba(198,168,124,0.10)" stroke="#c6a87c" stroke-width="1.2"/>
+        <text x="64" y="454" fill="#f7f5f0" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', sans-serif">핵심 독점 볼트 (Champagne Gold #C6A87C)</text>
+
+        <rect x="336" y="444" width="16" height="12" rx="2" fill="#1f222e" stroke="#f7f5f0" stroke-width="1"/>
+        <text x="360" y="454" fill="#f7f5f0" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', sans-serif">스튜디오 엔진 (Obsidian Card #1F222E)</text>
+
+        <rect x="616" y="444" width="16" height="12" rx="2" fill="rgba(247,245,240,0.05)" stroke="#b8b2a6" stroke-width="1"/>
+        <text x="640" y="454" fill="#b8b2a6" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', sans-serif">아카이브 에셋 (Muted #B8B2A6)</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>
