@@ -1,5 +1,5 @@
-:HL["/ondo-campus/_next/static/chunks/3j908t1xg83p4.css","style"]
+:HL["/ondo-campus/_next/static/chunks/0zlktr0sfq7f7.css","style"]
 :HL["https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css","style",{"crossOrigin":"anonymous","integrity":"sha384-GIdEBaqGN9mNkDkMkzMHW8EKUqtpPIe/sLj1X7DIrnc9uPtLROJgmuDlh+3rBw0j"}]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"faq","h":96,"c":"$Q2"}]]
-0:{"b":"mwawZG7tFtUlB--6QahVc","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"UVAvyr5cSOCdq5ZErijEa","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
